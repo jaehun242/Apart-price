@@ -92,7 +92,7 @@
         <div class="section-heading">
           <div>
             <p class="section-kicker">AT A GLANCE</p>
-            <h2 id="summary-title">현재 가격 스냅샷</h2>
+            <h2 id="summary-title">공급면적 기준 가격 스냅샷</h2>
           </div>
           <p class="section-note" id="summary-note">최근 연도 유효 거래 중앙값 · 거래금액 단위는 만원</p>
         </div>
@@ -103,7 +103,7 @@
         <div class="section-heading chart-heading">
           <div>
             <p class="section-kicker">PRICE TIMELINE</p>
-            <h2 id="chart-title">전용면적대별 가격 흐름</h2>
+            <h2 id="chart-title">공급면적대별 가격 흐름</h2>
           </div>
           <div class="segmented" role="group" aria-label="그래프 집계 방식">
             <button class="segment is-active" type="button" data-aggregation="monthly">월별 중앙값</button>
@@ -127,9 +127,9 @@
         <div class="filters">
           <div class="filter-group" role="group" aria-label="평형대 선택">
             <button class="filter-pill is-active" type="button" data-group="all">전체</button>
-            <button class="filter-pill" type="button" data-group="20">전용 20평대</button>
-            <button class="filter-pill" type="button" data-group="30">전용 30평대</button>
-            <button class="filter-pill" type="button" data-group="40">전용 40평대</button>
+            <button class="filter-pill" type="button" data-group="20">공급 20평대</button>
+            <button class="filter-pill" type="button" data-group="30">공급 30평대</button>
+            <button class="filter-pill" type="button" data-group="40">공급 40평대</button>
           </div>
           <div class="select-filters">
             <label><span>연도</span><select id="year-filter"><option value="all">전체 연도</option></select></label>
@@ -161,7 +161,7 @@
               <tr>
                 <th>기준일</th>
                 <th>자료 구분</th>
-                <th>전용면적대</th>
+                <th>공급 평형</th>
                 <th>전용면적</th>
                 <th>층</th>
                 <th class="align-right">가격</th>
@@ -183,7 +183,7 @@
           <article>
             <span>01</span>
             <h3>평형대 분류</h3>
-            <p>국토교통부 실거래의 전용면적(㎡)을 3.305785로 나눠 약 1자리 평수로 표시합니다. 면적대도 이 전용면적 기준 평수를 10평 단위로 묶으며 공급면적 평수로 바꾸지 않습니다.</p>
+            <p>각 단지의 실제 면적 타입에서 전용면적과 공급면적을 대조해 공급면적 평형을 먼저 표시하고, 20·30·40·50평대도 공급면적 기준으로 분류합니다. 전용면적㎡ 원본은 보조정보로 그대로 유지하며, 실제 타입을 확정할 수 없는 값은 추정하지 않고 ‘공급면적 확인 필요’로 표시합니다.</p>
           </article>
           <article>
             <span>02</span>
@@ -204,7 +204,7 @@
         <div class="source-callout">
           <div>
             <strong>출처</strong>
-            <p>화면은 로컬 data/transactions.js를 읽습니다 · 갱신 시 국토교통부 실거래가 조회 화면을 재조회합니다</p>
+            <p>거래 원본은 국토교통부 실거래가, 공급·전용 면적 타입은 아실 단지정보를 대조했습니다 · 화면은 data/transactions.js와 data/supply-areas.js를 읽습니다</p>
           </div>
           <a href="https://rt.molit.go.kr/" target="_blank" rel="noreferrer">국토부 실거래가 공개시스템 ↗</a>
         </div>
@@ -219,6 +219,7 @@
   </div>
 
   <script src="data/transactions.js"></script>
+  <script src="data/supply-areas.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

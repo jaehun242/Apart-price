@@ -2,25 +2,30 @@
   'use strict';
 
   const dataset = window.APT_ARCHIVE_DATA;
-  if (!dataset || !Array.isArray(dataset.complexes) || !Array.isArray(dataset.records)) {
-    document.body.innerHTML = '<p style="padding:40px;font-family:sans-serif">통합 데이터 파일을 불러오지 못했습니다. data/transactions.js 파일을 확인해 주세요.</p>';
+  const supplyDataset = window.APT_SUPPLY_AREA_DATA;
+  if (!dataset || !Array.isArray(dataset.complexes) || !Array.isArray(dataset.records) || !supplyDataset?.complexes) {
+    document.body.innerHTML = '<p style="padding:40px;font-family:sans-serif">통합 데이터 또는 공급면적 매핑 파일을 불러오지 못했습니다. data 폴더를 확인해 주세요.</p>';
     return;
   }
 
   const complexes = dataset.complexes;
-  const EXCLUSIVE_PY_DIVISOR = 3.305785;
-  const exclusivePy = area => Number(area) / EXCLUSIVE_PY_DIVISOR;
-  const roundedExclusivePy = area => Math.round(exclusivePy(area) * 10) / 10;
-  const exclusiveGroup = area => Math.floor((exclusivePy(area) + Number.EPSILON) / 10) * 10;
-  const allRecords = dataset.records.map(record => ({
-    ...record,
-    py: roundedExclusivePy(record.area),
-    group: exclusiveGroup(record.area)
-  }));
+  const areaKey = area => String(Number(area));
+  const supplyMappingFor = record => supplyDataset.complexes[record.complexId]?.areas?.[areaKey(record.area)] || null;
+  const allRecords = dataset.records.map(record => {
+    const mapping=supplyMappingFor(record);
+    return {
+      ...record,
+      supplyArea:mapping?.supplyArea??null,
+      py:mapping?.pyeong??null,
+      group:mapping?.group??null,
+      areaStatus:mapping?'verified':'needs-verification',
+      supplySourceMethod:mapping?.method??null
+    };
+  });
   const complexById = new Map(complexes.map(item => [item.id,item]));
   const wId = 'busan-26290-20362232';
   const hashId = decodeURIComponent(location.hash.slice(1));
-  const palette = { 0:'#d0d46d', 10:'#b7d85b', 20:'#47a5d8', 30:'#31b9aa', 40:'#7295f3', 50:'#f07a56', 60:'#d58be7', 70:'#efb84d', 80:'#8bc875', 90:'#dd7798' };
+  const palette = { 0:'#d0d46d', 10:'#b7d85b', 20:'#47a5d8', 30:'#31b9aa', 40:'#7295f3', 50:'#f07a56', 60:'#d58be7', 70:'#efb84d', 80:'#8bc875', 90:'#dd7798', 100:'#65c9b7', 110:'#c49170' };
   const state = {
     selectedId: complexById.has(hashId) ? hashId : null,
     aggregation:'monthly', group:'all', year:'all', kind:'all', sort:'date-desc', visible:25, homeExpanded:false
@@ -31,9 +36,9 @@
   const won = new Intl.NumberFormat('ko-KR');
   const currentComplex = () => complexById.get(state.selectedId) || null;
   const displayName = item => item.displayName || item.name;
-  const groupLabel = group => group===0 ? '10평 미만' : `${group}평대`;
-  const exclusiveGroupLabel = group => group===0 ? '전용 10평 미만' : `전용 ${group}평대`;
-  const formatExclusivePy = area => roundedExclusivePy(area).toFixed(1);
+  const groupLabel = group => group==null ? '공급면적 확인 필요' : group===0 ? '10평 미만' : `${group}평대`;
+  const supplyGroupLabel = group => group==null ? '공급면적 확인 필요' : group===0 ? '공급 10평 미만' : `공급 ${group}평대`;
+  const formatSupplyPyeong = record => record.py==null ? '공급면적 확인 필요' : `${record.py}평`;
   const selectedRecords = () => allRecords.filter(record => record.complexId === state.selectedId);
   const escapeHtml = value => String(value??'').replace(/[&<>'"]/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[character]));
 
@@ -62,16 +67,10 @@
   function availableGroups(rows=selectedRecords()) {
     const counts = new Map();
     rows.forEach(row => counts.set(row.group,(counts.get(row.group)||0)+1));
-    return [...counts].filter(([group]) => group>=0&&group<=90).sort((a,b) => b[1]-a[1]);
+    return [...counts].filter(([group]) => Number.isInteger(group)&&group>=0).sort((a,b) => b[1]-a[1]);
   }
   function chartGroups() {
-    const counts = availableGroups();
-    const groups=[30,40,50];
-    if (state.selectedId!==wId) {
-      const leadingOther=counts.find(([group]) => !groups.includes(group));
-      if (leadingOther) groups.push(leadingOther[0]);
-    }
-    return groups.sort((a,b) => a-b);
+    return availableGroups().map(([group]) => group).sort((a,b) => a-b);
   }
 
   function initSelectors() {
@@ -132,19 +131,19 @@
     $('#hero-location').textContent=`${item.city} · ${item.district}`;
     $('#hero-apartment').textContent=displayName(item);
     $('#hero-description').innerHTML=isMonthly
-      ? `2015년부터 2026년 현재까지 공개 실거래 기반 평형별 월평균을 정리했습니다.<br>전용면적 ${groups.map(groupLabel).join(' · ')||'전체'}의 가격 흐름을 비교합니다.`
+      ? `2015년부터 2026년 현재까지 공개 실거래 기반 평형별 월평균을 정리했습니다.<br>공급면적 ${groups.map(groupLabel).join(' · ')||'전체'}의 가격 흐름을 비교합니다.`
       : isHybrid
-        ? `과거 평형별 월평균과 ${refreshedYears||'최근 연도'} 국토교통부 개별 실거래를 연결해 보여줍니다.<br>전용면적 ${groups.map(groupLabel).join(' · ')||'전체'}의 가격 흐름을 비교합니다.`
-        : `2015년부터 2026년 현재까지 국토교통부 실거래를 정리했습니다.<br>전용면적 ${groups.map(groupLabel).join(' · ')||'전체'}의 가격 흐름을 비교합니다.`;
+        ? `과거 평형별 월평균과 ${refreshedYears||'최근 연도'} 국토교통부 개별 실거래를 연결해 보여줍니다.<br>공급면적 ${groups.map(groupLabel).join(' · ')||'전체'}의 가격 흐름을 비교합니다.`
+        : `2015년부터 2026년 현재까지 국토교통부 실거래를 정리했습니다.<br>공급면적 ${groups.map(groupLabel).join(' · ')||'전체'}의 가격 흐름을 비교합니다.`;
     $('#fact-apartment').textContent=displayName(item);
     $('#fact-location').textContent=`${item.city} ${item.district}`;
     $('#fact-tag').textContent=item.tags.join(' · ');
     $('#fact-source').textContent=item.sourceLabel||'국토교통부 실거래가';
     const latest=rows.map(row => row.date).sort().at(-1), stats=item.stats||{};
     const dataItems=isMonthly
-      ? [['수록 가격 자료',`${won.format(rows.length)}개`],['자료 유형','평형별 월평균'],['최근 기준월',latest?latest.slice(0,7):'자료 없음'],['가격 확인 연도',`${new Set(rows.map(row => row.date.slice(0,4))).size}개 연도`]]
+      ? [['수록 가격 자료',`${won.format(rows.length)}개`],['자료 유형','공급평형별 월평균'],['최근 기준월',latest?latest.slice(0,7):'자료 없음'],['가격 확인 연도',`${new Set(rows.map(row => row.date.slice(0,4))).size}개 연도`]]
       : isHybrid
-        ? [['수록 가격 자료',`${won.format(rows.length)}개`],['자료 유형','월평균 + 개별 실거래'],['최근 기준',latest?formatDate(latest):'자료 없음'],['최근 재조회 취소 제외',`${won.format(stats.recentCancelled||0)}건`]]
+        ? [['수록 가격 자료',`${won.format(rows.length)}개`],['자료 유형','공급평형 월평균 + 실거래'],['최근 기준',latest?formatDate(latest):'자료 없음'],['최근 재조회 취소 제외',`${won.format(stats.recentCancelled||0)}건`]]
         : [['수록 유효 거래',`${won.format(rows.length)}건`],[item.refresh?'최근 재조회 취소 제외':'해제·취소 제외',`${won.format(item.refresh?(stats.recentCancelled||0):(stats.cancelled||0))}건`],['최근 계약',latest?formatDate(latest):'거래 없음'],['거래 확인 연도',`${new Set(rows.map(row => row.date.slice(0,4))).size}개 연도`]];
     $('#data-strip').innerHTML=dataItems.map(([label,value]) => `<div class="strip-item"><span>${label}</span><strong>${value}</strong></div>`).join('');
   }
@@ -155,7 +154,7 @@
     const html=groups.map(group => {
       const groupRows=rows.filter(row => row.group===group);
       if (!groupRows.length) {
-        return `<article class="summary-card" data-group="${group}" style="--group-color:${palette[group]||'#fff'}"><div class="summary-card-top"><span class="group-label"><i class="group-dot"></i>${groupLabel(group)}</span><span class="summary-count">전체 0${countUnit}</span></div><p class="summary-price">${isMonthly?'월평균 없음':isHybrid?'가격 자료 없음':'거래 없음'}</p><p class="summary-caption">2015~2026 ${isMonthly||isHybrid?'가격 자료 없음':'신고 내역 없음'}</p><span class="summary-delta">해당 단지·평형 기준</span></article>`;
+        return `<article class="summary-card" data-group="${group}" style="--group-color:${palette[group]||'#fff'}"><div class="summary-card-top"><span class="group-label"><i class="group-dot"></i>${supplyGroupLabel(group)}</span><span class="summary-count">전체 0${countUnit}</span></div><p class="summary-price">${isMonthly?'월평균 없음':isHybrid?'가격 자료 없음':'거래 없음'}</p><p class="summary-caption">2015~2026 ${isMonthly||isHybrid?'가격 자료 없음':'신고 내역 없음'}</p><span class="summary-delta">해당 단지·평형 기준</span></article>`;
       }
       const years=[...new Set(groupRows.map(row => Number(row.date.slice(0,4))))].sort((a,b) => a-b);
       const lastYear=years.at(-1), firstYear=years[0];
@@ -163,15 +162,15 @@
       const firstRows=groupRows.filter(row => row.date.startsWith(String(firstYear)));
       const currentMedian=median(currentRows.map(row => row.price)), firstMedian=median(firstRows.map(row => row.price));
       const change=percentChange(firstMedian,currentMedian), sign=change!=null&&change>=0?'+':'';
-      return `<article class="summary-card" data-group="${group}" style="--group-color:${palette[group]||'#fff'}"><div class="summary-card-top"><span class="group-label"><i class="group-dot"></i>${groupLabel(group)}</span><span class="summary-count">전체 ${won.format(groupRows.length)}${countUnit}</span></div><p class="summary-price">${formatPrice(currentMedian)}</p><p class="summary-caption">${lastYear}년 ${isMonthly?'월평균 ':isHybrid?'가격 자료 ':''}중앙값 · ${currentRows.length}${countUnit} 기준</p><span class="summary-delta ${change!=null&&change<0?'down':''}">${firstYear} 대비 ${sign}${change?.toFixed(1)??'—'}%</span></article>`;
+      return `<article class="summary-card" data-group="${group}" style="--group-color:${palette[group]||'#fff'}"><div class="summary-card-top"><span class="group-label"><i class="group-dot"></i>${supplyGroupLabel(group)}</span><span class="summary-count">전체 ${won.format(groupRows.length)}${countUnit}</span></div><p class="summary-price">${formatPrice(currentMedian)}</p><p class="summary-caption">${lastYear}년 ${isMonthly?'월평균 ':isHybrid?'가격 자료 ':''}중앙값 · ${currentRows.length}${countUnit} 기준</p><span class="summary-delta ${change!=null&&change<0?'down':''}">${firstYear} 대비 ${sign}${change?.toFixed(1)??'—'}%</span></article>`;
     }).join('');
     $('#summary-grid').classList.toggle('has-four',groups.length>=4);
     $('#summary-grid').innerHTML=html||'<p>표시할 면적대 거래가 없습니다.</p>';
     $('#summary-note').textContent=isMonthly
-      ? `${latestYear(rows)}년 또는 면적대별 최근 연도 월평균 중앙값 · 금액 단위는 만원`
+      ? `${latestYear(rows)}년 또는 공급면적대별 최근 연도 월평균 중앙값 · 금액 단위는 만원`
       : isHybrid
-        ? `${latestYear(rows)}년 또는 면적대별 최근 가격 자료 중앙값 · 과거 월평균과 최근 실거래 혼합`
-        : `${latestYear(rows)}년 또는 면적대별 최근 연도 중앙값 · 거래금액 단위는 만원`;
+        ? `${latestYear(rows)}년 또는 공급면적대별 최근 가격 자료 중앙값 · 과거 월평균과 최근 실거래 혼합`
+        : `${latestYear(rows)}년 또는 공급면적대별 최근 연도 중앙값 · 거래금액 단위는 만원`;
   }
 
   const bucketKey=(record,aggregation) => aggregation==='monthly'?record.date.slice(0,7):record.date.slice(0,4);
@@ -201,9 +200,9 @@
     const rows=selectedRecords(), groups=chartGroups(), kinds=[...new Set(rows.map(row => row.kind))], mode=currentComplex().dataMode, isMonthly=mode==='monthly-average', isHybrid=mode==='hybrid';
     const hasPresale=kinds.includes('분양·입주권');
     $('#chart-legend').innerHTML=isMonthly
-      ? '<span><i class="legend-line legend-sale"></i>평형별 월평균</span>'
+      ? '<span><i class="legend-line legend-sale"></i>공급평형별 월평균</span>'
       : isHybrid
-        ? '<span><i class="legend-line legend-presale"></i>과거 평형별 월평균</span><span><i class="legend-line legend-sale"></i>최근 개별 실거래</span>'
+        ? '<span><i class="legend-line legend-presale"></i>과거 공급평형별 월평균</span><span><i class="legend-line legend-sale"></i>최근 개별 실거래</span>'
         : `${hasPresale?'<span><i class="legend-line legend-presale"></i>분양·입주권</span>':''}<span><i class="legend-line legend-sale"></i>아파트 매매</span>${state.selectedId===wId?'<span><i class="legend-boundary"></i>2018. 03. 27. 준공</span>':''}`;
     const aggregation=state.aggregation, start=Date.UTC(2015,0,1), end=Date.UTC(Number(dataset.meta?.rangeEnd?.slice(0,4))||2026,11,31), boundary=Date.UTC(2018,2,27);
     const width=1040,height=220,margin={top:18,right:66,bottom:34,left:12},innerW=width-margin.left-margin.right,innerH=height-margin.top-margin.bottom;
@@ -213,7 +212,7 @@
       if (!all.length) {
         const years=Array.from({length:12},(_,i) => 2015+i);
         const xGrid=years.map(year => { const x=xScale(Date.UTC(year,0,1)); return `<line x1="${x}" y1="${margin.top}" x2="${x}" y2="${height-margin.bottom}" stroke="rgba(255,255,255,.045)"/><text x="${x}" y="${height-10}" text-anchor="middle" fill="rgba(255,255,255,.36)" font-size="9">${String(year).slice(2)}</text>`; }).join('');
-        return `<article class="chart-row" style="--group-color:${palette[group]}" data-chart-group="${group}"><div class="chart-label"><span>EXCLUSIVE AREA</span><strong>${groupLabel(group)}</strong><p>${isMonthly?'월평균':'거래'} 없음<br>2015~2026</p></div><div class="chart-canvas"><div class="chart-scroll"><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${groupLabel(group)} ${isMonthly?'월평균':'거래'} 없음">${xGrid}<line x1="${margin.left}" y1="${height/2}" x2="${width-margin.right}" y2="${height/2}" stroke="rgba(255,255,255,.09)"/><text x="${width/2}" y="${height/2-10}" text-anchor="middle" fill="rgba(255,255,255,.42)" font-size="12">해당 평형의 ${isMonthly?'월평균 가격 자료':'신고 거래'}가 없습니다</text></svg></div><div class="chart-tooltip" role="status" aria-live="polite"></div></div></article>`;
+        return `<article class="chart-row" style="--group-color:${palette[group]}" data-chart-group="${group}"><div class="chart-label"><span>SUPPLY AREA</span><strong>${groupLabel(group)}</strong><p>${isMonthly?'월평균':'거래'} 없음<br>2015~2026</p></div><div class="chart-canvas"><div class="chart-scroll"><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="공급면적 ${groupLabel(group)} ${isMonthly?'월평균':'거래'} 없음">${xGrid}<line x1="${margin.left}" y1="${height/2}" x2="${width-margin.right}" y2="${height/2}" stroke="rgba(255,255,255,.09)"/><text x="${width/2}" y="${height/2-10}" text-anchor="middle" fill="rgba(255,255,255,.42)" font-size="12">해당 평형의 ${isMonthly?'월평균 가격 자료':'신고 거래'}가 없습니다</text></svg></div><div class="chart-tooltip" role="status" aria-live="polite"></div></div></article>`;
       }
       const [low,high]=niceRange(all.map(point => point.value)), yScale=value => margin.top+(1-(value-low)/(high-low))*innerH;
       const ticks=Array.from({length:4},(_,i) => low+((high-low)*i/3)), years=Array.from({length:12},(_,i) => 2015+i);
@@ -223,7 +222,7 @@
       const paths=series.map(item => { const archived=item.kind==='분양·입주권'||item.kind==='월평균 집계'; return pathSegments(item.points,aggregation,xScale,yScale).map(path => `<path d="${path}" fill="none" stroke="${palette[group]}" stroke-width="${archived?2.1:2.7}" ${archived?'stroke-dasharray="6 5" opacity=".72"':''} stroke-linecap="round" stroke-linejoin="round"/>`).join(''); }).join('');
       const points=flatPoints.map((point,index) => `<circle class="data-point" data-point="${index}" cx="${xScale(point.time)}" cy="${yScale(point.value)}" r="3.2" fill="${palette[group]}" stroke="#111923" stroke-width="1.4"/>`).join('');
       const boundaryX=xScale(boundary), groupRows=rows.filter(row => row.group===group), lastYear=Math.max(...groupRows.map(row => Number(row.date.slice(0,4)))), lastRows=groupRows.filter(row => row.date.startsWith(String(lastYear)));
-      return `<article class="chart-row" style="--group-color:${palette[group]}" data-chart-group="${group}"><div class="chart-label"><span>EXCLUSIVE AREA</span><strong>${groupLabel(group)}</strong><p>${lastYear} 중앙값<br>${formatPrice(median(lastRows.map(row => row.price)))}</p></div><div class="chart-canvas"><div class="chart-scroll"><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${groupLabel(group)} 가격 그래프">${yGrid}${xGrid}${state.selectedId===wId?`<rect x="${boundaryX-5}" y="${margin.top}" width="10" height="${innerH}" fill="rgba(255,255,255,.065)"/><line x1="${boundaryX}" y1="${margin.top}" x2="${boundaryX}" y2="${height-margin.bottom}" stroke="rgba(255,255,255,.27)" stroke-dasharray="2 4"/><text x="${boundaryX+7}" y="${margin.top+10}" fill="rgba(255,255,255,.46)" font-size="9">준공</text>`:''}${paths}${points}</svg></div><div class="chart-tooltip" role="status" aria-live="polite"></div></div></article>`;
+      return `<article class="chart-row" style="--group-color:${palette[group]}" data-chart-group="${group}"><div class="chart-label"><span>SUPPLY AREA</span><strong>${groupLabel(group)}</strong><p>${lastYear} 중앙값<br>${formatPrice(median(lastRows.map(row => row.price)))}</p></div><div class="chart-canvas"><div class="chart-scroll"><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="공급면적 ${groupLabel(group)} 가격 그래프">${yGrid}${xGrid}${state.selectedId===wId?`<rect x="${boundaryX-5}" y="${margin.top}" width="10" height="${innerH}" fill="rgba(255,255,255,.065)"/><line x1="${boundaryX}" y1="${margin.top}" x2="${boundaryX}" y2="${height-margin.bottom}" stroke="rgba(255,255,255,.27)" stroke-dasharray="2 4"/><text x="${boundaryX+7}" y="${margin.top+10}" fill="rgba(255,255,255,.46)" font-size="9">준공</text>`:''}${paths}${points}</svg></div><div class="chart-tooltip" role="status" aria-live="polite"></div></div></article>`;
     }).join('');
     $$('.chart-row').forEach(row => {
       const group=Number(row.dataset.chartGroup), points=kinds.flatMap(kind => aggregate(rows,group,kind,aggregation)), tooltip=$('.chart-tooltip',row);
@@ -237,18 +236,19 @@
 
   function renderGroupFilters() {
     const groups=availableGroups().map(([group]) => group).sort((a,b) => a-b);
-    $('.filter-group').innerHTML=`<button class="filter-pill is-active" type="button" data-group="all">전체</button>${groups.map(group => `<button class="filter-pill" type="button" data-group="${group}">${exclusiveGroupLabel(group)}</button>`).join('')}`;
+    const hasUnresolved=selectedRecords().some(record => record.group==null);
+    $('.filter-group').innerHTML=`<button class="filter-pill is-active" type="button" data-group="all">전체</button>${groups.map(group => `<button class="filter-pill" type="button" data-group="${group}">${supplyGroupLabel(group)}</button>`).join('')}${hasUnresolved?'<button class="filter-pill filter-pill-unresolved" type="button" data-group="unresolved">공급면적 확인 필요</button>':''}`;
     $$('.filter-pill').forEach(button => button.addEventListener('click',() => { $$('.filter-pill').forEach(item => item.classList.toggle('is-active',item===button)); state.group=button.dataset.group; state.visible=25; renderTable(); }));
     const kinds=[...new Set(selectedRecords().map(row => row.kind))];
     $('#kind-filter').innerHTML='<option value="all">전체 구분</option>'+kinds.map(kind => `<option value="${kind}">${kind}</option>`).join(''); $('#kind-filter').value='all';
   }
   function filteredRecords() {
-    const result=selectedRecords().filter(record => (state.group==='all'||record.group===Number(state.group))&&(state.year==='all'||record.date.startsWith(state.year))&&(state.kind==='all'||record.kind===state.kind));
+    const result=selectedRecords().filter(record => (state.group==='all'||(state.group==='unresolved'?record.group==null:record.group===Number(state.group)))&&(state.year==='all'||record.date.startsWith(state.year))&&(state.kind==='all'||record.kind===state.kind));
     return [...result].sort((a,b) => { if(state.sort==='date-asc')return a.date.localeCompare(b.date); if(state.sort==='price-desc')return b.price-a.price||b.date.localeCompare(a.date); if(state.sort==='price-asc')return a.price-b.price||b.date.localeCompare(a.date); return b.date.localeCompare(a.date); });
   }
   function renderTable() {
     const filtered=filteredRecords(),visible=filtered.slice(0,state.visible); $('#table-count').textContent=won.format(filtered.length);
-    $('#transaction-body').innerHTML=visible.length?visible.map(record => `<tr><td>${formatDate(record.date)}</td><td><span class="kind-badge ${record.kind==='아파트 매매'?'sale':''}">${record.kind}</span></td><td><strong>${groupLabel(record.group)}</strong></td><td>전용 ${record.area.toFixed(2)}㎡ <span class="area-detail">· 약 ${formatExclusivePy(record.area)}평</span></td><td>${record.floor==null?'—':`${record.floor}층`}</td><td class="price-cell">${formatPrice(record.price)}</td></tr>`).join(''):'<tr class="empty-row"><td colspan="6">선택한 조건에 해당하는 가격 자료가 없습니다.</td></tr>';
+    $('#transaction-body').innerHTML=visible.length?visible.map(record => `<tr><td>${formatDate(record.date)}</td><td><span class="kind-badge ${record.kind==='아파트 매매'?'sale':''}">${record.kind}</span></td><td><strong class="${record.py==null?'area-unresolved':''}">${formatSupplyPyeong(record)}</strong>${record.py==null?'':`<span class="area-detail"> · ${groupLabel(record.group)}</span>`}</td><td>전용 ${record.area.toFixed(2)}㎡</td><td>${record.floor==null?'—':`${record.floor}층`}</td><td class="price-cell">${formatPrice(record.price)}</td></tr>`).join(''):'<tr class="empty-row"><td colspan="6">선택한 조건에 해당하는 가격 자료가 없습니다.</td></tr>';
     $('#load-more').hidden=state.visible>=filtered.length;
   }
   function populateYearFilter() {
@@ -258,8 +258,8 @@
   const csvEscape=value => `"${String(value??'').replaceAll('"','""')}"`;
   function downloadCurrent() {
     const item=currentComplex(); if (!item) return;
-    const rows=filteredRecords(),isMonthly=item.dataMode==='monthly-average',isHybrid=item.dataMode==='hybrid',headers=['도시','구·군','단지명',isMonthly?'기준월':isHybrid?'기준일':'계약일','전용면적대','전용면적(㎡)','전용면적 기준 평수(약)',isMonthly?'월평균금액(만원)':isHybrid?'가격(만원)':'거래금액(만원)','층','거래구분','거래유형',isMonthly?'자료출처':isHybrid?'중개사/자료출처':'중개사소재지','등기일자'];
-    const body=rows.map(record => [item.city,item.district,displayName(item),record.date,groupLabel(record.group),record.area,formatExclusivePy(record.area),record.price,record.floor??'',record.kind,record.dealType,record.broker,record.registration]);
+    const rows=filteredRecords(),isMonthly=item.dataMode==='monthly-average',isHybrid=item.dataMode==='hybrid',headers=['도시','구·군','단지명',isMonthly?'기준월':isHybrid?'기준일':'계약일','공급면적 평형','공급면적대','공급면적(㎡)','전용면적(㎡)',isMonthly?'월평균금액(만원)':isHybrid?'가격(만원)':'거래금액(만원)','층','거래구분','거래유형',isMonthly?'자료출처':isHybrid?'중개사/자료출처':'중개사소재지','등기일자'];
+    const body=rows.map(record => [item.city,item.district,displayName(item),record.date,record.py??'공급면적 확인 필요',groupLabel(record.group),record.supplyArea??'',record.area,record.price,record.floor??'',record.kind,record.dealType,record.broker,record.registration]);
     const blob=new Blob(['\ufeff'+[headers,...body].map(row => row.map(csvEscape).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),anchor=document.createElement('a');
     anchor.href=url; anchor.download=`${item.city}_${item.district}_${displayName(item).replace(/[\\/:*?"<>|]/g,'')}_${isMonthly?'월평균가격':isHybrid?'가격자료':'실거래가'}.csv`; anchor.click(); URL.revokeObjectURL(url);
   }
@@ -284,7 +284,7 @@
     const visible=result.rows.slice(0,limit);
     $('#weekly-list').innerHTML=visible.map(record => {
       const item=complexById.get(record.complexId); if (!item) return '';
-      return `<button class="weekly-card" type="button" data-complex-id="${escapeHtml(item.id)}" aria-label="${escapeHtml(displayName(item))} 상세 보기"><span class="weekly-place"><i>${escapeHtml(item.city)}</i>${escapeHtml(item.district)} · ${escapeHtml(displayName(item))}</span><span class="weekly-date">${formatHomeDate(record.date)} · ${exclusiveGroupLabel(record.group)}</span><strong>${formatPrice(record.price)}</strong><span class="weekly-detail">전용 ${record.area.toFixed(2)}㎡ (약 ${formatExclusivePy(record.area)}평) · ${record.floor==null?'층 정보 없음':`${record.floor}층`}</span></button>`;
+      return `<button class="weekly-card" type="button" data-complex-id="${escapeHtml(item.id)}" aria-label="${escapeHtml(displayName(item))} 상세 보기"><span class="weekly-place"><i>${escapeHtml(item.city)}</i>${escapeHtml(item.district)} · ${escapeHtml(displayName(item))}</span><span class="weekly-date ${record.py==null?'area-unresolved':''}">${formatSupplyPyeong(record)} · ${formatHomeDate(record.date)}</span><strong>${formatPrice(record.price)}</strong><span class="weekly-detail ${record.py==null?'area-unresolved':''}">${formatSupplyPyeong(record)} · 전용 ${record.area.toFixed(2)}㎡ · ${record.floor==null?'층 정보 없음':`${record.floor}층`}</span></button>`;
     }).join('');
     $$('.weekly-card').forEach(card => card.addEventListener('click',() => selectComplex(card.dataset.complexId)));
     const toggle=$('#weekly-toggle');
@@ -333,6 +333,6 @@
       $('#city-select').value=''; populateDistricts(); populateApartments(); renderHome();
     }
   });
-  window.__APT_TEST__={getKoreaWeekRange,exclusivePy,roundedExclusivePy,exclusiveGroup,homeRows};
+  window.__APT_TEST__={getKoreaWeekRange,areaKey,supplyMappingFor,formatSupplyPyeong,allRecords,homeRows};
   initSelectors(); bindStaticEvents(); renderAll();
 })();

@@ -332,6 +332,7 @@ a { color: inherit; }
 .filters { display: flex; justify-content: space-between; gap: 30px; margin-bottom: 24px; }
 .filter-group { display: inline-flex; flex-wrap: wrap; gap: 8px; }
 .filter-pill { min-height: 42px; padding: 0 17px; border: 1px solid var(--line); border-radius: 999px; color: var(--ink-soft); background: rgba(255,255,255,.42); cursor: pointer; font-size: 12px; font-weight: 750; }
+.filter-pill-unresolved:not(.is-active) { color: #8a552d; border-color: rgba(138,85,45,.35); background: rgba(191,130,78,.08); }
 .filter-pill.is-active { color: #fff; border-color: var(--ink); background: var(--ink); }
 .select-filters { display: flex; gap: 10px; }
 .select-filters label { position: relative; }
@@ -351,6 +352,7 @@ th:last-child, td:last-child { padding-right: 0; }
 .kind-badge { display: inline-flex; padding: 5px 8px; border-radius: 5px; color: #385d87; background: #e7edf3; font-size: 10px; font-weight: 750; }
 .kind-badge.sale { color: #366554; background: #e3ede7; }
 .area-detail { color: var(--ink-soft); font-size: 11px; }
+.area-unresolved { color: #8a552d; }
 .price-cell { font-family: Georgia, "Malgun Gothic", serif; font-size: 17px; font-weight: 600; text-align: right; }
 .empty-row td { padding: 70px 0; color: var(--ink-soft); text-align: center; }
 .load-more { width: 100%; min-height: 58px; margin-top: 24px; border: 1px solid var(--line-dark); border-radius: 10px; color: var(--ink); background: transparent; cursor: pointer; font-size: 12px; font-weight: 750; }

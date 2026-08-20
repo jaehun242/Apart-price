@@ -110,20 +110,32 @@ jobs:
           - Data changed: **$changed**
           "@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
 
-      - name: Commit validated data
+      - name: Refresh supply mappings and validate
+        if: steps.verify.outputs.changed == 'true'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          ./scripts/build-supply-area-map.ps1 `
+            -DataPath 'public/data/transactions.js' `
+            -OutputPath 'public/data/supply-areas.js' `
+            -ReportPath 'reports/supply-area-verification.md' `
+            -ReuseExistingTypes
+          node ./scripts/test-supply-area-map.mjs
+
+      - name: Commit validated data and supply mappings
         if: steps.verify.outputs.changed == 'true'
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- public/data/transactions.js
-          git diff --cached --quiet -- public/data/transactions.js
+          git add -- public/data/transactions.js public/data/supply-areas.js reports/supply-area-verification.md
+          git diff --cached --quiet -- public/data/transactions.js public/data/supply-areas.js reports/supply-area-verification.md
           if ($LASTEXITCODE -eq 0) {
             throw 'Updater reported a change, but Git found no data difference.'
           }
           $date = [TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([DateTimeOffset]::UtcNow, 'Korea Standard Time').ToString('yyyy-MM-dd')
-          git commit -m "data: refresh apartment transactions $date" -- public/data/transactions.js
+          git commit -m "data: refresh apartment transactions $date" -- public/data/transactions.js public/data/supply-areas.js reports/supply-area-verification.md
           if ($LASTEXITCODE -ne 0) { throw 'Git commit failed.' }
 
       - name: Push and verify main

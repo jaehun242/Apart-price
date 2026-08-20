@@ -1,6 +1,6 @@
 # 서울·부산 주요 아파트 실거래가
 
-서울·부산 136개 주요 아파트의 실거래 데이터를 보여주는 정적 웹사이트입니다. Netlify는 저장소의 `public/` 폴더만 배포합니다.
+서울·부산 136개 주요 아파트의 실거래 데이터를 실제 공급면적 평형 기준으로 보여주는 정적 웹사이트입니다. 국토교통부 원본 전용면적㎡는 그대로 보존하고, 단지별 실제 면적 타입과 일치시킨 공급면적 평형을 화면·필터·그래프에 사용합니다. Netlify는 저장소의 `public/` 폴더만 배포합니다.
 
 ## 자동갱신
 
@@ -13,8 +13,9 @@ GitHub Actions의 `Daily apartment transaction update` workflow가 한국시간 
 3. 신규·취소·정정 거래 반영 및 신고번호 중복 제거
 4. 날짜·필수값·단지 수·거래 수 급감 여부 검증
 5. 모든 검증이 성공한 경우에만 `public/data/transactions.js`를 원자적으로 교체
-6. 실제 거래 데이터가 바뀐 경우에만 `main`에 commit/push
-7. 기존 Netlify Git 연동이 `public/` 폴더를 자동 배포
+6. 거래가 바뀌면 저장된 실제 단지 타입 자료로 공급면적 매핑과 확인 필요 보고서를 다시 생성·검증
+7. 실제 거래 데이터가 바뀐 경우에만 거래 원본·공급면적 매핑·보고서를 `main`에 commit/push
+8. 기존 Netlify Git 연동이 `public/` 폴더를 자동 배포
 
 조회 또는 검증에 실패하면 기존 데이터 파일은 변경하지 않으며 commit/push도 실행되지 않습니다.
 
@@ -22,6 +23,7 @@ GitHub Actions의 `Daily apartment transaction update` workflow가 한국시간 
 
 - 국토교통부 실거래가 공개시스템: `https://rt.molit.go.kr/`
 - 단지·연도 조회 화면 내부 주소: `https://rt.molit.go.kr/pt/gis/ptDtl.do`
+- 실제 단지 공급/전용 면적 타입: 아실 단지정보 `https://asil.kr/app/apt_info.jsp`
 
 이 주소는 공개 웹 화면에서 사용하는 내부 조회 주소이며 별도 API 키가 필요하지 않습니다. 주소 접근이 차단되거나 응답 형식이 변경되면 workflow는 실패로 종료하며 임의 데이터나 샘플 데이터로 대체하지 않습니다.
 
@@ -29,6 +31,10 @@ GitHub Actions의 `Daily apartment transaction update` workflow가 한국시간 
 
 - `public/`: Netlify가 배포하는 홈페이지 파일
 - `public/data/transactions.js`: 검증된 공개 실거래 데이터
+- `public/data/supply-areas.js`: 단지 + 전용면적별 실제 공급면적 평형 매핑
+- `reports/supply-area-verification.md`: 매핑률과 공급면적 확인 필요 타입 목록
+- `scripts/build-supply-area-map.ps1`: 실제 단지 면적 타입 조회·매핑·보고서 생성 프로그램
+- `scripts/test-supply-area-map.mjs`: 매핑 무결성과 필수 표본 검증
 - `scripts/update-data-github.ps1`: GitHub 서버용 수집·검증·저장 프로그램
 - `.github/workflows/daily-update.yml`: 매일 오전 7시 및 수동 실행 설정
 - `netlify.toml`: Netlify 공개 폴더 설정
