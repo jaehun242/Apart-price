@@ -1,0 +1,149 @@
+name: Daily apartment transaction update
+
+on:
+  schedule:
+    - cron: "0 7 * * *"
+      timezone: "Asia/Seoul"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-apartment-transaction-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    name: Refresh and validate transactions
+    runs-on: windows-latest
+    timeout-minutes: 45
+    env:
+      TZ: Asia/Seoul
+
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check MOLIT page access
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $response = Invoke-WebRequest `
+            -Uri 'https://rt.molit.go.kr/pt/gis/gis.do' `
+            -Method Get `
+            -TimeoutSec 30 `
+            -UseBasicParsing
+          if ([int]$response.StatusCode -ne 200) {
+            throw "MOLIT page returned HTTP $($response.StatusCode)."
+          }
+          "MOLIT page access succeeded: HTTP $($response.StatusCode)"
+
+      - name: Refresh current and previous years
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          ./scripts/update-data-github.ps1 `
+            -DataPath 'public/data/transactions.js' `
+            -LogPath "$env:RUNNER_TEMP/apart-price-update-log.json" `
+            -BackupPath "$env:RUNNER_TEMP/transactions.previous.js"
+
+      - name: Verify generated dataset
+        id: verify
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $logPath = "$env:RUNNER_TEMP/apart-price-update-log.json"
+          if (-not (Test-Path -LiteralPath $logPath)) {
+            throw 'Update log was not generated.'
+          }
+          $log = Get-Content -LiteralPath $logPath -Raw -Encoding UTF8 | ConvertFrom-Json
+          if ([string]$log.status -notin @('success-changed', 'success-no-change')) {
+            throw "Updater did not succeed: $($log.status)"
+          }
+          if ([int]$log.complexesRequested -ne 134) {
+            throw "Expected 134 complexes, got $($log.complexesRequested)."
+          }
+          if ([int]$log.pairsRequested -ne 268 -or [int]$log.pairsCompleted -ne 268) {
+            throw "Expected 268 completed complex-year requests."
+          }
+
+          $dataPath = 'public/data/transactions.js'
+          $text = [IO.File]::ReadAllText($dataPath, [Text.Encoding]::UTF8)
+          $json = $text -replace '^\s*window\.APT_ARCHIVE_DATA\s*=\s*', '' -replace ';\s*$', ''
+          $dataset = $json | ConvertFrom-Json
+          if (@($dataset.complexes).Count -ne 134) {
+            throw "Generated dataset has $(@($dataset.complexes).Count) complexes."
+          }
+          if (@($dataset.records).Count -ne [int]$dataset.meta.recordCount) {
+            throw 'Generated record count does not match metadata.'
+          }
+
+          $seen = New-Object 'System.Collections.Generic.HashSet[string]'
+          foreach ($record in @($dataset.records)) {
+            $statementId = ([string]$record.transactionId).Trim()
+            if (-not $statementId) { continue }
+            $key = "$($record.complexId)|$statementId"
+            if (-not $seen.Add($key)) { throw "Duplicate transaction ID: $key" }
+          }
+
+          $changed = [bool]$log.dataChanged
+          "changed=$($changed.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "status=$($log.status)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "new_transactions=$([int]$log.newTransactions)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "cancelled_or_corrected=$([int]$log.cancelledOrCorrected)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "latest_contract_date=$($log.latestContractDate)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+          @"
+          ## Apartment transaction refresh
+
+          - Status: **$($log.status)**
+          - Complexes: **$($log.complexesRequested)**
+          - Complex-year requests: **$($log.pairsCompleted)/$($log.pairsRequested)**
+          - Valid downloaded: **$($log.validDownloaded)**
+          - New transactions: **$($log.newTransactions)**
+          - Cancelled/corrected: **$($log.cancelledOrCorrected)**
+          - Cancelled rows excluded: **$($log.cancelledExcluded)**
+          - Latest contract date: **$($log.latestContractDate)**
+          - Data changed: **$changed**
+          "@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+
+      - name: Commit validated data
+        if: steps.verify.outputs.changed == 'true'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- public/data/transactions.js
+          git diff --cached --quiet -- public/data/transactions.js
+          if ($LASTEXITCODE -eq 0) {
+            throw 'Updater reported a change, but Git found no data difference.'
+          }
+          $date = [TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([DateTimeOffset]::UtcNow, 'Korea Standard Time').ToString('yyyy-MM-dd')
+          git commit -m "data: refresh apartment transactions $date" -- public/data/transactions.js
+          if ($LASTEXITCODE -ne 0) { throw 'Git commit failed.' }
+
+      - name: Push and verify main
+        if: steps.verify.outputs.changed == 'true'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $localHead = (git rev-parse HEAD).Trim()
+          git push origin HEAD:main
+          if ($LASTEXITCODE -ne 0) { throw 'GitHub push failed.' }
+          $remoteLine = git ls-remote origin refs/heads/main
+          $remoteHead = ($remoteLine -split '\s+')[0]
+          if ($remoteHead -ne $localHead) {
+            throw "Push verification failed: local=$localHead remote=$remoteHead"
+          }
+          "- GitHub push: **success** (`$localHead`)" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+          "- Netlify trigger: **main push completed**" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+
+      - name: Record no-change result
+        if: steps.verify.outputs.changed != 'true'
+        shell: pwsh
+        run: |
+          "- GitHub push: **not needed (no data change)**" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
