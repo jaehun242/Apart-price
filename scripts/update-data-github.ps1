@@ -257,8 +257,9 @@ function Convert-MolitRow {
   if ($dateText -notmatch '^\d{8}$') { throw "Invalid contract date: $dateText" }
   $date = "$($dateText.Substring(0,4))-$($dateText.Substring(4,2))-$($dateText.Substring(6,2))"
   $area = [double]$Row.prvuseAr
-  $py = [int][Math]::Floor(($area / 3.305785) + 0.5)
-  $group = [int]([Math]::Floor($py / 10) * 10)
+  $exclusivePy = $area / 3.305785
+  $py = [Math]::Round($exclusivePy, 1, [MidpointRounding]::AwayFromZero)
+  $group = [int]([Math]::Floor(($exclusivePy + [double]::Epsilon) / 10) * 10)
   $amountText = ([string]$Row.thingAmount) -replace '[^0-9-]', ''
   $price = [long]$amountText
   $floor = $null
@@ -343,8 +344,8 @@ function Assert-Dataset {
   param($Before, $After, [string[]]$RefreshYearStrings, [int]$ExpectedRecordCount)
   if (@($After.complexes).Count -ne @($Before.complexes).Count) { throw 'Validation failed: complex count changed.' }
   if (@($After.records).Count -ne $ExpectedRecordCount) { throw 'Validation failed: record count does not match generated output.' }
-  if (-not $ComplexIds -and $Limit -le 0 -and @($After.complexes).Count -ne 134) {
-    throw "Validation failed: expected 134 complexes, got $(@($After.complexes).Count)."
+  if (-not $ComplexIds -and $Limit -le 0 -and @($After.complexes).Count -ne 136) {
+    throw "Validation failed: expected 136 complexes, got $(@($After.complexes).Count)."
   }
 
   $complexSet = New-Object 'System.Collections.Generic.HashSet[string]'
@@ -359,6 +360,12 @@ function Assert-Dataset {
     }
     if ($parsedDate.Year -lt 2015 -or $parsedDate.Date -gt $today) { throw "Validation failed: out-of-range date $($record.date)." }
     if ([double]$record.area -le 0) { throw 'Validation failed: area must be positive.' }
+    $exclusivePy = [double]$record.area / 3.305785
+    $expectedPy = [Math]::Round($exclusivePy, 1, [MidpointRounding]::AwayFromZero)
+    $expectedGroup = [int]([Math]::Floor(($exclusivePy + [double]::Epsilon) / 10) * 10)
+    if ([Math]::Abs(([double]$record.py - $expectedPy)) -gt 0.0001 -or [int]$record.group -ne $expectedGroup) {
+      throw "Validation failed: exclusive-area conversion mismatch for $($record.complexId), $($record.area)m2."
+    }
     if ([long]$record.price -le 0) { throw 'Validation failed: price must be positive.' }
     $statementId = ([string]$record.transactionId).Trim()
     if ($statementId) {

@@ -63,18 +63,18 @@ jobs:
           if ([string]$log.status -notin @('success-changed', 'success-no-change')) {
             throw "Updater did not succeed: $($log.status)"
           }
-          if ([int]$log.complexesRequested -ne 134) {
-            throw "Expected 134 complexes, got $($log.complexesRequested)."
+          if ([int]$log.complexesRequested -ne 136) {
+            throw "Expected 136 complexes, got $($log.complexesRequested)."
           }
-          if ([int]$log.pairsRequested -ne 268 -or [int]$log.pairsCompleted -ne 268) {
-            throw "Expected 268 completed complex-year requests."
+          if ([int]$log.pairsRequested -ne 272 -or [int]$log.pairsCompleted -ne 272) {
+            throw "Expected 272 completed complex-year requests."
           }
 
           $dataPath = 'public/data/transactions.js'
           $text = [IO.File]::ReadAllText($dataPath, [Text.Encoding]::UTF8)
           $json = $text -replace '^\s*window\.APT_ARCHIVE_DATA\s*=\s*', '' -replace ';\s*$', ''
           $dataset = $json | ConvertFrom-Json
-          if (@($dataset.complexes).Count -ne 134) {
+          if (@($dataset.complexes).Count -ne 136) {
             throw "Generated dataset has $(@($dataset.complexes).Count) complexes."
           }
           if (@($dataset.records).Count -ne [int]$dataset.meta.recordCount) {

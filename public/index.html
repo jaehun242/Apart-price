@@ -11,7 +11,7 @@
   <div class="page-shell">
     <header class="hero">
       <nav class="topbar" aria-label="상단 메뉴">
-        <a class="wordmark" href="#top" aria-label="W 가격 아카이브 처음으로">
+        <a class="wordmark" href="./" aria-label="아파트 가격 아카이브 홈으로">
           <span class="wordmark-mark">A</span>
           <span>APT PRICE ARCHIVE</span>
         </a>
@@ -33,6 +33,21 @@
         </div>
       </div>
 
+      <div class="home-hero" id="home-view">
+        <div class="home-hero-copy">
+          <p class="eyebrow">SEOUL · BUSAN · WEEKLY ACTUAL TRANSACTIONS</p>
+          <h1>이번 주<br><span>실거래</span></h1>
+          <p class="hero-description" id="home-range-note">한국시간 기준 이번 주 월요일부터 오늘까지 계약된 실제 거래입니다.</p>
+        </div>
+        <div class="home-hero-aside" aria-label="이번 주 실거래 요약">
+          <div class="home-stat"><span>이번 주 거래</span><strong id="home-week-count">0건</strong></div>
+          <div class="home-stat"><span>오늘 거래</span><strong id="home-today-count">0건</strong></div>
+          <div class="home-stat"><span>최근 계약일</span><strong id="home-latest-date">—</strong></div>
+          <div class="home-stat"><span>조회 단지</span><strong id="home-complex-count">0개</strong></div>
+        </div>
+      </div>
+
+      <div id="detail-hero" hidden>
       <div class="hero-grid" id="top">
         <div class="hero-copy">
           <p class="eyebrow" id="hero-eyebrow">BUSAN · NAM-GU · ACTUAL TRANSACTION DATA</p>
@@ -55,9 +70,24 @@
       </div>
 
       <div class="data-strip" id="data-strip" aria-label="데이터 요약"></div>
+      </div>
     </header>
 
     <main>
+      <section class="section home-transactions-section" id="home-content" aria-labelledby="weekly-title">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">WEEKLY TRANSACTION LOG</p>
+            <h2 id="weekly-title">이번 주 실거래</h2>
+          </div>
+          <p class="section-note" id="weekly-range"></p>
+        </div>
+        <p class="weekly-status" id="weekly-status"></p>
+        <div class="weekly-list" id="weekly-list"></div>
+        <button class="load-more weekly-toggle" id="weekly-toggle" type="button" hidden>이번 주 거래 전체보기 <span>＋</span></button>
+      </section>
+
+      <div id="detail-content" hidden>
       <section class="section summary-section" aria-labelledby="summary-title">
         <div class="section-heading">
           <div>
@@ -73,7 +103,7 @@
         <div class="section-heading chart-heading">
           <div>
             <p class="section-kicker">PRICE TIMELINE</p>
-            <h2 id="chart-title">면적대별 가격 흐름</h2>
+            <h2 id="chart-title">전용면적대별 가격 흐름</h2>
           </div>
           <div class="segmented" role="group" aria-label="그래프 집계 방식">
             <button class="segment is-active" type="button" data-aggregation="monthly">월별 중앙값</button>
@@ -97,9 +127,9 @@
         <div class="filters">
           <div class="filter-group" role="group" aria-label="평형대 선택">
             <button class="filter-pill is-active" type="button" data-group="all">전체</button>
-            <button class="filter-pill" type="button" data-group="30">30평대</button>
-            <button class="filter-pill" type="button" data-group="40">40평대</button>
-            <button class="filter-pill" type="button" data-group="50">50평대</button>
+            <button class="filter-pill" type="button" data-group="20">전용 20평대</button>
+            <button class="filter-pill" type="button" data-group="30">전용 30평대</button>
+            <button class="filter-pill" type="button" data-group="40">전용 40평대</button>
           </div>
           <div class="select-filters">
             <label><span>연도</span><select id="year-filter"><option value="all">전체 연도</option></select></label>
@@ -131,7 +161,7 @@
               <tr>
                 <th>기준일</th>
                 <th>자료 구분</th>
-                <th>평형대</th>
+                <th>전용면적대</th>
                 <th>전용면적</th>
                 <th>층</th>
                 <th class="align-right">가격</th>
@@ -142,6 +172,7 @@
         </div>
         <button class="load-more" id="load-more" type="button">자료 더 보기 <span>＋</span></button>
       </section>
+      </div>
 
       <section class="section method-section" id="method" aria-labelledby="method-title">
         <div class="method-title-wrap">
@@ -152,12 +183,12 @@
           <article>
             <span>01</span>
             <h3>평형대 분류</h3>
-            <p>전용면적(㎡)을 3.305785로 나눈 뒤 반올림해 10평 단위 면적대로 묶습니다. 단지별 주요 면적대와 50평대를 함께 보여주며, 거래가 없으면 빈 그래프로 표시합니다.</p>
+            <p>국토교통부 실거래의 전용면적(㎡)을 3.305785로 나눠 약 1자리 평수로 표시합니다. 면적대도 이 전용면적 기준 평수를 10평 단위로 묶으며 공급면적 평수로 바꾸지 않습니다.</p>
           </article>
           <article>
             <span>02</span>
             <h3>대표 단지 선정</h3>
-            <p>서울 25개 구와 부산 16개 구·군마다 주요 단지를 약 3곳씩 구성하고, W·오륙도SK뷰·마린시티·센텀 랜드마크를 추가했습니다.</p>
+            <p>서울 25개 구와 부산 16개 구·군의 주요 단지 136곳을 구성하고, W·오륙도SK뷰·마린시티·센텀과 명지 더샵 주요 단지를 포함했습니다.</p>
           </article>
           <article>
             <span>03</span>

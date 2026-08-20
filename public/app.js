@@ -8,21 +8,34 @@
   }
 
   const complexes = dataset.complexes;
-  const allRecords = dataset.records;
-  const defaultId = 'busan-26290-20362232';
+  const EXCLUSIVE_PY_DIVISOR = 3.305785;
+  const exclusivePy = area => Number(area) / EXCLUSIVE_PY_DIVISOR;
+  const roundedExclusivePy = area => Math.round(exclusivePy(area) * 10) / 10;
+  const exclusiveGroup = area => Math.floor((exclusivePy(area) + Number.EPSILON) / 10) * 10;
+  const allRecords = dataset.records.map(record => ({
+    ...record,
+    py: roundedExclusivePy(record.area),
+    group: exclusiveGroup(record.area)
+  }));
+  const complexById = new Map(complexes.map(item => [item.id,item]));
+  const wId = 'busan-26290-20362232';
+  const hashId = decodeURIComponent(location.hash.slice(1));
   const palette = { 0:'#d0d46d', 10:'#b7d85b', 20:'#47a5d8', 30:'#31b9aa', 40:'#7295f3', 50:'#f07a56', 60:'#d58be7', 70:'#efb84d', 80:'#8bc875', 90:'#dd7798' };
   const state = {
-    selectedId: complexes.some(item => item.id === location.hash.slice(1)) ? location.hash.slice(1) : defaultId,
-    aggregation:'monthly', group:'all', year:'all', kind:'all', sort:'date-desc', visible:25
+    selectedId: complexById.has(hashId) ? hashId : null,
+    aggregation:'monthly', group:'all', year:'all', kind:'all', sort:'date-desc', visible:25, homeExpanded:false
   };
 
   const $ = (selector, root=document) => root.querySelector(selector);
   const $$ = (selector, root=document) => [...root.querySelectorAll(selector)];
   const won = new Intl.NumberFormat('ko-KR');
-  const currentComplex = () => complexes.find(item => item.id === state.selectedId) || complexes[0];
+  const currentComplex = () => complexById.get(state.selectedId) || null;
   const displayName = item => item.displayName || item.name;
   const groupLabel = group => group===0 ? '10평 미만' : `${group}평대`;
+  const exclusiveGroupLabel = group => group===0 ? '전용 10평 미만' : `전용 ${group}평대`;
+  const formatExclusivePy = area => roundedExclusivePy(area).toFixed(1);
   const selectedRecords = () => allRecords.filter(record => record.complexId === state.selectedId);
+  const escapeHtml = value => String(value??'').replace(/[&<>'"]/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[character]));
 
   function median(values) {
     if (!values.length) return null;
@@ -42,8 +55,9 @@
     const [year,month,day] = date.split('-');
     return `${year}. ${month}. ${day}.`;
   }
+  const formatHomeDate = date => { const [,month,day]=date.split('-').map(Number); return `${month}월 ${day}일`; };
   const percentChange = (from,to) => from&&to ? ((to-from)/from)*100 : null;
-  const latestYear = (rows=selectedRecords()) => rows.length ? Math.max(...rows.map(row => Number(row.date.slice(0,4)))) : 2026;
+  const latestYear = (rows=selectedRecords()) => rows.length ? Math.max(...rows.map(row => Number(row.date.slice(0,4)))) : Number(dataset.meta?.rangeEnd?.slice(0,4))||new Date().getFullYear();
 
   function availableGroups(rows=selectedRecords()) {
     const counts = new Map();
@@ -53,7 +67,7 @@
   function chartGroups() {
     const counts = availableGroups();
     const groups=[30,40,50];
-    if (state.selectedId!==defaultId) {
+    if (state.selectedId!==wId) {
       const leadingOther=counts.find(([group]) => !groups.includes(group));
       if (leadingOther) groups.push(leadingOther[0]);
     }
@@ -62,45 +76,50 @@
 
   function initSelectors() {
     const citySelect=$('#city-select');
-    citySelect.innerHTML=['부산','서울'].map(city => `<option value="${city}">${city}</option>`).join('');
-    citySelect.value=currentComplex().city;
-    populateDistricts(currentComplex().district);
-    populateApartments(currentComplex().district,state.selectedId);
+    citySelect.innerHTML='<option value="">도시 선택</option>'+['부산','서울'].map(city => `<option value="${city}">${city}</option>`).join('');
+    if (currentComplex()) syncSelectorToCurrent();
+    else {
+      citySelect.value='';
+      populateDistricts();
+      populateApartments();
+    }
     citySelect.addEventListener('change',() => {
-      const districts=[...new Set(complexes.filter(item => item.city===citySelect.value).map(item => item.district))].sort((a,b) => a.localeCompare(b,'ko'));
-      populateDistricts(districts[0]); selectFirstApartment();
+      populateDistricts();
+      populateApartments();
     });
-    $('#district-select').addEventListener('change',selectFirstApartment);
+    $('#district-select').addEventListener('change',() => populateApartments($('#district-select').value));
     $('#apartment-select').addEventListener('change',event => selectComplex(event.target.value));
   }
   function populateDistricts(selectedDistrict) {
     const city=$('#city-select').value;
     const districts=[...new Set(complexes.filter(item => item.city===city).map(item => item.district))].sort((a,b) => a.localeCompare(b,'ko'));
-    $('#district-select').innerHTML=districts.map(district => `<option value="${district}">${district}</option>`).join('');
-    $('#district-select').value=districts.includes(selectedDistrict) ? selectedDistrict : districts[0];
+    const select=$('#district-select');
+    select.innerHTML='<option value="">구·군 선택</option>'+districts.map(district => `<option value="${district}">${district}</option>`).join('');
+    select.value=districts.includes(selectedDistrict) ? selectedDistrict : '';
+    select.disabled=!city;
   }
   function populateApartments(district,selectedId) {
     const city=$('#city-select').value;
     const items=complexes.filter(item => item.city===city&&item.district===district)
       .sort((a,b) => Number(b.leader)-Number(a.leader)||displayName(a).localeCompare(displayName(b),'ko'));
-    const select=$('#apartment-select'); select.innerHTML='';
+    const select=$('#apartment-select'); select.innerHTML='<option value="">아파트 선택</option>';
     items.forEach(item => {
       const option=document.createElement('option'); option.value=item.id;
       option.textContent=`${item.leader?'★ ':''}${displayName(item)} · ${item.tags.join(' / ')}`;
       select.appendChild(option);
     });
-    select.value=items.some(item => item.id===selectedId) ? selectedId : items[0]?.id;
-  }
-  function selectFirstApartment() {
-    populateApartments($('#district-select').value); selectComplex($('#apartment-select').value);
+    select.value=items.some(item => item.id===selectedId) ? selectedId : '';
+    select.disabled=!city||!district;
   }
   function selectComplex(id) {
-    if (!complexes.some(item => item.id===id)) return;
+    if (!complexById.has(id)) return;
     state.selectedId=id; state.group='all'; state.year='all'; state.kind='all'; state.visible=25;
-    history.replaceState(null,'',`#${id}`); renderAll();
+    if (location.hash!==`#${id}`) history.pushState(null,'',`#${id}`);
+    renderAll();
   }
   function syncSelectorToCurrent() {
-    const item=currentComplex(); $('#city-select').value=item.city;
+    const item=currentComplex(); if (!item) return;
+    $('#city-select').value=item.city;
     populateDistricts(item.district); populateApartments(item.district,item.id);
   }
 
@@ -185,8 +204,8 @@
       ? '<span><i class="legend-line legend-sale"></i>평형별 월평균</span>'
       : isHybrid
         ? '<span><i class="legend-line legend-presale"></i>과거 평형별 월평균</span><span><i class="legend-line legend-sale"></i>최근 개별 실거래</span>'
-        : `${hasPresale?'<span><i class="legend-line legend-presale"></i>분양·입주권</span>':''}<span><i class="legend-line legend-sale"></i>아파트 매매</span>${state.selectedId===defaultId?'<span><i class="legend-boundary"></i>2018. 03. 27. 준공</span>':''}`;
-    const aggregation=state.aggregation, start=Date.UTC(2015,0,1), end=Date.UTC(2026,7,19), boundary=Date.UTC(2018,2,27);
+        : `${hasPresale?'<span><i class="legend-line legend-presale"></i>분양·입주권</span>':''}<span><i class="legend-line legend-sale"></i>아파트 매매</span>${state.selectedId===wId?'<span><i class="legend-boundary"></i>2018. 03. 27. 준공</span>':''}`;
+    const aggregation=state.aggregation, start=Date.UTC(2015,0,1), end=Date.UTC(Number(dataset.meta?.rangeEnd?.slice(0,4))||2026,11,31), boundary=Date.UTC(2018,2,27);
     const width=1040,height=220,margin={top:18,right:66,bottom:34,left:12},innerW=width-margin.left-margin.right,innerH=height-margin.top-margin.bottom;
     const xScale=time => margin.left+((time-start)/(end-start))*innerW;
     $('#chart-stack').innerHTML=groups.map(group => {
@@ -204,7 +223,7 @@
       const paths=series.map(item => { const archived=item.kind==='분양·입주권'||item.kind==='월평균 집계'; return pathSegments(item.points,aggregation,xScale,yScale).map(path => `<path d="${path}" fill="none" stroke="${palette[group]}" stroke-width="${archived?2.1:2.7}" ${archived?'stroke-dasharray="6 5" opacity=".72"':''} stroke-linecap="round" stroke-linejoin="round"/>`).join(''); }).join('');
       const points=flatPoints.map((point,index) => `<circle class="data-point" data-point="${index}" cx="${xScale(point.time)}" cy="${yScale(point.value)}" r="3.2" fill="${palette[group]}" stroke="#111923" stroke-width="1.4"/>`).join('');
       const boundaryX=xScale(boundary), groupRows=rows.filter(row => row.group===group), lastYear=Math.max(...groupRows.map(row => Number(row.date.slice(0,4)))), lastRows=groupRows.filter(row => row.date.startsWith(String(lastYear)));
-      return `<article class="chart-row" style="--group-color:${palette[group]}" data-chart-group="${group}"><div class="chart-label"><span>EXCLUSIVE AREA</span><strong>${groupLabel(group)}</strong><p>${lastYear} 중앙값<br>${formatPrice(median(lastRows.map(row => row.price)))}</p></div><div class="chart-canvas"><div class="chart-scroll"><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${groupLabel(group)} 가격 그래프">${yGrid}${xGrid}${state.selectedId===defaultId?`<rect x="${boundaryX-5}" y="${margin.top}" width="10" height="${innerH}" fill="rgba(255,255,255,.065)"/><line x1="${boundaryX}" y1="${margin.top}" x2="${boundaryX}" y2="${height-margin.bottom}" stroke="rgba(255,255,255,.27)" stroke-dasharray="2 4"/><text x="${boundaryX+7}" y="${margin.top+10}" fill="rgba(255,255,255,.46)" font-size="9">준공</text>`:''}${paths}${points}</svg></div><div class="chart-tooltip" role="status" aria-live="polite"></div></div></article>`;
+      return `<article class="chart-row" style="--group-color:${palette[group]}" data-chart-group="${group}"><div class="chart-label"><span>EXCLUSIVE AREA</span><strong>${groupLabel(group)}</strong><p>${lastYear} 중앙값<br>${formatPrice(median(lastRows.map(row => row.price)))}</p></div><div class="chart-canvas"><div class="chart-scroll"><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${groupLabel(group)} 가격 그래프">${yGrid}${xGrid}${state.selectedId===wId?`<rect x="${boundaryX-5}" y="${margin.top}" width="10" height="${innerH}" fill="rgba(255,255,255,.065)"/><line x1="${boundaryX}" y1="${margin.top}" x2="${boundaryX}" y2="${height-margin.bottom}" stroke="rgba(255,255,255,.27)" stroke-dasharray="2 4"/><text x="${boundaryX+7}" y="${margin.top+10}" fill="rgba(255,255,255,.46)" font-size="9">준공</text>`:''}${paths}${points}</svg></div><div class="chart-tooltip" role="status" aria-live="polite"></div></div></article>`;
     }).join('');
     $$('.chart-row').forEach(row => {
       const group=Number(row.dataset.chartGroup), points=kinds.flatMap(kind => aggregate(rows,group,kind,aggregation)), tooltip=$('.chart-tooltip',row);
@@ -218,7 +237,7 @@
 
   function renderGroupFilters() {
     const groups=availableGroups().map(([group]) => group).sort((a,b) => a-b);
-    $('.filter-group').innerHTML=`<button class="filter-pill is-active" type="button" data-group="all">전체</button>${groups.map(group => `<button class="filter-pill" type="button" data-group="${group}">${groupLabel(group)}</button>`).join('')}`;
+    $('.filter-group').innerHTML=`<button class="filter-pill is-active" type="button" data-group="all">전체</button>${groups.map(group => `<button class="filter-pill" type="button" data-group="${group}">${exclusiveGroupLabel(group)}</button>`).join('')}`;
     $$('.filter-pill').forEach(button => button.addEventListener('click',() => { $$('.filter-pill').forEach(item => item.classList.toggle('is-active',item===button)); state.group=button.dataset.group; state.visible=25; renderTable(); }));
     const kinds=[...new Set(selectedRecords().map(row => row.kind))];
     $('#kind-filter').innerHTML='<option value="all">전체 구분</option>'+kinds.map(kind => `<option value="${kind}">${kind}</option>`).join(''); $('#kind-filter').value='all';
@@ -229,27 +248,91 @@
   }
   function renderTable() {
     const filtered=filteredRecords(),visible=filtered.slice(0,state.visible); $('#table-count').textContent=won.format(filtered.length);
-    $('#transaction-body').innerHTML=visible.length?visible.map(record => `<tr><td>${formatDate(record.date)}</td><td><span class="kind-badge ${record.kind==='아파트 매매'?'sale':''}">${record.kind}</span></td><td><strong>${groupLabel(record.group)}</strong></td><td>${record.area.toFixed(2)}㎡ <span class="area-detail">· ${record.py}평</span></td><td>${record.floor==null?'—':`${record.floor}층`}</td><td class="price-cell">${formatPrice(record.price)}</td></tr>`).join(''):'<tr class="empty-row"><td colspan="6">선택한 조건에 해당하는 가격 자료가 없습니다.</td></tr>';
+    $('#transaction-body').innerHTML=visible.length?visible.map(record => `<tr><td>${formatDate(record.date)}</td><td><span class="kind-badge ${record.kind==='아파트 매매'?'sale':''}">${record.kind}</span></td><td><strong>${groupLabel(record.group)}</strong></td><td>전용 ${record.area.toFixed(2)}㎡ <span class="area-detail">· 약 ${formatExclusivePy(record.area)}평</span></td><td>${record.floor==null?'—':`${record.floor}층`}</td><td class="price-cell">${formatPrice(record.price)}</td></tr>`).join(''):'<tr class="empty-row"><td colspan="6">선택한 조건에 해당하는 가격 자료가 없습니다.</td></tr>';
     $('#load-more').hidden=state.visible>=filtered.length;
   }
   function populateYearFilter() {
-    $('#year-filter').innerHTML='<option value="all">전체 연도</option>'+Array.from({length:12},(_,i) => 2026-i).map(year => `<option value="${year}">${year}년</option>`).join(''); $('#year-filter').value='all';
+    const endYear=Number(dataset.meta?.rangeEnd?.slice(0,4))||new Date().getFullYear();
+    $('#year-filter').innerHTML='<option value="all">전체 연도</option>'+Array.from({length:endYear-2014},(_,i) => endYear-i).map(year => `<option value="${year}">${year}년</option>`).join(''); $('#year-filter').value='all';
   }
   const csvEscape=value => `"${String(value??'').replaceAll('"','""')}"`;
   function downloadCurrent() {
-    const item=currentComplex(),rows=filteredRecords(),isMonthly=item.dataMode==='monthly-average',isHybrid=item.dataMode==='hybrid',headers=['도시','구·군','단지명',isMonthly?'기준월':isHybrid?'기준일':'계약일','평형대','전용면적(㎡)','전용평수(반올림)',isMonthly?'월평균금액(만원)':isHybrid?'가격(만원)':'거래금액(만원)','층','거래구분','거래유형',isMonthly?'자료출처':isHybrid?'중개사/자료출처':'중개사소재지','등기일자'];
-    const body=rows.map(record => [item.city,item.district,displayName(item),record.date,groupLabel(record.group),record.area,record.py,record.price,record.floor??'',record.kind,record.dealType,record.broker,record.registration]);
+    const item=currentComplex(); if (!item) return;
+    const rows=filteredRecords(),isMonthly=item.dataMode==='monthly-average',isHybrid=item.dataMode==='hybrid',headers=['도시','구·군','단지명',isMonthly?'기준월':isHybrid?'기준일':'계약일','전용면적대','전용면적(㎡)','전용면적 기준 평수(약)',isMonthly?'월평균금액(만원)':isHybrid?'가격(만원)':'거래금액(만원)','층','거래구분','거래유형',isMonthly?'자료출처':isHybrid?'중개사/자료출처':'중개사소재지','등기일자'];
+    const body=rows.map(record => [item.city,item.district,displayName(item),record.date,groupLabel(record.group),record.area,formatExclusivePy(record.area),record.price,record.floor??'',record.kind,record.dealType,record.broker,record.registration]);
     const blob=new Blob(['\ufeff'+[headers,...body].map(row => row.map(csvEscape).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),anchor=document.createElement('a');
     anchor.href=url; anchor.download=`${item.city}_${item.district}_${displayName(item).replace(/[\\/:*?"<>|]/g,'')}_${isMonthly?'월평균가격':isHybrid?'가격자료':'실거래가'}.csv`; anchor.click(); URL.revokeObjectURL(url);
   }
-  function renderAll() { syncSelectorToCurrent(); renderHero(); renderSummary(); renderCharts(); renderGroupFilters(); populateYearFilter(); renderTable(); }
+  function getKoreaWeekRange(now=new Date()) {
+    const parts=Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(now).filter(part => part.type!=='literal').map(part => [part.type,part.value]));
+    const today=`${parts.year}-${parts.month}-${parts.day}`;
+    const utcDate=new Date(Date.UTC(Number(parts.year),Number(parts.month)-1,Number(parts.day)));
+    const mondayOffset=(utcDate.getUTCDay()+6)%7;
+    utcDate.setUTCDate(utcDate.getUTCDate()-mondayOffset);
+    return {monday:utcDate.toISOString().slice(0,10),today};
+  }
+  function homeRows(now=new Date()) {
+    const {monday,today}=getKoreaWeekRange(now);
+    const actual=allRecords.filter(record => record.kind==='아파트 매매');
+    const sortLatest=(a,b) => b.date.localeCompare(a.date)||String(b.transactionId||'').localeCompare(String(a.transactionId||''));
+    const weekly=actual.filter(record => record.date>=monday&&record.date<=today).sort(sortLatest);
+    const recent=[...actual].sort(sortLatest);
+    return {monday,today,weekly,rows:weekly.length?weekly:recent,isFallback:weekly.length===0};
+  }
+  function renderHomeList(result) {
+    const limit=state.homeExpanded?result.rows.length:25;
+    const visible=result.rows.slice(0,limit);
+    $('#weekly-list').innerHTML=visible.map(record => {
+      const item=complexById.get(record.complexId); if (!item) return '';
+      return `<button class="weekly-card" type="button" data-complex-id="${escapeHtml(item.id)}" aria-label="${escapeHtml(displayName(item))} 상세 보기"><span class="weekly-place"><i>${escapeHtml(item.city)}</i>${escapeHtml(item.district)} · ${escapeHtml(displayName(item))}</span><span class="weekly-date">${formatHomeDate(record.date)} · ${exclusiveGroupLabel(record.group)}</span><strong>${formatPrice(record.price)}</strong><span class="weekly-detail">전용 ${record.area.toFixed(2)}㎡ (약 ${formatExclusivePy(record.area)}평) · ${record.floor==null?'층 정보 없음':`${record.floor}층`}</span></button>`;
+    }).join('');
+    $$('.weekly-card').forEach(card => card.addEventListener('click',() => selectComplex(card.dataset.complexId)));
+    const toggle=$('#weekly-toggle');
+    toggle.hidden=result.rows.length<=25;
+    const expandLabel=result.isFallback?'최근 거래 전체보기':'이번 주 거래 전체보기';
+    toggle.innerHTML=state.homeExpanded?'처음 25건만 보기 <span>−</span>':`${expandLabel} <span>＋</span>`;
+  }
+  function renderHome() {
+    state.selectedId=null;
+    $('#home-view').hidden=false; $('#detail-hero').hidden=true;
+    $('#home-content').hidden=false; $('#detail-content').hidden=true;
+    $('#download-current-top').hidden=true;
+    const result=homeRows(),latest=result.rows[0]?.date;
+    $('#home-range-note').textContent=`한국시간 기준 ${formatHomeDate(result.monday)}부터 ${formatHomeDate(result.today)}까지 계약된 실제 거래입니다.`;
+    $('#weekly-range').textContent=`${result.monday} — ${result.today} · 계약일 기준`;
+    $('#home-week-count').textContent=`${won.format(result.weekly.length)}건`;
+    $('#home-today-count').textContent=`${won.format(result.weekly.filter(record => record.date===result.today).length)}건`;
+    $('#home-latest-date').textContent=latest?formatHomeDate(latest):'—';
+    $('#home-complex-count').textContent=`${won.format(complexes.length)}개`;
+    $('#weekly-status').textContent=result.isFallback?'이번 주 등록된 거래가 없어 최근 거래를 표시합니다.':`이번 주 등록된 실제 거래 ${won.format(result.weekly.length)}건을 최신 계약일부터 표시합니다.`;
+    $('#weekly-status').classList.toggle('is-fallback',result.isFallback);
+    renderHomeList(result);
+  }
+  function renderAll() {
+    if (!currentComplex()) { renderHome(); return; }
+    $('#home-view').hidden=true; $('#detail-hero').hidden=false;
+    $('#home-content').hidden=true; $('#detail-content').hidden=false;
+    $('#download-current-top').hidden=false;
+    syncSelectorToCurrent(); renderHero(); renderSummary(); renderCharts(); renderGroupFilters(); populateYearFilter(); renderTable();
+  }
   function bindStaticEvents() {
     $$('.segment').forEach(button => button.addEventListener('click',() => { $$('.segment').forEach(item => item.classList.toggle('is-active',item===button)); state.aggregation=button.dataset.aggregation; renderCharts(); }));
     $('#year-filter').addEventListener('change',event => { state.year=event.target.value; state.visible=25; renderTable(); });
     $('#kind-filter').addEventListener('change',event => { state.kind=event.target.value; state.visible=25; renderTable(); });
     $('#sort-filter').addEventListener('change',event => { state.sort=event.target.value; state.visible=25; renderTable(); });
     $('#load-more').addEventListener('click',() => { state.visible+=25; renderTable(); });
+    $('#weekly-toggle').addEventListener('click',() => { state.homeExpanded=!state.homeExpanded; renderHomeList(homeRows()); });
     $('#download-filtered').addEventListener('click',downloadCurrent); $('#download-current-top').addEventListener('click',downloadCurrent);
   }
+  window.addEventListener('popstate',() => {
+    const id=decodeURIComponent(location.hash.slice(1));
+    state.selectedId=complexById.has(id)?id:null;
+    state.homeExpanded=false;
+    if (state.selectedId) renderAll();
+    else {
+      $('#city-select').value=''; populateDistricts(); populateApartments(); renderHome();
+    }
+  });
+  window.__APT_TEST__={getKoreaWeekRange,exclusivePy,roundedExclusivePy,exclusiveGroup,homeRows};
   initSelectors(); bindStaticEvents(); renderAll();
 })();
