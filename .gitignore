@@ -1,0 +1,36 @@
+# Local desktop copies; Netlify publishes only public/.
+/index.html
+/styles.css
+/app.js
+/data/
+
+# Windows-only local updater and launch helpers.
+/scripts/update-data.ps1
+/*.bat
+
+# Dependencies and local tool state.
+/node_modules/
+/.netlify/
+
+# Secrets must never be committed.
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*secret*
+*credential*
+
+# Temporary, backup, and log files.
+*.log
+*.tmp
+*.temp
+*.bak
+*.previous.*
+.update.lock
+
+# Editor and operating-system metadata.
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
