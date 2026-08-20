@@ -196,14 +196,22 @@ function Get-MolitYear {
   $expression = @"
 (async () => {
   const parameters = $parameterJson;
-  const response = await fetch('$MolitDetailUrl', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-      'X-Requested-With': 'XMLHttpRequest'
-    },
-    body: new URLSearchParams(parameters)
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 25000);
+  let response;
+  try {
+    response = await fetch('$MolitDetailUrl', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: new URLSearchParams(parameters),
+      signal: controller.signal
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
   const text = await response.text();
   if (!response.ok) throw new Error('HTTP ' + response.status + ': ' + text.slice(0, 160));
   const data = JSON.parse(text);
