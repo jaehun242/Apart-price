@@ -2,7 +2,9 @@ name: Daily apartment transaction update
 
 on:
   schedule:
-    - cron: "0 7 * * *"
+    - cron: "17 7 * * *"
+      timezone: "Asia/Seoul"
+    - cron: "17 8 * * *"
       timezone: "Asia/Seoul"
   workflow_dispatch:
 
@@ -17,9 +19,11 @@ jobs:
   update:
     name: Refresh and validate transactions
     runs-on: windows-latest
-    timeout-minutes: 45
+    timeout-minutes: 90
     env:
       TZ: Asia/Seoul
+      MOLIT_API_KEY: ${{ secrets.MOLIT_API_KEY }}
+      PUBLIC_SITE_URL: https://beautiful-palmier-5f7cbc.netlify.app
 
     steps:
       - name: Check out main
@@ -27,85 +31,94 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check MOLIT page access
+      - name: Test updater safeguards
+        shell: pwsh
+        run: ./scripts/test-openapi-updater.ps1
+
+      - name: Check MOLIT OpenAPI secret
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $response = Invoke-WebRequest `
-            -Uri 'https://rt.molit.go.kr/pt/gis/gis.do' `
-            -Method Get `
-            -TimeoutSec 30 `
-            -UseBasicParsing
-          if ([int]$response.StatusCode -ne 200) {
-            throw "MOLIT page returned HTTP $($response.StatusCode)."
+          if ([string]::IsNullOrWhiteSpace($env:MOLIT_API_KEY)) {
+            throw 'Repository Secret MOLIT_API_KEY is not configured.'
           }
-          "MOLIT page access succeeded: HTTP $($response.StatusCode)"
+          'MOLIT_API_KEY is configured. The value is not printed.'
 
-      - name: Refresh current and previous years
+      - name: Refresh rolling six months from MOLIT OpenAPI
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
           ./scripts/update-data-github.ps1 `
             -DataPath 'public/data/transactions.js' `
+            -RefreshMonths 6 `
+            -MaxRetries 3 `
             -LogPath "$env:RUNNER_TEMP/apart-price-update-log.json" `
-            -BackupPath "$env:RUNNER_TEMP/transactions.previous.js"
+            -BackupPath "$env:RUNNER_TEMP/transactions.previous.js" `
+            -MatchReportPath 'reports/molit-openapi-matching.md'
 
-      - name: Verify generated dataset
+      - name: Verify generated dataset and OpenAPI run
         id: verify
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
           $logPath = "$env:RUNNER_TEMP/apart-price-update-log.json"
-          if (-not (Test-Path -LiteralPath $logPath)) {
-            throw 'Update log was not generated.'
-          }
+          if (-not (Test-Path -LiteralPath $logPath)) { throw 'Update log was not generated.' }
           $log = Get-Content -LiteralPath $logPath -Raw -Encoding UTF8 | ConvertFrom-Json
           if ([string]$log.status -notin @('success-changed', 'success-no-change')) {
-            throw "Updater did not succeed: $($log.status)"
+            throw "Updater did not succeed: $($log.status); $($log.error)"
           }
-          if ([int]$log.complexesRequested -ne 136) {
-            throw "Expected 136 complexes, got $($log.complexesRequested)."
+          if (-not [bool]$log.apiKeyRecognized) { throw 'MOLIT OpenAPI did not recognize the API key.' }
+          if ([int]$log.complexesRequested -le 0 -or [int]$log.complexesMatched -ne [int]$log.complexesRequested) {
+            throw "Complex matching failed: $($log.complexesMatched)/$($log.complexesRequested)."
           }
-          if ([int]$log.pairsRequested -ne 272 -or [int]$log.pairsCompleted -ne 272) {
-            throw "Expected 272 completed complex-year requests."
+          if ([int]$log.pairsCompleted -ne [int]$log.pairsRequested -or [int]$log.apiCalls -le 0) {
+            throw "OpenAPI requests were incomplete: $($log.pairsCompleted)/$($log.pairsRequested)."
           }
+          if ([int]$log.validDownloaded -le 0) { throw 'No matched transactions were downloaded.' }
 
           $dataPath = 'public/data/transactions.js'
           $text = [IO.File]::ReadAllText($dataPath, [Text.Encoding]::UTF8)
           $json = $text -replace '^\s*window\.APT_ARCHIVE_DATA\s*=\s*', '' -replace ';\s*$', ''
           $dataset = $json | ConvertFrom-Json
-          if (@($dataset.complexes).Count -ne 136) {
-            throw "Generated dataset has $(@($dataset.complexes).Count) complexes."
+          if (@($dataset.complexes).Count -ne [int]$log.complexesRequested) {
+            throw "Generated dataset has $(@($dataset.complexes).Count) complexes; expected $($log.complexesRequested)."
           }
-          if (@($dataset.records).Count -ne [int]$dataset.meta.recordCount) {
-            throw 'Generated record count does not match metadata.'
+          if (@($dataset.records).Count -ne [int]$dataset.meta.recordCount) { throw 'Generated record count does not match metadata.' }
+          if ([string]$dataset.meta.sourceUrl -ne 'https://apis.data.go.kr/1613000/RTMSDataSvcAptTradeDev/getRTMSDataSvcAptTradeDev') {
+            throw 'Dataset source URL is not the official MOLIT OpenAPI endpoint.'
           }
-
           $seen = New-Object 'System.Collections.Generic.HashSet[string]'
           foreach ($record in @($dataset.records)) {
-            $statementId = ([string]$record.transactionId).Trim()
-            if (-not $statementId) { continue }
-            $key = "$($record.complexId)|$statementId"
-            if (-not $seen.Add($key)) { throw "Duplicate transaction ID: $key" }
+            if (-not $record.complexId -or -not $record.date -or [double]$record.area -le 0 -or [long]$record.price -le 0) {
+              throw 'Generated dataset contains a record with missing required fields.'
+            }
+            $id = ([string]$record.transactionId).Trim()
+            if ($id -and -not $seen.Add("$($record.complexId)|$id")) { throw "Duplicate transaction ID: $($record.complexId)|$id" }
           }
 
           $changed = [bool]$log.dataChanged
           "changed=$($changed.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          "status=$($log.status)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          "new_transactions=$([int]$log.newTransactions)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          "cancelled_or_corrected=$([int]$log.cancelledOrCorrected)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           "latest_contract_date=$($log.latestContractDate)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "record_count=$(@($dataset.records).Count)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "api_calls=$([int]$log.apiCalls)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
           @"
-          ## Apartment transaction refresh
+          ## MOLIT OpenAPI refresh
 
           - Status: **$($log.status)**
-          - Complexes: **$($log.complexesRequested)**
-          - Complex-year requests: **$($log.pairsCompleted)/$($log.pairsRequested)**
-          - Valid downloaded: **$($log.validDownloaded)**
-          - New transactions: **$($log.newTransactions)**
-          - Cancelled/corrected: **$($log.cancelledOrCorrected)**
+          - API key recognized: **$($log.apiKeyRecognized)**
+          - Complexes matched: **$($log.complexesMatched)/$($log.complexesRequested)**
+          - Regions: **$($log.regionsRequested)**
+          - Rolling window: **$($log.refreshStart) — $($log.refreshEnd)**
+          - OpenAPI request pairs: **$($log.pairsCompleted)/$($log.pairsRequested)**
+          - HTTP attempts including retries: **$($log.apiAttempts)**
+          - Successful HTTP calls: **$($log.apiCalls)**
+          - Valid matched transactions: **$($log.validDownloaded)**
           - Cancelled rows excluded: **$($log.cancelledExcluded)**
+          - Duplicate rows skipped: **$($log.duplicateRowsSkipped)**
+          - New transactions: **$($log.newTransactions)**
+          - Removed/cancelled: **$($log.cancelledOrRemoved)**
+          - Corrected: **$($log.correctedTransactions)**
           - Latest contract date: **$($log.latestContractDate)**
           - Data changed: **$changed**
           "@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
@@ -122,23 +135,22 @@ jobs:
             -ReuseExistingTypes
           node ./scripts/test-supply-area-map.mjs
 
-      - name: Commit validated data and supply mappings
+      - name: Commit validated data and mappings
         if: steps.verify.outputs.changed == 'true'
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- public/data/transactions.js public/data/supply-areas.js reports/supply-area-verification.md
-          git diff --cached --quiet -- public/data/transactions.js public/data/supply-areas.js reports/supply-area-verification.md
-          if ($LASTEXITCODE -eq 0) {
-            throw 'Updater reported a change, but Git found no data difference.'
-          }
+          git add -- public/data/transactions.js public/data/supply-areas.js reports/supply-area-verification.md reports/molit-openapi-matching.md
+          git diff --cached --quiet
+          if ($LASTEXITCODE -eq 0) { throw 'Updater reported a change, but Git found no staged data difference.' }
           $date = [TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([DateTimeOffset]::UtcNow, 'Korea Standard Time').ToString('yyyy-MM-dd')
-          git commit -m "data: refresh apartment transactions $date" -- public/data/transactions.js public/data/supply-areas.js reports/supply-area-verification.md
+          git commit -m "data: refresh apartment transactions $date"
           if ($LASTEXITCODE -ne 0) { throw 'Git commit failed.' }
 
       - name: Push and verify main
+        id: push
         if: steps.verify.outputs.changed == 'true'
         shell: pwsh
         run: |
@@ -148,14 +160,60 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'GitHub push failed.' }
           $remoteLine = git ls-remote origin refs/heads/main
           $remoteHead = ($remoteLine -split '\s+')[0]
-          if ($remoteHead -ne $localHead) {
-            throw "Push verification failed: local=$localHead remote=$remoteHead"
-          }
+          if ($remoteHead -ne $localHead) { throw "Push verification failed: local=$localHead remote=$remoteHead" }
+          "sha=$localHead" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           "- GitHub push: **success** (`$localHead`)" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
-          "- Netlify trigger: **main push completed**" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+
+      - name: Verify Netlify deployment and public data
+        if: steps.verify.outputs.changed == 'true'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $localPath = 'public/data/transactions.js'
+          $localContent = ([IO.File]::ReadAllText($localPath, [Text.Encoding]::UTF8) -replace "`r`n", "`n").TrimEnd("`r", "`n")
+          $sha = [Security.Cryptography.SHA256]::Create()
+          try { $localHash = ([BitConverter]::ToString($sha.ComputeHash([Text.Encoding]::UTF8.GetBytes($localContent))) -replace '-', '') } finally { $sha.Dispose() }
+          $dataUrl = "$env:PUBLIC_SITE_URL/data/transactions.js"
+          $lastStatus = 'no response'
+          for ($attempt = 1; $attempt -le 40; $attempt++) {
+            try {
+              $response = Invoke-WebRequest -Uri $dataUrl -UseBasicParsing -TimeoutSec 30 -Headers @{ 'Cache-Control'='no-cache' }
+              $lastStatus = "HTTP $([int]$response.StatusCode)"
+              if ([int]$response.StatusCode -eq 200) {
+                $remoteContent = (([string]$response.Content) -replace "`r`n", "`n").TrimEnd("`r", "`n")
+                $remoteBytes = [Text.Encoding]::UTF8.GetBytes($remoteContent)
+                $sha = [Security.Cryptography.SHA256]::Create()
+                try { $remoteHash = ([BitConverter]::ToString($sha.ComputeHash($remoteBytes)) -replace '-', '') } finally { $sha.Dispose() }
+                if ($remoteHash -eq $localHash) {
+                  $expectedMarker = '"rangeEnd":"' + '${{ steps.verify.outputs.latest_contract_date }}' + '"'
+                  if (-not ([string]$response.Content).Contains($expectedMarker)) {
+                    throw 'Netlify data file does not contain the expected latest contract date.'
+                  }
+                  "- Netlify deployment: **success** ($env:PUBLIC_SITE_URL)" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+                  "- Public latest contract date: **${{ steps.verify.outputs.latest_contract_date }}**" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+                  exit 0
+                }
+                $lastStatus = 'HTTP 200 but the deployed data hash is still old'
+              }
+            } catch { $lastStatus = $_.Exception.Message }
+            if ($attempt -lt 40) { Start-Sleep -Seconds 15 }
+          }
+          throw "Netlify deployment was not verified after 10 minutes: $lastStatus"
 
       - name: Record no-change result
         if: steps.verify.outputs.changed != 'true'
         shell: pwsh
         run: |
-          "- GitHub push: **not needed (no data change)**" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+          "- GitHub push: **not needed (validated OpenAPI data had no change)**" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+          "- Netlify deployment: **not needed**" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+
+      - name: Upload OpenAPI diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: molit-openapi-diagnostics-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/apart-price-update-log.json
+            reports/molit-openapi-matching.md
+          if-no-files-found: ignore
+          retention-days: 14
