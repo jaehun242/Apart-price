@@ -1,10 +1,10 @@
 # 공급면적 매핑 검증 보고서
 
-- 생성 시각: 2026-08-20T16:18:51.3066409+09:00
+- 생성 시각: 2026-08-26T01:19:53.5376434+00:00
 - 출처: 아실 단지 상세의 실제 평면 공급면적/전용면적 및 평형 라벨
 - 처리 단지: 136개
-- 매핑된 전용면적 값: 1316개 (61430건)
-- 공급면적 확인 필요 값: 144개 (2219건)
+- 매핑된 전용면적 값: 1316개 (61511건)
+- 공급면적 확인 필요 값: 144개 (2222건)
 - 거래 레코드 매핑률: 96.51%
 
 ## 단지별 결과
@@ -209,9 +209,9 @@
 | 더블유 (W) | 241.1244 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
 | 더블유 (W) | 286.3985 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
 | 더샵남천프레스티지 | 39.365 | 57 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20444528) |
-| 삼익비치 | 61.09 | 177 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=5222) |
+| 삼익비치 | 61.09 | 178 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=5222) |
 | 레이카운티(2단지) | 101.6538 | 11 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20455647) |
-| 레이카운티(2단지) | 101.8683 | 7 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20455647) |
+| 레이카운티(2단지) | 101.8683 | 8 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20455647) |
 | 해운대 I PARK | 93.997 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
 | 해운대 I PARK | 94.112 | 2 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
 | 해운대 I PARK | 94.172 | 8 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
@@ -302,7 +302,7 @@
 | 일광자이푸르지오1단지 | 155.13 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20400207) |
 | 오륙도SK뷰 | 84.9636 | 49 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20106194) |
 | 대연롯데캐슬레전드1단지 | 84.95 | 163 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20380885) |
-| 대연롯데캐슬레전드1단지 | 84.98 | 86 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20380885) |
+| 대연롯데캐슬레전드1단지 | 84.98 | 87 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20380885) |
 | 두산위브더제니스하버시티 | 119.93 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20445383) |
 | 동래래미안아이파크 | 163.25 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20435455) |
 | 명륜자이 | 39.5948 | 5 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20387733) |
