@@ -51,7 +51,7 @@ jobs:
           ./scripts/update-data-github.ps1 `
             -DataPath 'public/data/transactions.js' `
             -RefreshMonths 6 `
-            -MaxRetries 3 `
+            -MaxRetries 5 `
             -LogPath "$env:RUNNER_TEMP/apart-price-update-log.json" `
             -BackupPath "$env:RUNNER_TEMP/transactions.previous.js" `
             -MatchReportPath 'reports/molit-openapi-matching.md'

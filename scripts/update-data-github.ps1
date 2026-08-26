@@ -6,7 +6,7 @@ param(
   [ValidateRange(3, 6)][int]$RefreshMonths = 6,
   [int]$RequestDelayMs = 150,
   [ValidateRange(5, 60)][int]$RequestTimeoutSec = 40,
-  [ValidateRange(1, 3)][int]$MaxRetries = 3,
+  [ValidateRange(1, 5)][int]$MaxRetries = 3,
   [int]$Limit = 0,
   [string[]]$ComplexIds,
   [string]$LogPath = '',
