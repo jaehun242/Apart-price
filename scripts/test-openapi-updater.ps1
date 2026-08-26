@@ -60,9 +60,10 @@ try {
     <items>
       <item><aptSeq>fixture-1</aptSeq><aptNm>에코델타호반써밋스마트시티</aptNm><umdNm>강동동</umdNm><jibun>123</jibun><roadNm>에코대로</roadNm><dealYear>$year</dealYear><dealMonth>$month</dealMonth><dealDay>20</dealDay><excluUseAr>84.9146</excluUseAr><dealAmount>55,000</dealAmount><floor>7</floor><aptDong>101</aptDong><dealingGbn>중개거래</dealingGbn><estateAgentSggNm>부산 강서구</estateAgentSggNm><rgstDate></rgstDate><cdealDay></cdealDay><cdealType></cdealType></item>
       <item><aptSeq>fixture-1</aptSeq><aptNm>에코델타호반써밋스마트시티</aptNm><umdNm>강동동</umdNm><jibun>123</jibun><roadNm>에코대로</roadNm><dealYear>$year</dealYear><dealMonth>$month</dealMonth><dealDay>20</dealDay><excluUseAr>84.9146</excluUseAr><dealAmount>55,000</dealAmount><floor>7</floor><aptDong>101</aptDong><dealingGbn>중개거래</dealingGbn><estateAgentSggNm>부산 강서구</estateAgentSggNm><rgstDate></rgstDate><cdealDay></cdealDay><cdealType></cdealType></item>
+      <item><aptSeq>fixture-1</aptSeq><aptNm>에코델타호반써밋스마트시티</aptNm><umdNm>강동동</umdNm><jibun>123</jibun><roadNm>에코대로</roadNm><dealYear>$year</dealYear><dealMonth>$month</dealMonth><dealDay>18</dealDay><excluUseAr>59.9821</excluUseAr><dealAmount>42,000</dealAmount><floor>11</floor><aptDong>103</aptDong><dealingGbn>중개거래</dealingGbn><estateAgentSggNm>부산 강서구</estateAgentSggNm><rgstDate></rgstDate><cdealDay></cdealDay><cdealType></cdealType></item>
       <item><aptSeq>fixture-1</aptSeq><aptNm>에코델타호반써밋스마트시티</aptNm><umdNm>강동동</umdNm><jibun>123</jibun><roadNm>에코대로</roadNm><dealYear>$year</dealYear><dealMonth>$month</dealMonth><dealDay>19</dealDay><excluUseAr>84.9146</excluUseAr><dealAmount>54,000</dealAmount><floor>5</floor><aptDong>102</aptDong><dealingGbn>중개거래</dealingGbn><estateAgentSggNm>부산 강서구</estateAgentSggNm><rgstDate></rgstDate><cdealDay>$year$('{0:D2}' -f $month)21</cdealDay><cdealType>O</cdealType></item>
     </items>
-    <numOfRows>9999</numOfRows><pageNo>1</pageNo><totalCount>3</totalCount>
+    <numOfRows>9999</numOfRows><pageNo>1</pageNo><totalCount>4</totalCount>
   </body>
 </response>
 "@
@@ -112,9 +113,9 @@ try {
   if ([int]$log.complexesMatched -ne 1 -or [int]$log.complexesRequested -ne 1) { throw "Fixture matching failed: $($log.complexesMatched)/$($log.complexesRequested)" }
   if ([int]$log.pairsCompleted -ne 3 -or [int]$log.apiCalls -ne 3) { throw "Fixture request count mismatch: pairs=$($log.pairsCompleted), calls=$($log.apiCalls)" }
   if ([int]$log.apiAttempts -ne 4) { throw "Expected one retry and four total attempts, got $($log.apiAttempts)." }
-  if ([int]$log.validDownloaded -ne 1) { throw "Expected one deduplicated valid row, got $($log.validDownloaded)." }
+  if ([int]$log.validDownloaded -ne 2) { throw "Expected two distinct deduplicated valid rows, got $($log.validDownloaded)." }
   if ([int]$log.cancelledExcluded -ne 3) { throw "Expected three cancelled rows, got $($log.cancelledExcluded)." }
-  if ([int]$log.duplicateRowsSkipped -ne 5) { throw "Expected five duplicate rows, got $($log.duplicateRowsSkipped)." }
+  if ([int]$log.duplicateRowsSkipped -ne 7) { throw "Expected seven duplicate rows, got $($log.duplicateRowsSkipped)." }
   if ((Get-Content -LiteralPath $logPath -Raw -Encoding UTF8).Contains('fixture-secret-that-must-not-be-logged')) { throw 'API key leaked into the updater log.' }
   if ((Get-FileHashText $dataPath) -ne $beforeHash) { throw 'Probe mode changed transactions.js.' }
   if (Test-Path -LiteralPath $backupPath) { throw 'Probe mode unexpectedly created a data backup.' }

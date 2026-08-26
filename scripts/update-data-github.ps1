@@ -160,20 +160,21 @@ function Protect-ApiKey {
 function Get-OpenApiTransactionSignature {
   param($Row)
   $floorValue = Get-OpenApiFloor $Row
-  return @(
-    Get-OpenApiIdentity $Row,
-    Get-OpenApiDate $Row,
-    (Get-OpenApiArea $Row).ToString('0.####', [Globalization.CultureInfo]::InvariantCulture),
-    Get-OpenApiPrice $Row,
-    $(if ($null -eq $floorValue) { '' } else { $floorValue }),
-    Get-Field $Row @('aptDong'),
-    Get-Field $Row @('dealingGbn'),
-    Get-Field $Row @('estateAgentSggNm'),
-    Get-Field $Row @('rgstDate'),
-    Get-Field $Row @('buyerGbn'),
-    Get-Field $Row @('slerGbn'),
-    Get-Field $Row @('landLeaseholdGbn')
-  ) -join '|'
+  $parts = @(
+    (Get-OpenApiIdentity $Row)
+    (Get-OpenApiDate $Row)
+    ((Get-OpenApiArea $Row).ToString('0.####', [Globalization.CultureInfo]::InvariantCulture))
+    (Get-OpenApiPrice $Row)
+    $(if ($null -eq $floorValue) { '' } else { $floorValue })
+    (Get-Field $Row @('aptDong'))
+    (Get-Field $Row @('dealingGbn'))
+    (Get-Field $Row @('estateAgentSggNm'))
+    (Get-Field $Row @('rgstDate'))
+    (Get-Field $Row @('buyerGbn'))
+    (Get-Field $Row @('slerGbn'))
+    (Get-Field $Row @('landLeaseholdGbn'))
+  )
+  return $parts -join '|'
 }
 
 function Get-ComparableSignature {
