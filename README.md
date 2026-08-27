@@ -11,14 +11,17 @@ GitHub Actions의 `Daily apartment transaction update` workflow가 한국시간 
 1. GitHub Repository Secret `MOLIT_API_KEY`로 국토교통부 공식 실거래가 OpenAPI 호출
 2. 41개 법정동 지역코드의 최근 6개월을 월별로 재조회
 3. 단지명·법정동·지번·전용면적·기존 거래를 대조해 136개 단지를 정확히 매칭
-4. 신규·취소·정정·늦은 신고 반영 및 중복 제거
-5. 날짜·필수값·단지 수·거래 수 급감 여부 검증
-6. 모든 API 호출과 검증이 성공한 경우에만 `public/data/transactions.js`를 원자적으로 교체
-7. 거래가 바뀌면 저장된 실제 단지 타입 자료로 공급면적 매핑과 확인 필요 보고서를 다시 생성·검증
-8. 실제 데이터가 바뀐 경우에만 거래 원본·공급면적 매핑·보고서를 `main`에 commit/push
-9. 기존 Netlify Git 연동이 `public/` 폴더를 자동 배포하고 공개 데이터 해시를 재검증
+4. 기존 `transactionId`와 안정적인 거래 추적키를 함께 비교해 신규·취소·정정·늦은 신고 반영 및 중복 제거
+5. 처음 발견한 신규 거래에만 한국 날짜 `first_seen_at`을 기록하고, 정정·재수집 거래는 기존 최초수집일 유지
+6. 날짜·필수값·단지 수·거래 수 급감 여부 검증
+7. 모든 API 호출과 검증이 성공한 경우에만 `public/data/transactions.js`를 원자적으로 교체
+8. 거래가 바뀌면 저장된 실제 단지 타입 자료로 공급면적 매핑과 확인 필요 보고서를 다시 생성·검증
+9. 실제 데이터가 바뀐 경우에만 거래 원본·공급면적 매핑·보고서를 `main`에 commit/push
+10. 기존 Netlify Git 연동이 `public/` 폴더를 자동 배포하고 공개 데이터 해시를 재검증
 
 조회 또는 검증에 실패하면 기존 데이터 파일은 변경하지 않으며 commit/push도 실행되지 않습니다.
+
+메인페이지의 **이번 주 신규 실거래**는 실제 계약일이 아니라 `first_seen_at`(우리 시스템의 최초 수집일)로 집계합니다. 가격 그래프·시세 계산·기간별 통계와 거래 카드에 표시하는 계약일은 계속 실제 계약일 기준입니다. 추적 도입 전 기존 거래는 `first_seen_at: null`로 초기화해 도입 주에 신규 거래로 잘못 집계되지 않도록 했습니다.
 
 ## 데이터 소스
 
@@ -35,6 +38,9 @@ OpenAPI 키는 코드나 로그에 저장하지 않고 GitHub Actions의 `secret
 - `reports/supply-area-verification.md`: 매핑률과 공급면적 확인 필요 타입 목록
 - `scripts/build-supply-area-map.ps1`: 실제 단지 면적 타입 조회·매핑·보고서 생성 프로그램
 - `scripts/test-openapi-updater.ps1`: 현재 저장된 OpenAPI 단지 식별자를 사용하는 재시도·매칭·취소·중복·원본 보호 통합 테스트
+- `scripts/transaction-first-seen.ps1`: 신규 거래 최초수집일 기록과 정정·재수집 연결 로직
+- `scripts/test-first-seen-tracking.ps1`: 기존 거래 초기화·신규·정정·중복·해제 처리 검증
+- `scripts/test-weekly-new-transactions.cjs`: 메인페이지 최초수집일 기반 주간 필터 검증
 - `scripts/check-daily-refresh-needed.ps1`: 당일 성공 이력을 확인해 중복 API 호출을 막고 실패 시 후속 예약을 허용하는 프로그램
 - `scripts/test-refresh-gate.ps1`: 당일 성공·실패·수동 실행에 대한 자동 갱신 판단 테스트
 - `scripts/test-supply-area-map.mjs`: 매핑 무결성과 필수 표본 검증

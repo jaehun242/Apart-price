@@ -63,6 +63,13 @@ jobs:
         shell: pwsh
         run: ./scripts/test-openapi-updater.ps1
 
+      - name: Test first-seen tracking and weekly-new filter
+        if: steps.freshness.outputs.should_run == 'true'
+        shell: pwsh
+        run: |
+          ./scripts/test-first-seen-tracking.ps1
+          node ./scripts/test-weekly-new-transactions.cjs
+
       - name: Check MOLIT OpenAPI secret
         if: steps.freshness.outputs.should_run == 'true'
         shell: pwsh
@@ -123,6 +130,9 @@ jobs:
             if (-not $record.complexId -or -not $record.date -or [double]$record.area -le 0 -or [long]$record.price -le 0) {
               throw 'Generated dataset contains a record with missing required fields.'
             }
+            if (-not $record.PSObject.Properties['first_seen_at']) { throw 'Generated dataset contains a record without first_seen_at.' }
+            $firstSeen = ([string]$record.first_seen_at).Trim()
+            if ($firstSeen -and $firstSeen -notmatch '^\d{4}-\d{2}-\d{2}$') { throw "Invalid first_seen_at: $firstSeen" }
             $id = ([string]$record.transactionId).Trim()
             if ($id -and -not $seen.Add("$($record.complexId)|$id")) { throw "Duplicate transaction ID: $($record.complexId)|$id" }
           }

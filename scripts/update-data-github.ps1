@@ -19,6 +19,7 @@ $ErrorActionPreference = 'Stop'
 $Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 $scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repositoryDirectory = Split-Path -Parent $scriptDirectory
+. (Join-Path $scriptDirectory 'transaction-first-seen.ps1')
 $lockStream = $null
 $temporaryFile = $null
 
@@ -210,24 +211,11 @@ function Convert-OpenApiRow {
     dealType = $(if (Get-Field $Row @('dealingGbn')) { Get-Field $Row @('dealingGbn') } else { '-' })
     broker = $(if (Get-Field $Row @('estateAgentSggNm')) { Get-Field $Row @('estateAgentSggNm') } else { '-' })
     registration = $(if (Get-Field $Row @('rgstDate')) { Get-Field $Row @('rgstDate') } else { '-' })
+    apartmentDong = $(if (Get-Field $Row @('aptDong')) { Get-Field $Row @('aptDong') } else { '-' })
+    tracking_key = $null
+    first_seen_at = $null
     source = '국토교통부 실거래가 OpenAPI'
   }
-}
-
-function Get-RecordKey {
-  param($Record)
-  $transactionId = ([string]$Record.transactionId).Trim()
-  if ($transactionId) { return "$($Record.complexId)|id|$transactionId" }
-  return "$($Record.complexId)|fallback|$(Get-ComparableSignature $Record)"
-}
-
-function Get-RecordSignature {
-  param($Record)
-  return ([ordered]@{
-    complexId = $Record.complexId; transactionId = $Record.transactionId; date = $Record.date; area = $Record.area
-    py = $Record.py; group = $Record.group; price = $Record.price; floor = $Record.floor; kind = $Record.kind
-    dealType = $Record.dealType; broker = $Record.broker; registration = $Record.registration; source = $Record.source
-  } | ConvertTo-Json -Compress)
 }
 
 function Get-ComplexStats {
@@ -263,7 +251,7 @@ $runLog = [ordered]@{
   apiCalls = 0; apiAttempts = 0; complexesRequested = 0; complexesMatched = 0; unmatchedComplexes = @()
   validDownloaded = 0; cancelledExcluded = 0; duplicateRowsSkipped = 0; recordsBefore = 0; recordsAfter = 0
   newTransactions = 0; cancelledOrRemoved = 0; correctedTransactions = 0; cancelledOrCorrected = 0
-  latestContractDate = $null; dataChanged = $false
+  latestContractDate = $null; firstSeenFieldsInitialized = 0; dataChanged = $false
 }
 
 function Write-UpdateLog {
@@ -454,6 +442,13 @@ function Assert-Dataset {
     if ([Math]::Abs(([double]$record.py - $expectedPy)) -gt 0.0001 -or [int]$record.group -ne $expectedGroup) { throw "Validation failed: exclusive-area conversion mismatch for $($record.complexId)." }
     $transactionId = ([string]$record.transactionId).Trim()
     if ($transactionId -and -not $transactionSet.Add("$($record.complexId)|$transactionId")) { throw "Validation failed: duplicate transaction id $($record.complexId)|$transactionId." }
+    if (-not $record.PSObject.Properties['first_seen_at']) { throw "Validation failed: missing first_seen_at for $($record.complexId)." }
+    $firstSeenText = ([string]$record.first_seen_at).Trim()
+    if ($firstSeenText) {
+      $firstSeen = [DateTime]::MinValue
+      if (-not [DateTime]::TryParseExact($firstSeenText, 'yyyy-MM-dd', [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::None, [ref]$firstSeen)) { throw "Validation failed: invalid first_seen_at $firstSeenText." }
+      if ($firstSeen.Date -gt $today) { throw "Validation failed: future first_seen_at $firstSeenText." }
+    }
   }
   if ($OldRefreshCount -ge 20 -and $NewRefreshCount -lt [Math]::Floor($OldRefreshCount * 0.65)) { throw "Validation failed: rolling-window records dropped unexpectedly ($OldRefreshCount -> $NewRefreshCount)." }
 }
@@ -466,6 +461,8 @@ try {
   $json = $text -replace '^\s*window\.APT_ARCHIVE_DATA\s*=\s*', '' -replace ';\s*$', ''
   $dataset = $json | ConvertFrom-Json
   if (-not $dataset.complexes -or -not $dataset.records) { throw 'Unable to parse apartment dataset.' }
+  $firstSeenFieldsInitialized = Initialize-FirstSeenFields -Records $dataset.records
+  $runLog.firstSeenFieldsInitialized = $firstSeenFieldsInitialized
 
   $today = Get-KoreaNow
   $currentMonth = [DateTime]::new($today.Year, $today.Month, 1)
@@ -541,11 +538,9 @@ try {
 
   $selectedSet = New-Object 'System.Collections.Generic.HashSet[string]'; foreach ($complex in $complexesToUpdate) { [void]$selectedSet.Add([string]$complex.id) }
   $oldRefreshRows = @($dataset.records | Where-Object { $selectedSet.Contains([string]$_.complexId) -and $_.kind -eq '아파트 매매' -and [string]$_.date -ge $refreshStart -and [string]$_.date -le $refreshEnd })
-  $oldMap = @{}; foreach ($record in $oldRefreshRows) { $oldMap[(Get-RecordKey $record)] = $record }
-  $newMap = @{}; foreach ($record in @($replacementRows)) { $newMap[(Get-RecordKey $record)] = $record }
-  $newCount = 0; $removedCount = 0; $correctedCount = 0
-  foreach ($key in $newMap.Keys) { if (-not $oldMap.ContainsKey($key)) { $newCount++ } elseif ((Get-RecordSignature $oldMap[$key]) -ne (Get-RecordSignature $newMap[$key])) { $correctedCount++ } }
-  foreach ($key in $oldMap.Keys) { if (-not $newMap.ContainsKey($key)) { $removedCount++ } }
+  $trackingResult = Sync-FirstSeenForTransactions -ExistingRows $oldRefreshRows -IncomingRows @($replacementRows) -SeenDate $today.ToString('yyyy-MM-dd')
+  $replacementRows = @($trackingResult.Rows)
+  $newCount = [int]$trackingResult.NewCount; $removedCount = [int]$trackingResult.RemovedCount; $correctedCount = [int]$trackingResult.CorrectedCount
   $mappingChanged = $false
   foreach ($complex in $complexesToUpdate) {
     $oldMetadata = if ($complex.openApi) { $complex.openApi | ConvertTo-Json -Compress } else { '' }
@@ -553,7 +548,7 @@ try {
     if ($oldMetadata -ne $newMetadata) { $mappingChanged = $true; break }
   }
   $sourceMigration = ([string]$dataset.meta.lastRefresh.sourceUrl -ne $ApiEndpoint)
-  $dataChanged = ($newCount -gt 0 -or $removedCount -gt 0 -or $correctedCount -gt 0 -or $mappingChanged -or $sourceMigration)
+  $dataChanged = ($newCount -gt 0 -or $removedCount -gt 0 -or $correctedCount -gt 0 -or $mappingChanged -or $sourceMigration -or $firstSeenFieldsInitialized -gt 0)
   $runLog.newTransactions = $newCount; $runLog.cancelledOrRemoved = $removedCount; $runLog.correctedTransactions = $correctedCount
   $runLog.cancelledOrCorrected = $removedCount + $correctedCount; $runLog.dataChanged = $dataChanged
   $latestBefore = @($dataset.records | ForEach-Object { [string]$_.date } | Sort-Object | Select-Object -Last 1)
@@ -591,6 +586,8 @@ try {
   $metaMap['rangeEnd'] = $(if ($latestDate.Count) { $latestDate[0] } else { $refreshEnd }); $metaMap['generatedAt'] = $today.ToString('yyyy-MM-dd'); $metaMap['recordCount'] = $sortedRows.Count
   $metaMap['source'] = '국토교통부 실거래가 공식 OpenAPI · 서울 공개 아카이브 · 아실 월평균'; $metaMap['sourceUrl'] = $ApiEndpoint
   $metaMap['basis'] = "계약일 기준 · 공식 OpenAPI 최근 $RefreshMonths개월 전체 재조회 · 해제/취소 제외 · 공급면적 평형은 검증된 단지 타입 매핑 사용"
+  $trackingStartedAt = if ($dataset.meta.firstSeenTracking.startedAt) { [string]$dataset.meta.firstSeenTracking.startedAt } else { $today.ToString('yyyy-MM-dd') }
+  $metaMap['firstSeenTracking'] = [ordered]@{ field = 'first_seen_at'; startedAt = $trackingStartedAt; legacyValue = $null; basis = '우리 시스템이 거래를 처음 발견한 한국 날짜; 추적 도입 전 거래는 null' }
   $metaMap['lastRefresh'] = [ordered]@{ completedAt = $completedAt; months = $dealMonths; complexes = $complexesToUpdate.Count; regions = $lawdCodes.Count; validDownloaded = $runLog.validDownloaded; cancelledExcluded = $runLog.cancelledExcluded; sourceUrl = $ApiEndpoint; method = "official OpenAPI rolling $RefreshMonths-month full replacement" }
   $output = [ordered]@{ meta = $metaMap; complexes = $complexesOut; records = $sortedRows }
   $temporaryFile = $dataFile + '.tmp'

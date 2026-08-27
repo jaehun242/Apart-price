@@ -36,13 +36,13 @@
       <div class="home-hero" id="home-view">
         <div class="home-hero-copy">
           <p class="eyebrow">SEOUL · BUSAN · WEEKLY ACTUAL TRANSACTIONS</p>
-          <h1>이번 주<br><span>실거래</span></h1>
-          <p class="hero-description" id="home-range-note">한국시간 기준 이번 주 월요일부터 오늘까지 계약된 실제 거래입니다.</p>
+          <h1>이번 주 신규<br><span>실거래</span></h1>
+          <p class="hero-description" id="home-range-note">한국시간 기준 이번 주 월요일부터 오늘까지 우리 데이터에 처음 추가된 거래입니다.</p>
         </div>
-        <div class="home-hero-aside" aria-label="이번 주 실거래 요약">
-          <div class="home-stat"><span>이번 주 거래</span><strong id="home-week-count">0건</strong></div>
-          <div class="home-stat"><span>오늘 거래</span><strong id="home-today-count">0건</strong></div>
-          <div class="home-stat"><span>최근 계약일</span><strong id="home-latest-date">—</strong></div>
+        <div class="home-hero-aside" aria-label="이번 주 신규 실거래 요약">
+          <div class="home-stat"><span>이번 주 신규</span><strong id="home-week-count">0건</strong></div>
+          <div class="home-stat"><span>오늘 신규</span><strong id="home-today-count">0건</strong></div>
+          <div class="home-stat"><span>최근 수집일</span><strong id="home-latest-date">—</strong></div>
           <div class="home-stat"><span>조회 단지</span><strong id="home-complex-count">0개</strong></div>
         </div>
       </div>
@@ -78,13 +78,13 @@
         <div class="section-heading">
           <div>
             <p class="section-kicker">WEEKLY TRANSACTION LOG</p>
-            <h2 id="weekly-title">이번 주 실거래</h2>
+            <h2 id="weekly-title">이번 주 신규 실거래</h2>
           </div>
           <p class="section-note" id="weekly-range"></p>
         </div>
         <p class="weekly-status" id="weekly-status"></p>
         <div class="weekly-list" id="weekly-list"></div>
-        <button class="load-more weekly-toggle" id="weekly-toggle" type="button" hidden>이번 주 거래 전체보기 <span>＋</span></button>
+        <button class="load-more weekly-toggle" id="weekly-toggle" type="button" hidden>이번 주 신규 거래 전체보기 <span>＋</span></button>
       </section>
 
       <div id="detail-content" hidden>
@@ -193,7 +193,7 @@
           <article>
             <span>03</span>
             <h3>그래프 집계</h3>
-            <p>개별 실거래는 월별 중앙값, 부산 추가 단지의 과거 자료는 평형별 월평균을 표시합니다. 자동 갱신 뒤에는 최근 연도의 국토부 개별 실거래가 이어지며 무거래 구간은 임의로 채우지 않습니다.</p>
+            <p>개별 실거래는 월별 중앙값, 부산 추가 단지의 과거 자료는 평형별 월평균을 표시합니다. 메인의 ‘이번 주 신규 실거래’만 최초 수집일 기준이며, 가격 그래프·시세 계산·기간별 통계는 실제 계약일 기준을 유지합니다.</p>
           </article>
           <article>
             <span>04</span>
@@ -220,6 +220,7 @@
 
   <script src="data/transactions.js"></script>
   <script src="data/supply-areas.js"></script>
+  <script src="weekly-new-transactions.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

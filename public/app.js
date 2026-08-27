@@ -3,7 +3,8 @@
 
   const dataset = window.APT_ARCHIVE_DATA;
   const supplyDataset = window.APT_SUPPLY_AREA_DATA;
-  if (!dataset || !Array.isArray(dataset.complexes) || !Array.isArray(dataset.records) || !supplyDataset?.complexes) {
+  const weeklyNew = window.APT_WEEKLY_NEW;
+  if (!dataset || !Array.isArray(dataset.complexes) || !Array.isArray(dataset.records) || !supplyDataset?.complexes || !weeklyNew) {
     document.body.innerHTML = '<p style="padding:40px;font-family:sans-serif">통합 데이터 또는 공급면적 매핑 파일을 불러오지 못했습니다. data 폴더를 확인해 주세요.</p>';
     return;
   }
@@ -263,49 +264,34 @@
     const blob=new Blob(['\ufeff'+[headers,...body].map(row => row.map(csvEscape).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),anchor=document.createElement('a');
     anchor.href=url; anchor.download=`${item.city}_${item.district}_${displayName(item).replace(/[\\/:*?"<>|]/g,'')}_${isMonthly?'월평균가격':isHybrid?'가격자료':'실거래가'}.csv`; anchor.click(); URL.revokeObjectURL(url);
   }
-  function getKoreaWeekRange(now=new Date()) {
-    const parts=Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(now).filter(part => part.type!=='literal').map(part => [part.type,part.value]));
-    const today=`${parts.year}-${parts.month}-${parts.day}`;
-    const utcDate=new Date(Date.UTC(Number(parts.year),Number(parts.month)-1,Number(parts.day)));
-    const mondayOffset=(utcDate.getUTCDay()+6)%7;
-    utcDate.setUTCDate(utcDate.getUTCDate()-mondayOffset);
-    return {monday:utcDate.toISOString().slice(0,10),today};
-  }
-  function homeRows(now=new Date()) {
-    const {monday,today}=getKoreaWeekRange(now);
-    const actual=allRecords.filter(record => record.kind==='아파트 매매');
-    const sortLatest=(a,b) => b.date.localeCompare(a.date)||String(b.transactionId||'').localeCompare(String(a.transactionId||''));
-    const weekly=actual.filter(record => record.date>=monday&&record.date<=today).sort(sortLatest);
-    const recent=[...actual].sort(sortLatest);
-    return {monday,today,weekly,rows:weekly.length?weekly:recent,isFallback:weekly.length===0};
-  }
+  const getKoreaWeekRange=weeklyNew.getKoreaWeekRange;
+  function homeRows(now=new Date(),records=allRecords) { return weeklyNew.getWeeklyNewTransactions(records,now); }
   function renderHomeList(result) {
     const limit=state.homeExpanded?result.rows.length:25;
     const visible=result.rows.slice(0,limit);
     $('#weekly-list').innerHTML=visible.map(record => {
       const item=complexById.get(record.complexId); if (!item) return '';
-      return `<button class="weekly-card" type="button" data-complex-id="${escapeHtml(item.id)}" aria-label="${escapeHtml(displayName(item))} 상세 보기"><span class="weekly-place"><i>${escapeHtml(item.city)}</i>${escapeHtml(item.district)} · ${escapeHtml(displayName(item))}</span><span class="weekly-date ${record.py==null?'area-unresolved':''}">${formatSupplyPyeong(record)} · ${formatHomeDate(record.date)}</span><strong>${formatPrice(record.price)}</strong><span class="weekly-detail ${record.py==null?'area-unresolved':''}">${formatSupplyPyeong(record)} · 전용 ${record.area.toFixed(2)}㎡ · ${record.floor==null?'층 정보 없음':`${record.floor}층`}</span></button>`;
+      return `<button class="weekly-card" type="button" data-complex-id="${escapeHtml(item.id)}" aria-label="${escapeHtml(displayName(item))} 상세 보기"><span class="weekly-place"><i>${escapeHtml(item.city)}</i>${escapeHtml(item.district)} · ${escapeHtml(displayName(item))}</span><span class="weekly-date ${record.py==null?'area-unresolved':''}">${formatSupplyPyeong(record)} · 계약 ${formatHomeDate(record.date)}</span><strong>${formatPrice(record.price)}</strong><span class="weekly-detail ${record.py==null?'area-unresolved':''}">신규 ${formatHomeDate(record.first_seen_at)} · 전용 ${record.area.toFixed(2)}㎡ · ${record.floor==null?'층 정보 없음':`${record.floor}층`}</span></button>`;
     }).join('');
     $$('.weekly-card').forEach(card => card.addEventListener('click',() => selectComplex(card.dataset.complexId)));
     const toggle=$('#weekly-toggle');
     toggle.hidden=result.rows.length<=25;
-    const expandLabel=result.isFallback?'최근 거래 전체보기':'이번 주 거래 전체보기';
-    toggle.innerHTML=state.homeExpanded?'처음 25건만 보기 <span>−</span>':`${expandLabel} <span>＋</span>`;
+    toggle.innerHTML=state.homeExpanded?'처음 25건만 보기 <span>−</span>':'이번 주 신규 거래 전체보기 <span>＋</span>';
   }
   function renderHome() {
     state.selectedId=null;
     $('#home-view').hidden=false; $('#detail-hero').hidden=true;
     $('#home-content').hidden=false; $('#detail-content').hidden=true;
     $('#download-current-top').hidden=true;
-    const result=homeRows(),latest=result.rows[0]?.date;
-    $('#home-range-note').textContent=`한국시간 기준 ${formatHomeDate(result.monday)}부터 ${formatHomeDate(result.today)}까지 계약된 실제 거래입니다.`;
-    $('#weekly-range').textContent=`${result.monday} — ${result.today} · 계약일 기준`;
+    const result=homeRows(),latest=result.rows[0]?.first_seen_at;
+    $('#home-range-note').textContent=`한국시간 기준 ${formatHomeDate(result.monday)}부터 ${formatHomeDate(result.today)}까지 우리 데이터에 처음 추가된 거래입니다.`;
+    $('#weekly-range').textContent=`${result.monday} — ${result.today} · 최초 수집일 기준`;
     $('#home-week-count').textContent=`${won.format(result.weekly.length)}건`;
-    $('#home-today-count').textContent=`${won.format(result.weekly.filter(record => record.date===result.today).length)}건`;
+    $('#home-today-count').textContent=`${won.format(result.weekly.filter(record => record.first_seen_at===result.today).length)}건`;
     $('#home-latest-date').textContent=latest?formatHomeDate(latest):'—';
     $('#home-complex-count').textContent=`${won.format(complexes.length)}개`;
-    $('#weekly-status').textContent=result.isFallback?'이번 주 등록된 거래가 없어 최근 거래를 표시합니다.':`이번 주 등록된 실제 거래 ${won.format(result.weekly.length)}건을 최신 계약일부터 표시합니다.`;
-    $('#weekly-status').classList.toggle('is-fallback',result.isFallback);
+    $('#weekly-status').textContent=result.weekly.length?`이번 주 처음 수집된 실제 거래 ${won.format(result.weekly.length)}건을 최신 수집일부터 표시합니다.`:'이번 주에 처음 수집된 실제 거래가 없습니다.';
+    $('#weekly-status').classList.toggle('is-fallback',result.weekly.length===0);
     renderHomeList(result);
   }
   function renderAll() {
