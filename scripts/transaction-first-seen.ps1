@@ -103,6 +103,17 @@ function Get-StrongCorrectionKey {
   return @([string]$Record.complexId, [string]$Record.date, (Get-RecordAreaText $Record), (Get-RecordFloorText $Record), $dong) -join '|'
 }
 
+function Get-ExactComparableKey {
+  param($Record)
+  return @(
+    [string]$Record.complexId
+    [string]$Record.date
+    (Get-RecordAreaText $Record)
+    [string]$Record.price
+    (Get-RecordFloorText $Record)
+  ) -join '|'
+}
+
 function Get-LegacyCorrectionKey {
   param($Record)
   return @([string]$Record.complexId, [string]$Record.date, (Get-RecordAreaText $Record), (Get-RecordFloorText $Record)) -join '|'
@@ -183,6 +194,11 @@ function Sync-FirstSeenForTransactions {
   Match-ByKey `
     -OldKey { param($record) $property = $record.PSObject.Properties['tracking_key']; if ($property) { [string]$property.Value } } `
     -IncomingKey { param($record) [string]$record.tracking_key }
+
+  # Preserve discovery when a provider or transaction-ID algorithm changes but
+  # the visible transaction facts are identical. Multiset pairing keeps truly
+  # distinct duplicate contracts separate.
+  Match-ByKey -OldKey { param($record) Get-ExactComparableKey $record } -IncomingKey { param($record) Get-ExactComparableKey $record }
 
   Match-ByKey -OldKey { param($record) Get-StrongCorrectionKey $record } -IncomingKey { param($record) Get-StrongCorrectionKey $record }
 

@@ -587,7 +587,9 @@ try {
   $metaMap['source'] = '국토교통부 실거래가 공식 OpenAPI · 서울 공개 아카이브 · 아실 월평균'; $metaMap['sourceUrl'] = $ApiEndpoint
   $metaMap['basis'] = "계약일 기준 · 공식 OpenAPI 최근 $RefreshMonths개월 전체 재조회 · 해제/취소 제외 · 공급면적 평형은 검증된 단지 타입 매핑 사용"
   $trackingStartedAt = if ($dataset.meta.firstSeenTracking.startedAt) { [string]$dataset.meta.firstSeenTracking.startedAt } else { $today.ToString('yyyy-MM-dd') }
-  $metaMap['firstSeenTracking'] = [ordered]@{ field = 'first_seen_at'; startedAt = $trackingStartedAt; legacyValue = $null; basis = '우리 시스템이 거래를 처음 발견한 한국 날짜; 추적 도입 전 거래는 null' }
+  $firstSeenTrackingMap = [ordered]@{ field = 'first_seen_at'; startedAt = $trackingStartedAt; legacyValue = $null; basis = '우리 시스템이 거래를 처음 발견한 한국 날짜; 추적 도입 전 거래는 null' }
+  if ($dataset.meta.firstSeenTracking.historyBackfill) { $firstSeenTrackingMap['historyBackfill'] = $dataset.meta.firstSeenTracking.historyBackfill }
+  $metaMap['firstSeenTracking'] = $firstSeenTrackingMap
   $metaMap['lastRefresh'] = [ordered]@{ completedAt = $completedAt; months = $dealMonths; complexes = $complexesToUpdate.Count; regions = $lawdCodes.Count; validDownloaded = $runLog.validDownloaded; cancelledExcluded = $runLog.cancelledExcluded; sourceUrl = $ApiEndpoint; method = "official OpenAPI rolling $RefreshMonths-month full replacement" }
   $output = [ordered]@{ meta = $metaMap; complexes = $complexesOut; records = $sortedRows }
   $temporaryFile = $dataFile + '.tmp'

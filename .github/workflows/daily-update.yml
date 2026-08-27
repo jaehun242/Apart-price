@@ -69,6 +69,7 @@ jobs:
         run: |
           ./scripts/test-first-seen-tracking.ps1
           node ./scripts/test-weekly-new-transactions.cjs
+          node ./scripts/test-first-seen-history-backfill.cjs
 
       - name: Check MOLIT OpenAPI secret
         if: steps.freshness.outputs.should_run == 'true'

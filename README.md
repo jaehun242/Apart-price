@@ -23,6 +23,8 @@ GitHub Actions의 `Daily apartment transaction update` workflow가 한국시간 
 
 메인페이지의 **이번 주 신규 실거래**는 실제 계약일이 아니라 `first_seen_at`(우리 시스템의 최초 수집일)로 집계합니다. 가격 그래프·시세 계산·기간별 통계와 거래 카드에 표시하는 계약일은 계속 실제 계약일 기준입니다. 추적 도입 전 기존 거래는 `first_seen_at: null`로 초기화해 도입 주에 신규 거래로 잘못 집계되지 않도록 했습니다.
 
+최초 추적 도입 주(2026-08-24 시작)는 Git의 월요일 직전 데이터와 8월 26·27일 자동수집 스냅샷을 거래 추적키로 비교해 복원했습니다. 수집기 전환으로 바뀐 거래 ID는 기존 거래로 연결하고, 당시 처음 등장했으며 현재도 유효한 105건만 실제 최초 등장일을 기록했습니다. 거래별 근거는 `reports/weekly-first-seen-backfill-2026-08-24.md`에 보존합니다.
+
 ## 데이터 소스
 
 - 국토교통부 아파트 매매 실거래가 상세자료 공식 OpenAPI: `https://apis.data.go.kr/1613000/RTMSDataSvcAptTradeDev/getRTMSDataSvcAptTradeDev`
@@ -39,7 +41,9 @@ OpenAPI 키는 코드나 로그에 저장하지 않고 GitHub Actions의 `secret
 - `scripts/build-supply-area-map.ps1`: 실제 단지 면적 타입 조회·매핑·보고서 생성 프로그램
 - `scripts/test-openapi-updater.ps1`: 현재 저장된 OpenAPI 단지 식별자를 사용하는 재시도·매칭·취소·중복·원본 보호 통합 테스트
 - `scripts/transaction-first-seen.ps1`: 신규 거래 최초수집일 기록과 정정·재수집 연결 로직
+- `scripts/backfill-first-seen-from-git.cjs`: Git 데이터 스냅샷을 비교해 과거 최초수집일을 안전하게 복원하는 프로그램
 - `scripts/test-first-seen-tracking.ps1`: 기존 거래 초기화·신규·정정·중복·해제 처리 검증
+- `scripts/test-first-seen-history-backfill.cjs`: 수집기 ID 전환·정정·해제 포함 Git 이력 복원 검증
 - `scripts/test-weekly-new-transactions.cjs`: 메인페이지 최초수집일 기반 주간 필터 검증
 - `scripts/check-daily-refresh-needed.ps1`: 당일 성공 이력을 확인해 중복 API 호출을 막고 실패 시 후속 예약을 허용하는 프로그램
 - `scripts/test-refresh-gate.ps1`: 당일 성공·실패·수동 실행에 대한 자동 갱신 판단 테스트
