@@ -2,13 +2,22 @@ name: Daily apartment transaction update
 
 on:
   schedule:
-    - cron: "17 7 * * *"
+    - cron: "37 6 * * *"
       timezone: "Asia/Seoul"
-    - cron: "17 8 * * *"
+    - cron: "23 9 * * *"
+      timezone: "Asia/Seoul"
+    - cron: "41 12 * * *"
+      timezone: "Asia/Seoul"
+    - cron: "7 16 * * *"
+      timezone: "Asia/Seoul"
+    - cron: "29 19 * * *"
+      timezone: "Asia/Seoul"
+    - cron: "53 22 * * *"
       timezone: "Asia/Seoul"
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: write
 
 concurrency:
@@ -31,11 +40,31 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Decide whether another refresh is needed today
+        id: freshness
+        shell: pwsh
+        env:
+          GH_ACTIONS_TOKEN: ${{ github.token }}
+        run: |
+          ./scripts/check-daily-refresh-needed.ps1 `
+            -EventName '${{ github.event_name }}' `
+            -Repository '${{ github.repository }}' `
+            -CurrentRunId '${{ github.run_id }}' `
+            -GitHubToken $env:GH_ACTIONS_TOKEN `
+            -OutputPath $env:GITHUB_OUTPUT
+
+      - name: Test daily refresh gate
+        if: steps.freshness.outputs.should_run == 'true'
+        shell: pwsh
+        run: ./scripts/test-refresh-gate.ps1
+
       - name: Test updater safeguards
+        if: steps.freshness.outputs.should_run == 'true'
         shell: pwsh
         run: ./scripts/test-openapi-updater.ps1
 
       - name: Check MOLIT OpenAPI secret
+        if: steps.freshness.outputs.should_run == 'true'
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
@@ -45,6 +74,7 @@ jobs:
           'MOLIT_API_KEY is configured. The value is not printed.'
 
       - name: Refresh rolling six months from MOLIT OpenAPI
+        if: steps.freshness.outputs.should_run == 'true'
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
@@ -58,6 +88,7 @@ jobs:
 
       - name: Verify generated dataset and OpenAPI run
         id: verify
+        if: steps.freshness.outputs.should_run == 'true'
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
@@ -124,7 +155,7 @@ jobs:
           "@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
 
       - name: Refresh supply mappings and validate
-        if: steps.verify.outputs.changed == 'true'
+        if: steps.freshness.outputs.should_run == 'true' && steps.verify.outputs.changed == 'true'
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
@@ -136,7 +167,7 @@ jobs:
           node ./scripts/test-supply-area-map.mjs
 
       - name: Commit validated data and mappings
-        if: steps.verify.outputs.changed == 'true'
+        if: steps.freshness.outputs.should_run == 'true' && steps.verify.outputs.changed == 'true'
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
@@ -151,7 +182,7 @@ jobs:
 
       - name: Push and verify main
         id: push
-        if: steps.verify.outputs.changed == 'true'
+        if: steps.freshness.outputs.should_run == 'true' && steps.verify.outputs.changed == 'true'
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
@@ -165,7 +196,7 @@ jobs:
           "- GitHub push: **success** (`$localHead`)" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
 
       - name: Verify Netlify deployment and public data
-        if: steps.verify.outputs.changed == 'true'
+        if: steps.freshness.outputs.should_run == 'true' && steps.verify.outputs.changed == 'true'
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
@@ -201,14 +232,22 @@ jobs:
           throw "Netlify deployment was not verified after 10 minutes: $lastStatus"
 
       - name: Record no-change result
-        if: steps.verify.outputs.changed != 'true'
+        if: steps.freshness.outputs.should_run == 'true' && steps.verify.outputs.changed != 'true'
         shell: pwsh
         run: |
           "- GitHub push: **not needed (validated OpenAPI data had no change)**" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
           "- Netlify deployment: **not needed**" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
 
+      - name: Record already-refreshed result
+        if: steps.freshness.outputs.should_run != 'true'
+        shell: pwsh
+        run: |
+          "## Daily refresh skipped" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+          "- Reason: **a successful refresh already completed today**" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+          "- Successful run: **${{ steps.freshness.outputs.successful_run_id }}**" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+
       - name: Upload OpenAPI diagnostics
-        if: always()
+        if: always() && steps.freshness.outputs.should_run == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: molit-openapi-diagnostics-${{ github.run_id }}

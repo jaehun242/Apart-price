@@ -4,7 +4,7 @@
 
 ## 자동갱신
 
-GitHub Actions의 `Daily apartment transaction update` workflow가 한국시간 매일 오전 7시 17분과 8시 17분에 실행됩니다. 두 번째 실행은 첫 실행 실패 시 복구용이며, 데이터 변경이 없으면 커밋하지 않습니다. GitHub의 **Actions** 화면에서 `Run workflow`를 눌러 수동 실행할 수도 있습니다.
+GitHub Actions의 `Daily apartment transaction update` workflow가 한국시간 매일 06:37, 09:23, 12:41, 16:07, 19:29, 22:53에 실행을 시도합니다. 당일 성공 실행이 있으면 후속 예약은 국토부 API를 다시 호출하지 않고 정상 종료하며, 실패했거나 GitHub 예약이 누락된 경우 다음 시간대가 자동 복구를 시도합니다. 데이터 변경이 없으면 커밋하지 않습니다. GitHub Actions 실행 이력 확인에 일시적으로 실패하면 갱신을 생략하지 않고 실제 업데이트를 실행합니다. **Actions** 화면의 `Run workflow`를 누른 수동 실행은 당일 성공 여부와 관계없이 항상 실행됩니다.
 
 갱신 순서:
 
@@ -34,10 +34,12 @@ OpenAPI 키는 코드나 로그에 저장하지 않고 GitHub Actions의 `secret
 - `public/data/supply-areas.js`: 단지 + 전용면적별 실제 공급면적 평형 매핑
 - `reports/supply-area-verification.md`: 매핑률과 공급면적 확인 필요 타입 목록
 - `scripts/build-supply-area-map.ps1`: 실제 단지 면적 타입 조회·매핑·보고서 생성 프로그램
-- `scripts/test-openapi-updater.ps1`: OpenAPI 재시도·단지 매칭·취소·중복·원본 보호 통합 테스트
+- `scripts/test-openapi-updater.ps1`: 현재 저장된 OpenAPI 단지 식별자를 사용하는 재시도·매칭·취소·중복·원본 보호 통합 테스트
+- `scripts/check-daily-refresh-needed.ps1`: 당일 성공 이력을 확인해 중복 API 호출을 막고 실패 시 후속 예약을 허용하는 프로그램
+- `scripts/test-refresh-gate.ps1`: 당일 성공·실패·수동 실행에 대한 자동 갱신 판단 테스트
 - `scripts/test-supply-area-map.mjs`: 매핑 무결성과 필수 표본 검증
 - `scripts/update-data-github.ps1`: GitHub 서버용 수집·검증·저장 프로그램
-- `.github/workflows/daily-update.yml`: 매일 오전 7시 17분·8시 17분 및 수동 실행 설정
+- `.github/workflows/daily-update.yml`: 하루 6회 분산 예약·당일 중복 방지·수동 실행 설정
 - `netlify.toml`: Netlify 공개 폴더 설정
 
 API 키, 비밀번호, 개인 PC 경로, 로그, 백업, 임시파일은 저장소에 포함하지 않습니다.

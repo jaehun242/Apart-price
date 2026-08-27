@@ -19,6 +19,20 @@ function Get-FileHashText {
 try {
   [IO.Directory]::CreateDirectory($testDirectory) | Out-Null
   $beforeHash = Get-FileHashText $dataPath
+  $datasetText = [IO.File]::ReadAllText($dataPath, [Text.Encoding]::UTF8)
+  $dataset = (($datasetText -replace '^\s*window\.APT_ARCHIVE_DATA\s*=\s*', '' -replace ';\s*$', '') | ConvertFrom-Json)
+  $fixtureComplex = @($dataset.complexes)[0]
+  if (-not $fixtureComplex) { throw 'Fixture test requires at least one apartment complex.' }
+  $fixtureAptSeq = if ($fixtureComplex.openApi.aptSeq) { [string]$fixtureComplex.openApi.aptSeq } else { 'fixture-1' }
+  $fixtureAptName = if ($fixtureComplex.openApi.aptName) { [string]$fixtureComplex.openApi.aptName } else { [string]$fixtureComplex.name }
+  $fixtureLegalDong = if ($fixtureComplex.openApi.legalDong) { [string]$fixtureComplex.openApi.legalDong } else { 'fixture-dong' }
+  $fixtureJibun = if ($fixtureComplex.openApi.jibun) { [string]$fixtureComplex.openApi.jibun } else { '123' }
+  $fixtureRoadName = if ($fixtureComplex.openApi.roadName) { [string]$fixtureComplex.openApi.roadName } else { 'fixture-road' }
+  $fixtureAptSeq = [Security.SecurityElement]::Escape($fixtureAptSeq)
+  $fixtureAptName = [Security.SecurityElement]::Escape($fixtureAptName)
+  $fixtureLegalDong = [Security.SecurityElement]::Escape($fixtureLegalDong)
+  $fixtureJibun = [Security.SecurityElement]::Escape($fixtureJibun)
+  $fixtureRoadName = [Security.SecurityElement]::Escape($fixtureRoadName)
 
   $probe = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, 0)
   $probe.Start()
@@ -27,8 +41,8 @@ try {
 
   # A thread job keeps the local socket in the same process; process jobs cannot
   # reliably create listening sockets in the Windows GitHub Actions sandbox.
-  $serverJob = Start-ThreadJob -ArgumentList $port -ScriptBlock {
-    param([int]$Port)
+  $serverJob = Start-ThreadJob -ArgumentList $port, $fixtureAptSeq, $fixtureAptName, $fixtureLegalDong, $fixtureJibun, $fixtureRoadName -ScriptBlock {
+    param([int]$Port, [string]$AptSeq, [string]$AptName, [string]$LegalDong, [string]$Jibun, [string]$RoadName)
     $ErrorActionPreference = 'Stop'
     $listener = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, $Port)
     $listener.Start()
@@ -58,10 +72,10 @@ try {
   <header><resultCode>000</resultCode><resultMsg>OK</resultMsg></header>
   <body>
     <items>
-      <item><aptSeq>fixture-1</aptSeq><aptNm>에코델타호반써밋스마트시티</aptNm><umdNm>강동동</umdNm><jibun>123</jibun><roadNm>에코대로</roadNm><dealYear>$year</dealYear><dealMonth>$month</dealMonth><dealDay>20</dealDay><excluUseAr>84.9146</excluUseAr><dealAmount>55,000</dealAmount><floor>7</floor><aptDong>101</aptDong><dealingGbn>중개거래</dealingGbn><estateAgentSggNm>부산 강서구</estateAgentSggNm><rgstDate></rgstDate><cdealDay></cdealDay><cdealType></cdealType></item>
-      <item><aptSeq>fixture-1</aptSeq><aptNm>에코델타호반써밋스마트시티</aptNm><umdNm>강동동</umdNm><jibun>123</jibun><roadNm>에코대로</roadNm><dealYear>$year</dealYear><dealMonth>$month</dealMonth><dealDay>20</dealDay><excluUseAr>84.9146</excluUseAr><dealAmount>55,000</dealAmount><floor>7</floor><aptDong>101</aptDong><dealingGbn>중개거래</dealingGbn><estateAgentSggNm>부산 강서구</estateAgentSggNm><rgstDate></rgstDate><cdealDay></cdealDay><cdealType></cdealType></item>
-      <item><aptSeq>fixture-1</aptSeq><aptNm>에코델타호반써밋스마트시티</aptNm><umdNm>강동동</umdNm><jibun>123</jibun><roadNm>에코대로</roadNm><dealYear>$year</dealYear><dealMonth>$month</dealMonth><dealDay>18</dealDay><excluUseAr>59.9821</excluUseAr><dealAmount>42,000</dealAmount><floor>11</floor><aptDong>103</aptDong><dealingGbn>중개거래</dealingGbn><estateAgentSggNm>부산 강서구</estateAgentSggNm><rgstDate></rgstDate><cdealDay></cdealDay><cdealType></cdealType></item>
-      <item><aptSeq>fixture-1</aptSeq><aptNm>에코델타호반써밋스마트시티</aptNm><umdNm>강동동</umdNm><jibun>123</jibun><roadNm>에코대로</roadNm><dealYear>$year</dealYear><dealMonth>$month</dealMonth><dealDay>19</dealDay><excluUseAr>84.9146</excluUseAr><dealAmount>54,000</dealAmount><floor>5</floor><aptDong>102</aptDong><dealingGbn>중개거래</dealingGbn><estateAgentSggNm>부산 강서구</estateAgentSggNm><rgstDate></rgstDate><cdealDay>$year$('{0:D2}' -f $month)21</cdealDay><cdealType>O</cdealType></item>
+      <item><aptSeq>$AptSeq</aptSeq><aptNm>$AptName</aptNm><umdNm>$LegalDong</umdNm><jibun>$Jibun</jibun><roadNm>$RoadName</roadNm><dealYear>$year</dealYear><dealMonth>$month</dealMonth><dealDay>20</dealDay><excluUseAr>84.9146</excluUseAr><dealAmount>55,000</dealAmount><floor>7</floor><aptDong>101</aptDong><dealingGbn>중개거래</dealingGbn><estateAgentSggNm>부산 강서구</estateAgentSggNm><rgstDate></rgstDate><cdealDay></cdealDay><cdealType></cdealType></item>
+      <item><aptSeq>$AptSeq</aptSeq><aptNm>$AptName</aptNm><umdNm>$LegalDong</umdNm><jibun>$Jibun</jibun><roadNm>$RoadName</roadNm><dealYear>$year</dealYear><dealMonth>$month</dealMonth><dealDay>20</dealDay><excluUseAr>84.9146</excluUseAr><dealAmount>55,000</dealAmount><floor>7</floor><aptDong>101</aptDong><dealingGbn>중개거래</dealingGbn><estateAgentSggNm>부산 강서구</estateAgentSggNm><rgstDate></rgstDate><cdealDay></cdealDay><cdealType></cdealType></item>
+      <item><aptSeq>$AptSeq</aptSeq><aptNm>$AptName</aptNm><umdNm>$LegalDong</umdNm><jibun>$Jibun</jibun><roadNm>$RoadName</roadNm><dealYear>$year</dealYear><dealMonth>$month</dealMonth><dealDay>18</dealDay><excluUseAr>59.9821</excluUseAr><dealAmount>42,000</dealAmount><floor>11</floor><aptDong>103</aptDong><dealingGbn>중개거래</dealingGbn><estateAgentSggNm>부산 강서구</estateAgentSggNm><rgstDate></rgstDate><cdealDay></cdealDay><cdealType></cdealType></item>
+      <item><aptSeq>$AptSeq</aptSeq><aptNm>$AptName</aptNm><umdNm>$LegalDong</umdNm><jibun>$Jibun</jibun><roadNm>$RoadName</roadNm><dealYear>$year</dealYear><dealMonth>$month</dealMonth><dealDay>19</dealDay><excluUseAr>84.9146</excluUseAr><dealAmount>54,000</dealAmount><floor>5</floor><aptDong>102</aptDong><dealingGbn>중개거래</dealingGbn><estateAgentSggNm>부산 강서구</estateAgentSggNm><rgstDate></rgstDate><cdealDay>$year$('{0:D2}' -f $month)21</cdealDay><cdealType>O</cdealType></item>
     </items>
     <numOfRows>9999</numOfRows><pageNo>1</pageNo><totalCount>4</totalCount>
   </body>
