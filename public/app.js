@@ -271,7 +271,7 @@
     const visible=result.rows.slice(0,limit);
     $('#weekly-list').innerHTML=visible.map(record => {
       const item=complexById.get(record.complexId); if (!item) return '';
-      return `<button class="weekly-card" type="button" data-complex-id="${escapeHtml(item.id)}" aria-label="${escapeHtml(displayName(item))} 상세 보기"><span class="weekly-place"><i>${escapeHtml(item.city)}</i>${escapeHtml(item.district)} · ${escapeHtml(displayName(item))}</span><span class="weekly-date ${record.py==null?'area-unresolved':''}">${formatSupplyPyeong(record)} · 계약 ${formatHomeDate(record.date)}</span><strong>${formatPrice(record.price)}</strong><span class="weekly-detail ${record.py==null?'area-unresolved':''}">신규 ${formatHomeDate(record.first_seen_at)} · 전용 ${record.area.toFixed(2)}㎡ · ${record.floor==null?'층 정보 없음':`${record.floor}층`}</span></button>`;
+      return `<button class="weekly-card" type="button" data-complex-id="${escapeHtml(item.id)}" aria-label="${escapeHtml(displayName(item))} 상세 보기"><span class="weekly-place"><i>${escapeHtml(item.city)}</i>${escapeHtml(item.district)} · ${escapeHtml(displayName(item))}</span><span class="weekly-date ${record.py==null?'area-unresolved':''}">${formatSupplyPyeong(record)} · 계약 ${formatHomeDate(record.date)}</span><strong>${formatPrice(record.price)}</strong><span class="weekly-detail ${record.py==null?'area-unresolved':''}">신규 ${formatHomeDate(record.first_seen_at)} · 전용 ${record.area.toFixed(2)}㎡${record.py==null?'':` (${formatSupplyPyeong(record)})`} · ${record.floor==null?'층 정보 없음':`${record.floor}층`}</span></button>`;
     }).join('');
     $$('.weekly-card').forEach(card => card.addEventListener('click',() => selectComplex(card.dataset.complexId)));
     const toggle=$('#weekly-toggle');
