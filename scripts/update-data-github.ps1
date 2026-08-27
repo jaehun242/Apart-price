@@ -509,9 +509,12 @@ try {
       $_.catalogAddedAt -and @($existingActualByComplex[[string]$_.id]).Count -eq 0
     } | ForEach-Object { ([string]$_.id).Split('-')[1] } | Sort-Object -Unique)
   if ($newCatalogLawdCodes.Count -and $CatalogDiscoveryMonths -gt $RefreshMonths) {
-    $catalogDiscoveryMonths = @($RefreshMonths..($CatalogDiscoveryMonths - 1) | ForEach-Object { $currentMonth.AddMonths(-$_).ToString('yyyyMM') })
+    $catalogDiscoveryDealMonths = New-Object System.Collections.Generic.List[string]
+    for ($monthOffset = $RefreshMonths; $monthOffset -lt $CatalogDiscoveryMonths; $monthOffset++) {
+      $catalogDiscoveryDealMonths.Add($currentMonth.AddMonths(-$monthOffset).ToString('yyyyMM'))
+    }
     foreach ($lawdCode in $newCatalogLawdCodes) {
-      foreach ($dealMonth in $catalogDiscoveryMonths) { Ensure-OpenApiPair -LawdCode $lawdCode -DealYmd $dealMonth -Discovery }
+      foreach ($dealMonth in $catalogDiscoveryDealMonths) { Ensure-OpenApiPair -LawdCode $lawdCode -DealYmd $dealMonth -Discovery }
     }
   }
   if ($needsDiscovery.Count) { $groups = Get-ApiGroups }
