@@ -182,6 +182,7 @@ foreach ($complex in $complexes) {
   $complexId = [string]$complex.id
   $complexName = $(if ($complex.displayName) { [string]$complex.displayName } else { [string]$complex.name })
   $complexCode = Get-ComplexCode -Complex $complex
+  $pendingSourceCode = [string]$complex.supplyMapping -eq 'pending-source-code'
   $cachedProperty = if ($sourceCache) { $sourceCache.complexes.PSObject.Properties[$complexId] } else { $null }
   if ($cachedProperty) {
     Write-Host "[$index/$($complexes.Count)] $complexName ($complexCode, cached)"
@@ -189,6 +190,9 @@ foreach ($complex in $complexes) {
       FloorTypes = @($cachedProperty.Value.floorTypes)
       LabelTypes = @($cachedProperty.Value.labelTypes)
     }
+  } elseif ($pendingSourceCode) {
+    Write-Host "[$index/$($complexes.Count)] $complexName (supply source pending)"
+    $sourceTypes = [PSCustomObject]@{ FloorTypes = @(); LabelTypes = @() }
   } else {
     Write-Host "[$index/$($complexes.Count)] $complexName ($complexCode)"
     $html = Get-SourcePage -ComplexCode $complexCode
@@ -236,7 +240,7 @@ foreach ($complex in $complexes) {
     FloorTypes = $sourceTypes.FloorTypes.Count
     LabelTypes = $sourceTypes.LabelTypes.Count
   })
-  if (-not $cachedProperty -and $RequestDelayMs -gt 0 -and $index -lt $complexes.Count) { Start-Sleep -Milliseconds $RequestDelayMs }
+  if (-not $cachedProperty -and -not $pendingSourceCode -and $RequestDelayMs -gt 0 -and $index -lt $complexes.Count) { Start-Sleep -Milliseconds $RequestDelayMs }
 }
 
 $output = [ordered]@{

@@ -4,6 +4,7 @@ param(
   [string]$ApiKey = $env:MOLIT_API_KEY,
   [string]$ApiEndpoint = 'https://apis.data.go.kr/1613000/RTMSDataSvcAptTradeDev/getRTMSDataSvcAptTradeDev',
   [ValidateRange(3, 6)][int]$RefreshMonths = 6,
+  [ValidateRange(6, 60)][int]$CatalogDiscoveryMonths = 24,
   [int]$RequestDelayMs = 150,
   [ValidateRange(5, 60)][int]$RequestTimeoutSec = 40,
   [ValidateRange(1, 5)][int]$MaxRetries = 3,
@@ -77,7 +78,7 @@ function Normalize-ApartmentName {
 function Get-ComplexNameAliases {
   param($Complex)
   $values = New-Object System.Collections.Generic.List[string]
-  foreach ($name in @([string]$Complex.name, [string]$Complex.displayName)) {
+  foreach ($name in @([string]$Complex.name, [string]$Complex.displayName) + @($Complex.aliases)) {
     if ([string]::IsNullOrWhiteSpace($name)) { continue }
     $values.Add($name)
     $values.Add(($name -replace '\([^)]*\)', ''))
@@ -251,7 +252,7 @@ $runLog = [ordered]@{
   apiCalls = 0; apiAttempts = 0; complexesRequested = 0; complexesMatched = 0; unmatchedComplexes = @()
   validDownloaded = 0; cancelledExcluded = 0; duplicateRowsSkipped = 0; recordsBefore = 0; recordsAfter = 0
   newTransactions = 0; cancelledOrRemoved = 0; correctedTransactions = 0; cancelledOrCorrected = 0
-  latestContractDate = $null; firstSeenFieldsInitialized = 0; dataChanged = $false
+  latestContractDate = $null; firstSeenFieldsInitialized = 0; bootstrapTransactions = 0; dataChanged = $false
 }
 
 function Write-UpdateLog {
@@ -485,6 +486,12 @@ try {
   $groups = Get-ApiGroups
   $existingActualByComplex = @{}
   foreach ($complex in $complexesToUpdate) { $existingActualByComplex[[string]$complex.id] = @($dataset.records | Where-Object { $_.complexId -eq $complex.id -and $_.kind -eq '아파트 매매' }) }
+  $bootstrapComplexIds = New-Object 'System.Collections.Generic.HashSet[string]'
+  foreach ($complex in $complexesToUpdate) {
+    if ($complex.catalogAddedAt -and @($existingActualByComplex[[string]$complex.id]).Count -eq 0) {
+      [void]$bootstrapComplexIds.Add([string]$complex.id)
+    }
+  }
   $needsDiscovery = New-Object System.Collections.ArrayList
   foreach ($complex in $complexesToUpdate) {
     $result = Resolve-ComplexMapping -Complex $complex -Groups $groups -ExistingRows $existingActualByComplex[[string]$complex.id]
@@ -496,6 +503,15 @@ try {
       $lawdCode = ([string]$complex.id).Split('-')[1]
       $dealMonth = ([string]$latest[0].date).Substring(0, 7) -replace '-', ''
       Ensure-OpenApiPair -LawdCode $lawdCode -DealYmd $dealMonth -Discovery
+    }
+  }
+  $newCatalogLawdCodes = @($needsDiscovery | Where-Object {
+      $_.catalogAddedAt -and @($existingActualByComplex[[string]$_.id]).Count -eq 0
+    } | ForEach-Object { ([string]$_.id).Split('-')[1] } | Sort-Object -Unique)
+  if ($newCatalogLawdCodes.Count -and $CatalogDiscoveryMonths -gt $RefreshMonths) {
+    $catalogDiscoveryMonths = @($RefreshMonths..($CatalogDiscoveryMonths - 1) | ForEach-Object { $currentMonth.AddMonths(-$_).ToString('yyyyMM') })
+    foreach ($lawdCode in $newCatalogLawdCodes) {
+      foreach ($dealMonth in $catalogDiscoveryMonths) { Ensure-OpenApiPair -LawdCode $lawdCode -DealYmd $dealMonth -Discovery }
     }
   }
   if ($needsDiscovery.Count) { $groups = Get-ApiGroups }
@@ -539,7 +555,9 @@ try {
   $selectedSet = New-Object 'System.Collections.Generic.HashSet[string]'; foreach ($complex in $complexesToUpdate) { [void]$selectedSet.Add([string]$complex.id) }
   $oldRefreshRows = @($dataset.records | Where-Object { $selectedSet.Contains([string]$_.complexId) -and $_.kind -eq '아파트 매매' -and [string]$_.date -ge $refreshStart -and [string]$_.date -le $refreshEnd })
   $trackingResult = Sync-FirstSeenForTransactions -ExistingRows $oldRefreshRows -IncomingRows @($replacementRows) -SeenDate $today.ToString('yyyy-MM-dd')
+  $trackingResult = Protect-CatalogBootstrapTransactions -TrackingResult $trackingResult -BootstrapComplexIds @($bootstrapComplexIds)
   $replacementRows = @($trackingResult.Rows)
+  $bootstrapTransactions = [int]$trackingResult.BootstrapCount
   $newCount = [int]$trackingResult.NewCount; $removedCount = [int]$trackingResult.RemovedCount; $correctedCount = [int]$trackingResult.CorrectedCount
   $mappingChanged = $false
   foreach ($complex in $complexesToUpdate) {
@@ -550,6 +568,7 @@ try {
   $sourceMigration = ([string]$dataset.meta.lastRefresh.sourceUrl -ne $ApiEndpoint)
   $dataChanged = ($newCount -gt 0 -or $removedCount -gt 0 -or $correctedCount -gt 0 -or $mappingChanged -or $sourceMigration -or $firstSeenFieldsInitialized -gt 0)
   $runLog.newTransactions = $newCount; $runLog.cancelledOrRemoved = $removedCount; $runLog.correctedTransactions = $correctedCount
+  $runLog.bootstrapTransactions = $bootstrapTransactions
   $runLog.cancelledOrCorrected = $removedCount + $correctedCount; $runLog.dataChanged = $dataChanged
   $latestBefore = @($dataset.records | ForEach-Object { [string]$_.date } | Sort-Object | Select-Object -Last 1)
 

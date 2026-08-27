@@ -77,4 +77,15 @@ $cancelResult = Sync-FirstSeenForTransactions @((New-TestRecord -Id 'cancelled' 
 Assert-Equal $cancelResult.RemovedCount 1 'A cancelled/removed transaction was not removed.'
 Assert-Equal @($cancelResult.Rows).Count 0 'A cancelled/removed transaction remained in output.'
 
-Write-Host 'First-seen tracking tests passed: legacy migration, new discovery, exact re-fetch, price/date correction preservation, duplicate distinction, and cancellation removal.'
+$catalogHistory = New-TestRecord -Id 'catalog-history' -Date '2026-06-01'
+$catalogHistory.complexId = 'catalog-bootstrap'
+$genuineNew = New-TestRecord -Id 'genuine-new' -Date '2026-08-26'
+$genuineNew.complexId = 'existing-complex'
+$bootstrapResult = Sync-FirstSeenForTransactions @() @($catalogHistory, $genuineNew) '2026-08-26'
+$bootstrapResult = Protect-CatalogBootstrapTransactions $bootstrapResult @('catalog-bootstrap')
+Assert-Equal $bootstrapResult.BootstrapCount 1 'Catalog bootstrap reset count mismatch.'
+Assert-Equal $bootstrapResult.NewCount 1 'Catalog bootstrap protection suppressed a genuine new transaction.'
+if ($null -ne $bootstrapResult.Rows[0].first_seen_at) { throw 'Catalog bootstrap history must remain excluded from weekly-new.' }
+Assert-Equal $bootstrapResult.Rows[1].first_seen_at '2026-08-26' 'A genuine new transaction lost its discovery date during catalog bootstrap.'
+
+Write-Host 'First-seen tracking tests passed: legacy migration, new discovery, exact re-fetch, price/date correction preservation, duplicate distinction, cancellation removal, and catalog-bootstrap protection.'

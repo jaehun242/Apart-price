@@ -101,11 +101,11 @@
   function populateApartments(district,selectedId) {
     const city=$('#city-select').value;
     const items=complexes.filter(item => item.city===city&&item.district===district)
-      .sort((a,b) => Number(b.leader)-Number(a.leader)||displayName(a).localeCompare(displayName(b),'ko'));
+      .sort((a,b) => Number(b.featured)-Number(a.featured)||Number(b.leader)-Number(a.leader)||displayName(a).localeCompare(displayName(b),'ko'));
     const select=$('#apartment-select'); select.innerHTML='<option value="">아파트 선택</option>';
     items.forEach(item => {
       const option=document.createElement('option'); option.value=item.id;
-      option.textContent=`${item.leader?'★ ':''}${displayName(item)} · ${item.tags.join(' / ')}`;
+      option.textContent=`${item.featured||item.leader?'★ ':''}${displayName(item)} · ${(item.tags||[]).join(' / ')}`;
       select.appendChild(option);
     });
     select.value=items.some(item => item.id===selectedId) ? selectedId : '';

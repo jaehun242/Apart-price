@@ -1,6 +1,11 @@
 name: Daily apartment transaction update
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - config/additional-apartments.json
   schedule:
     - cron: "37 6 * * *"
       timezone: "Asia/Seoul"
@@ -61,7 +66,9 @@ jobs:
       - name: Test updater safeguards
         if: steps.freshness.outputs.should_run == 'true'
         shell: pwsh
-        run: ./scripts/test-openapi-updater.ps1
+        run: |
+          ./scripts/test-openapi-updater.ps1
+          node ./scripts/test-apartment-catalog.cjs
 
       - name: Test first-seen tracking and weekly-new filter
         if: steps.freshness.outputs.should_run == 'true'
@@ -80,6 +87,11 @@ jobs:
             throw 'Repository Secret MOLIT_API_KEY is not configured.'
           }
           'MOLIT_API_KEY is configured. The value is not printed.'
+
+      - name: Merge expanded apartment catalog
+        if: steps.freshness.outputs.should_run == 'true'
+        shell: pwsh
+        run: node ./scripts/sync-apartment-catalog.cjs
 
       - name: Refresh rolling six months from MOLIT OpenAPI
         if: steps.freshness.outputs.should_run == 'true'
@@ -159,6 +171,7 @@ jobs:
           - Cancelled rows excluded: **$($log.cancelledExcluded)**
           - Duplicate rows skipped: **$($log.duplicateRowsSkipped)**
           - New transactions: **$($log.newTransactions)**
+          - Catalog bootstrap transactions kept out of weekly-new: **$($log.bootstrapTransactions)**
           - Removed/cancelled: **$($log.cancelledOrRemoved)**
           - Corrected: **$($log.correctedTransactions)**
           - Latest contract date: **$($log.latestContractDate)**

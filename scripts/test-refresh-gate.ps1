@@ -32,8 +32,9 @@ try {
   Invoke-GateCase -Name 'scheduled-after-failure' -EventName 'schedule' -Runs @($todayFailure, $yesterdaySuccess) -CurrentRunId 200 -ExpectedShouldRun $true -ExpectedReason 'no-success-today'
   Invoke-GateCase -Name 'current-run-excluded' -EventName 'schedule' -Runs @([PSCustomObject]@{ id = 200; event = 'schedule'; conclusion = 'success'; updated_at = '2026-08-27T02:30:00Z' }) -CurrentRunId 200 -ExpectedShouldRun $true -ExpectedReason 'no-success-today'
   Invoke-GateCase -Name 'manual-always-runs' -EventName 'workflow_dispatch' -Runs @($todaySuccess) -CurrentRunId 200 -ExpectedShouldRun $true -ExpectedReason 'manual-dispatch'
+  Invoke-GateCase -Name 'catalog-change-always-runs' -EventName 'push' -Runs @($todaySuccess) -CurrentRunId 200 -ExpectedShouldRun $true -ExpectedReason 'catalog-change'
 
-  Write-Host 'Daily refresh gate tests passed: success skip, failed retry, current-run exclusion, and manual override.'
+  Write-Host 'Daily refresh gate tests passed: success skip, failed retry, current-run exclusion, manual override, and catalog-change override.'
 } finally {
   if (Test-Path -LiteralPath $testDirectory) { Remove-Item -LiteralPath $testDirectory -Recurse -Force }
 }

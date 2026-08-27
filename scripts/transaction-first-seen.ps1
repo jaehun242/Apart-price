@@ -235,3 +235,26 @@ function Sync-FirstSeenForTransactions {
     MatchedCount = $matchedOld.Count
   }
 }
+
+function Protect-CatalogBootstrapTransactions {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory = $true)]$TrackingResult,
+    [Parameter(Mandatory = $true)][AllowEmptyCollection()][string[]]$BootstrapComplexIds
+  )
+
+  $bootstrapSet = New-Object 'System.Collections.Generic.HashSet[string]'
+  foreach ($complexId in @($BootstrapComplexIds)) {
+    if (-not [string]::IsNullOrWhiteSpace([string]$complexId)) { [void]$bootstrapSet.Add([string]$complexId) }
+  }
+  $resetCount = 0
+  foreach ($record in @($TrackingResult.Rows)) {
+    if ($bootstrapSet.Contains([string]$record.complexId) -and (Get-FirstSeenPropertyValue $record)) {
+      Set-FirstSeenPropertyValue -Record $record -Value $null
+      $resetCount++
+    }
+  }
+  $TrackingResult.NewCount = [Math]::Max(0, [int]$TrackingResult.NewCount - $resetCount)
+  $TrackingResult | Add-Member -NotePropertyName BootstrapCount -NotePropertyValue $resetCount -Force
+  return $TrackingResult
+}

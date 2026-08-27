@@ -1,0 +1,174 @@
+{
+  "version": "2026-08-27",
+  "minimumPerDistrict": 5,
+  "selectionBasis": "서울·부산 각 구·군의 대표, 고가, 대단지, 신축 및 거래 활발 단지",
+  "complexes": [
+    {"id":"busan-26290-20106194","city":"부산","district":"남구","name":"오륙도에스케이뷰","displayName":"오륙도SK뷰","featured":true,"tags":["부산 랜드마크","사용자 요청"]},
+
+    {"id":"seoul-11680-catalog-001","city":"서울","district":"강남구","name":"디에이치퍼스티어아이파크","featured":true,"officialComplexCode":"1500071300","tags":["강남 대표","신축 대단지"]},
+    {"id":"seoul-11680-catalog-002","city":"서울","district":"강남구","name":"개포자이프레지던스","featured":true,"officialComplexCode":"1500070541","tags":["강남 대표","신축 대단지"]},
+    {"id":"seoul-11680-catalog-003","city":"서울","district":"강남구","name":"디에이치아너힐즈","tags":["강남 대표","신축"]},
+    {"id":"seoul-11680-catalog-004","city":"서울","district":"강남구","name":"개포래미안포레스트","tags":["강남 대표","신축"]},
+    {"id":"seoul-11680-catalog-005","city":"서울","district":"강남구","name":"은마","displayName":"은마아파트","tags":["강남 대표","재건축"]},
+    {"id":"seoul-11680-catalog-006","city":"서울","district":"강남구","name":"타워팰리스1","displayName":"타워팰리스 1차","tags":["강남 랜드마크"]},
+    {"id":"seoul-11680-catalog-007","city":"서울","district":"강남구","name":"아크로힐스논현","tags":["강남 대표","신축"]},
+
+    {"id":"seoul-11740-catalog-001","city":"서울","district":"강동구","name":"래미안솔베뉴","tags":["구 대표"]},
+    {"id":"seoul-11740-catalog-002","city":"서울","district":"강동구","name":"고덕센트럴아이파크","tags":["구 대표","신축"]},
+    {"id":"seoul-11740-catalog-003","city":"서울","district":"강동구","name":"강동롯데캐슬퍼스트","tags":["대단지"]},
+
+    {"id":"seoul-11305-catalog-001","city":"서울","district":"강북구","name":"래미안트리베라1단지","tags":["구 대표"]},
+    {"id":"seoul-11305-catalog-002","city":"서울","district":"강북구","name":"두산위브트레지움","tags":["구 대표","대단지"]},
+
+    {"id":"seoul-11500-catalog-001","city":"서울","district":"강서구","name":"마곡13단지힐스테이트마스터","tags":["마곡","신축"]},
+    {"id":"seoul-11500-catalog-002","city":"서울","district":"강서구","name":"우장산힐스테이트","tags":["구 대표","대단지"]},
+    {"id":"seoul-11500-catalog-003","city":"서울","district":"강서구","name":"강서한강자이","tags":["구 대표"]},
+
+    {"id":"seoul-11620-catalog-001","city":"서울","district":"관악구","name":"관악푸르지오","tags":["구 대표","대단지"]},
+    {"id":"seoul-11620-catalog-002","city":"서울","district":"관악구","name":"신림푸르지오","tags":["구 대표"]},
+
+    {"id":"seoul-11215-catalog-001","city":"서울","district":"광진구","name":"광장현대파크빌10차","tags":["광장동 대표"]},
+    {"id":"seoul-11215-catalog-002","city":"서울","district":"광진구","name":"광장현대5단지","tags":["광장동 대표"]},
+    {"id":"seoul-11215-catalog-003","city":"서울","district":"광진구","name":"자양한강현대","tags":["한강변"]},
+
+    {"id":"seoul-11530-catalog-001","city":"서울","district":"구로구","name":"신도림4차e-편한세상","tags":["신도림 대표"]},
+    {"id":"seoul-11530-catalog-002","city":"서울","district":"구로구","name":"신도림태영타운","tags":["신도림 대표","대단지"]},
+    {"id":"seoul-11530-catalog-003","city":"서울","district":"구로구","name":"고척아이파크","tags":["신축 대단지"]},
+
+    {"id":"seoul-11545-catalog-001","city":"서울","district":"금천구","name":"롯데캐슬골드파크4차","tags":["구 대표","신축"]},
+    {"id":"seoul-11545-catalog-002","city":"서울","district":"금천구","name":"남서울힐스테이트","tags":["구 대표","대단지"]},
+
+    {"id":"seoul-11350-catalog-001","city":"서울","district":"노원구","name":"포레나노원","tags":["구 대표","신축"]},
+    {"id":"seoul-11350-catalog-002","city":"서울","district":"노원구","name":"노원센트럴푸르지오","tags":["구 대표","신축"]},
+    {"id":"seoul-11350-catalog-003","city":"서울","district":"노원구","name":"미륭미성삼호3차","tags":["재건축","대단지"]},
+
+    {"id":"seoul-11320-catalog-001","city":"서울","district":"도봉구","name":"창동주공19단지","tags":["창동 대표","대단지"]},
+    {"id":"seoul-11320-catalog-002","city":"서울","district":"도봉구","name":"북한산코오롱하늘채","tags":["구 대표"]},
+
+    {"id":"seoul-11230-catalog-001","city":"서울","district":"동대문구","name":"래미안엘리니티","tags":["구 대표","신축"]},
+    {"id":"seoul-11230-catalog-002","city":"서울","district":"동대문구","name":"휘경자이디센시아","tags":["신축 대단지"]},
+    {"id":"seoul-11230-catalog-003","city":"서울","district":"동대문구","name":"답십리파크자이","tags":["구 대표"]},
+
+    {"id":"seoul-11590-catalog-001","city":"서울","district":"동작구","name":"흑석리버파크자이","tags":["흑석 대표","신축"]},
+    {"id":"seoul-11590-catalog-002","city":"서울","district":"동작구","name":"보라매SKVIEW","displayName":"보라매SK뷰","tags":["구 대표","신축"]},
+    {"id":"seoul-11590-catalog-003","city":"서울","district":"동작구","name":"e편한세상상도노빌리티","tags":["구 대표"]},
+
+    {"id":"seoul-11440-catalog-001","city":"서울","district":"마포구","name":"마포자이3차","tags":["마포 대표"]},
+    {"id":"seoul-11440-catalog-002","city":"서울","district":"마포구","name":"공덕자이","tags":["공덕 대표"]},
+    {"id":"seoul-11440-catalog-003","city":"서울","district":"마포구","name":"래미안공덕5차","tags":["공덕 대표"]},
+
+    {"id":"seoul-11410-catalog-001","city":"서울","district":"서대문구","name":"힐스테이트신촌","tags":["구 대표","신축"]},
+    {"id":"seoul-11410-catalog-002","city":"서울","district":"서대문구","name":"DMC래미안e편한세상","tags":["DMC","대단지"]},
+    {"id":"seoul-11410-catalog-003","city":"서울","district":"서대문구","name":"래미안루센티아","tags":["구 대표","신축"]},
+
+    {"id":"seoul-11650-catalog-001","city":"서울","district":"서초구","name":"반포자이","featured":true,"officialComplexCode":"20113618","tags":["서초 대표","대단지"]},
+    {"id":"seoul-11650-catalog-002","city":"서울","district":"서초구","name":"신반포자이","tags":["반포 대표"]},
+    {"id":"seoul-11650-catalog-003","city":"서울","district":"서초구","name":"디에이치반포라클라스","tags":["반포 대표","신축"]},
+    {"id":"seoul-11650-catalog-004","city":"서울","district":"서초구","name":"아크로리버뷰신반포","tags":["한강변","고가"]},
+    {"id":"seoul-11650-catalog-005","city":"서울","district":"서초구","name":"서초그랑자이","tags":["서초 대표","신축"]},
+
+    {"id":"seoul-11200-catalog-001","city":"서울","district":"성동구","name":"옥수파크힐스101동~116동","displayName":"옥수파크힐스","tags":["옥수 대표","대단지"]},
+    {"id":"seoul-11200-catalog-002","city":"서울","district":"성동구","name":"서울숲리버뷰자이","tags":["성동 대표","한강변"]},
+    {"id":"seoul-11200-catalog-003","city":"서울","district":"성동구","name":"e편한세상금호파크힐스","tags":["금호 대표","대단지"]},
+
+    {"id":"seoul-11290-catalog-001","city":"서울","district":"성북구","name":"장위자이레디언트","tags":["신축 대단지"]},
+    {"id":"seoul-11290-catalog-002","city":"서울","district":"성북구","name":"래미안장위퍼스트하이","tags":["장위 대표","대단지"]},
+    {"id":"seoul-11290-catalog-003","city":"서울","district":"성북구","name":"보문파크뷰자이","tags":["구 대표"]},
+
+    {"id":"seoul-11710-catalog-001","city":"서울","district":"송파구","name":"헬리오시티","featured":true,"tags":["송파 대표","대단지"]},
+    {"id":"seoul-11710-catalog-002","city":"서울","district":"송파구","name":"잠실주공5단지","tags":["잠실 대표","재건축"]},
+    {"id":"seoul-11710-catalog-003","city":"서울","district":"송파구","name":"트리지움","tags":["잠실 대표","대단지"]},
+    {"id":"seoul-11710-catalog-004","city":"서울","district":"송파구","name":"올림픽선수기자촌1단지","tags":["송파 대표","재건축"]},
+
+    {"id":"seoul-11470-catalog-001","city":"서울","district":"양천구","name":"목동신시가지1","displayName":"목동신시가지1단지","tags":["목동 대표","재건축"]},
+    {"id":"seoul-11470-catalog-002","city":"서울","district":"양천구","name":"목동신시가지2","displayName":"목동신시가지2단지","tags":["목동 대표","재건축"]},
+    {"id":"seoul-11470-catalog-003","city":"서울","district":"양천구","name":"목동센트럴아이파크위브1단지","tags":["신축 대단지"]},
+
+    {"id":"seoul-11560-catalog-001","city":"서울","district":"영등포구","name":"여의도자이","tags":["여의도 대표"]},
+    {"id":"seoul-11560-catalog-002","city":"서울","district":"영등포구","name":"래미안에스티움","tags":["신길 대표","대단지"]},
+    {"id":"seoul-11560-catalog-003","city":"서울","district":"영등포구","name":"신길센트럴자이","tags":["신길 대표","신축"]},
+
+    {"id":"seoul-11170-catalog-001","city":"서울","district":"용산구","name":"래미안첼리투스","tags":["용산 대표","한강변"]},
+    {"id":"seoul-11170-catalog-002","city":"서울","district":"용산구","name":"용산푸르지오써밋","tags":["용산 대표","고가"]},
+    {"id":"seoul-11170-catalog-003","city":"서울","district":"용산구","name":"한가람","tags":["이촌 대표","대단지"]},
+
+    {"id":"seoul-11380-catalog-001","city":"서울","district":"은평구","name":"은평스카이뷰자이","tags":["구 대표","신축"]},
+    {"id":"seoul-11380-catalog-002","city":"서울","district":"은평구","name":"북한산푸르지오","tags":["구 대표","대단지"]},
+    {"id":"seoul-11380-catalog-003","city":"서울","district":"은평구","name":"래미안베라힐즈","tags":["구 대표"]},
+
+    {"id":"seoul-11110-catalog-001","city":"서울","district":"종로구","name":"경희궁롯데캐슬","tags":["구 대표","신축"]},
+    {"id":"seoul-11110-catalog-002","city":"서울","district":"종로구","name":"광화문스페이스본(101동~105동)","displayName":"광화문스페이스본","tags":["광화문 대표"]},
+
+    {"id":"seoul-11140-catalog-001","city":"서울","district":"중구","name":"래미안하이베르","tags":["구 대표"]},
+    {"id":"seoul-11140-catalog-002","city":"서울","district":"중구","name":"청구e편한세상","tags":["구 대표","대단지"]},
+    {"id":"seoul-11140-catalog-003","city":"서울","district":"중구","name":"롯데캐슬베네치아","tags":["도심 대표"]},
+
+    {"id":"seoul-11260-catalog-001","city":"서울","district":"중랑구","name":"용마산하늘채","tags":["구 대표"]},
+    {"id":"seoul-11260-catalog-002","city":"서울","district":"중랑구","name":"한양수자인사가정파크","tags":["구 대표","신축"]},
+    {"id":"seoul-11260-catalog-003","city":"서울","district":"중랑구","name":"상봉프레미어스엠코","tags":["상봉 대표"]},
+
+    {"id":"busan-26440-catalog-001","city":"부산","district":"강서구","name":"명지대방노블랜드오션뷰1차","tags":["명지 대표"]},
+    {"id":"busan-26440-catalog-002","city":"부산","district":"강서구","name":"명지국제신도시삼정그린코아더베스트","tags":["명지 대표","신축"]},
+
+    {"id":"busan-26410-catalog-001","city":"부산","district":"금정구","name":"래미안장전","tags":["금정 대표","대단지"]},
+    {"id":"busan-26410-catalog-002","city":"부산","district":"금정구","name":"구서롯데캐슬골드2단지","tags":["구서 대표"]},
+    {"id":"busan-26410-catalog-003","city":"부산","district":"금정구","name":"금정산2차쌍용예가","tags":["구 대표","대단지"]},
+
+    {"id":"busan-26710-catalog-001","city":"부산","district":"기장군","name":"정관동일스위트1차","tags":["정관 대표","대단지"]},
+    {"id":"busan-26710-catalog-002","city":"부산","district":"기장군","name":"정관신도시롯데캐슬","tags":["정관 대표"]},
+    {"id":"busan-26710-catalog-003","city":"부산","district":"기장군","name":"일광한신더휴센트럴포레1단지","tags":["일광","신축"]},
+
+    {"id":"busan-26290-catalog-001","city":"부산","district":"남구","name":"대연힐스테이트푸르지오","featured":true,"tags":["남구 대표","대단지"]},
+    {"id":"busan-26290-catalog-002","city":"부산","district":"남구","name":"대연SKVIEWHills","displayName":"대연SK뷰힐스","tags":["남구 대표"]},
+    {"id":"busan-26290-catalog-003","city":"부산","district":"남구","name":"GS하이츠자이","tags":["남구 대표"]},
+    {"id":"busan-26290-catalog-004","city":"부산","district":"남구","name":"대연푸르지오클라센트1단지","tags":["신축 대단지"]},
+    {"id":"busan-26290-catalog-005","city":"부산","district":"남구","name":"대연디아이엘","displayName":"대연 디아이엘","tags":["신축 대단지"]},
+
+    {"id":"busan-26170-catalog-001","city":"부산","district":"동구","name":"부산항일동미라주더오션","tags":["북항","신축"]},
+    {"id":"busan-26170-catalog-002","city":"부산","district":"동구","name":"두산위브포세이돈2","tags":["동구 대표"]},
+
+    {"id":"busan-26260-catalog-001","city":"부산","district":"동래구","name":"사직쌍용예가","tags":["사직 대표","대단지"]},
+    {"id":"busan-26260-catalog-002","city":"부산","district":"동래구","name":"명륜2차아이파크1단지","tags":["동래 대표"]},
+    {"id":"busan-26260-catalog-003","city":"부산","district":"동래구","name":"힐스테이트명륜트라디움","tags":["동래 대표","신축"]},
+    {"id":"busan-26260-catalog-004","city":"부산","district":"동래구","name":"e편한세상동래명장1단지","tags":["신축 대단지"]},
+
+    {"id":"busan-26230-catalog-001","city":"부산","district":"부산진구","name":"포레나부산초읍","tags":["초읍 대표","신축"]},
+    {"id":"busan-26230-catalog-002","city":"부산","district":"부산진구","name":"시민공원삼정그린코아더베스트","tags":["시민공원","신축"]},
+    {"id":"busan-26230-catalog-003","city":"부산","district":"부산진구","name":"개금아이파크","tags":["구 대표","대단지"]},
+
+    {"id":"busan-26320-catalog-001","city":"부산","district":"북구","name":"백양디이스트(1단지)","displayName":"백양디이스트 1단지","tags":["신축 대단지"]},
+    {"id":"busan-26320-catalog-002","city":"부산","district":"북구","name":"화명동원로얄듀크","tags":["화명 대표"]},
+    {"id":"busan-26320-catalog-003","city":"부산","district":"북구","name":"만덕5휴먼시아","tags":["대단지"]},
+
+    {"id":"busan-26530-catalog-001","city":"부산","district":"사상구","name":"주례경동리인","tags":["주례 대표"]},
+    {"id":"busan-26530-catalog-002","city":"부산","district":"사상구","name":"사상구남역동원로얄듀크","tags":["구 대표","신축"]},
+
+    {"id":"busan-26380-catalog-001","city":"부산","district":"사하구","name":"다대동롯데캐슬몰운대","tags":["다대 대표","대단지"]},
+    {"id":"busan-26380-catalog-002","city":"부산","district":"사하구","name":"괴정한신더휴","tags":["괴정 대표","신축"]},
+    {"id":"busan-26380-catalog-003","city":"부산","district":"사하구","name":"하단SKVIEW","displayName":"하단SK뷰","tags":["하단 대표"]},
+
+    {"id":"busan-26140-catalog-001","city":"부산","district":"서구","name":"대신해모로센트럴아파트","displayName":"대신해모로센트럴","tags":["서구 대표","신축"]},
+    {"id":"busan-26140-catalog-002","city":"부산","district":"서구","name":"e편한세상송도더퍼스트비치","tags":["송도 대표","신축"]},
+    {"id":"busan-26140-catalog-003","city":"부산","district":"서구","name":"동대신역비스타동원아파트","displayName":"동대신역비스타동원","tags":["역세권","신축"]},
+
+    {"id":"busan-26500-catalog-001","city":"부산","district":"수영구","name":"광안자이","tags":["광안 대표","신축"]},
+    {"id":"busan-26500-catalog-002","city":"부산","district":"수영구","name":"쌍용예가디오션","tags":["광안 대표","고가"]},
+    {"id":"busan-26500-catalog-003","city":"부산","district":"수영구","name":"수영SKVIEW1단지","displayName":"수영SK뷰 1단지","tags":["수영 대표"]},
+    {"id":"busan-26500-catalog-004","city":"부산","district":"수영구","name":"e편한세상오션테라스3단지","tags":["민락 대표","신축"]},
+    {"id":"busan-26500-catalog-005","city":"부산","district":"수영구","name":"드파인광안","displayName":"드파인 광안","tags":["광안 신축"]},
+
+    {"id":"busan-26470-catalog-001","city":"부산","district":"연제구","name":"힐스테이트연산","tags":["연산 대표","대단지"]},
+    {"id":"busan-26470-catalog-002","city":"부산","district":"연제구","name":"연산자이","tags":["연산 대표"]},
+    {"id":"busan-26470-catalog-003","city":"부산","district":"연제구","name":"연산더샵","tags":["연산 대표"]},
+
+    {"id":"busan-26200-catalog-001","city":"부산","district":"영도구","name":"오션라이프에일린의뜰1단지","tags":["영도 신축","대단지"]},
+    {"id":"busan-26200-catalog-002","city":"부산","district":"영도구","name":"동삼그린힐","tags":["영도 대표","대단지"]},
+
+    {"id":"busan-26110-catalog-001","city":"부산","district":"중구","name":"롯데캐슬스카이","tags":["중구 대표"]},
+    {"id":"busan-26110-catalog-002","city":"부산","district":"중구","name":"보수허브센티움","tags":["중구 신축"]},
+
+    {"id":"busan-26350-catalog-001","city":"부산","district":"해운대구","name":"해운대힐스테이트위브","tags":["해운대 대표","대단지"]},
+    {"id":"busan-26350-catalog-002","city":"부산","district":"해운대구","name":"경남마리나","tags":["마린시티 대표","재건축"]},
+    {"id":"busan-26350-catalog-003","city":"부산","district":"해운대구","name":"해운대자이2차1단지","tags":["해운대 대표","신축"]}
+  ]
+}

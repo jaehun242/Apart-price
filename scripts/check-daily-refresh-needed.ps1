@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-  [Parameter(Mandatory = $true)][ValidateSet('schedule', 'workflow_dispatch')][string]$EventName,
+  [Parameter(Mandatory = $true)][ValidateSet('schedule', 'workflow_dispatch', 'push')][string]$EventName,
   [Parameter(Mandatory = $true)][string]$Repository,
   [string]$WorkflowFile = 'daily-update.yml',
   [long]$CurrentRunId = 0,
@@ -23,8 +23,8 @@ function Write-Decision {
   }
 }
 
-if ($EventName -eq 'workflow_dispatch') {
-  Write-Decision -ShouldRun $true -Reason 'manual-dispatch'
+if ($EventName -in @('workflow_dispatch', 'push')) {
+  Write-Decision -ShouldRun $true -Reason $(if ($EventName -eq 'push') { 'catalog-change' } else { 'manual-dispatch' })
   return
 }
 
