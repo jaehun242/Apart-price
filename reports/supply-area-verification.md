@@ -1,6 +1,6 @@
 # 공급면적 매핑 검증 보고서
 
-- 생성 시각: 2026-08-29T11:04:48.7668532+00:00
+- 생성 시각: 2026-08-29T12:00:29.3928724+00:00
 - 출처: 아실 단지 상세의 실제 평면 공급면적/전용면적 및 평형 라벨
 - 처리 단지: 261개
 - 매핑된 전용면적 값: 1343개 (61648건)
@@ -15,7 +15,7 @@
 | 래미안포레스티지1단지(장전동) | 3 | 0 | 21 | 1 |
 | 일광자이푸르지오2단지 | 7 | 0 | 7 | 3 |
 | 더비치푸르지오써밋 | 7 | 0 | 8 | 5 |
-| 더블유 (W) | 61 | 38 | 47 | 27 |
+| 용호동 W아파트 (더블유) | 61 | 38 | 47 | 27 |
 | 협성휴포레부산진역오션뷰 | 4 | 0 | 4 | 3 |
 | 사직롯데캐슬더클래식 | 8 | 0 | 8 | 5 |
 | 가야롯데캐슬골드아너 | 5 | 0 | 6 | 5 |
@@ -38,10 +38,10 @@
 | 마린시티자이 | 4 | 0 | 4 | 2 |
 | 센텀두산위브 | 11 | 0 | 8 | 7 |
 | 센텀센시빌 | 2 | 0 | 0 | 1 |
-| 엘시티 | 3 | 0 | 2 | 4 |
-| 해운대 I PARK | 100 | 27 | 92 | 83 |
+| 해운대 엘시티 | 3 | 0 | 2 | 4 |
+| 해운대 아이파크 | 100 | 27 | 92 | 83 |
 | 해운대경동제이드 | 14 | 1 | 6 | 7 |
-| 해운대두산위브더제니스 | 15 | 0 | 15 | 14 |
+| 해운대 두산위브더제니스 | 15 | 0 | 15 | 14 |
 | 래미안대치팰리스 | 14 | 5 | 18 | 12 |
 | 올림픽파크포레온 | 12 | 0 | 28 | 12 |
 | 꿈의숲해링턴플레이스 | 11 | 0 | 11 | 7 |
@@ -68,7 +68,7 @@
 | 서울역센트럴자이 | 12 | 0 | 12 | 7 |
 | 사가정센트럴아이파크 | 7 | 0 | 6 | 4 |
 | 도곡렉슬 | 20 | 4 | 13 | 6 |
-| 현대14차(203,204,205,206동) | 1 | 2 | 4 | 7 |
+| 압구정 현대14차 | 1 | 2 | 4 | 7 |
 | 고덕그라시움 | 25 | 0 | 22 | 9 |
 | 고덕아르테온 | 8 | 0 | 9 | 3 |
 | 북서울자이폴라리스(1단지) | 2 | 0 | 12 | 5 |
@@ -295,75 +295,75 @@
 
 | 단지 | 전용면적㎡ | 레코드 수 | 확인 출처 |
 |---|---:|---:|---|
-| 더블유 (W) | 6 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 28.2752 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 40.28 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 99.9068 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 108.1436 | 8 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 111.8999 | 65 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 115.0115 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 117.2808 | 21 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 117.385 | 4 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 122.9186 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 124.3428 | 12 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 130.1249 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 130.3706 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 131.126 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 131.9127 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 133.6994 | 4 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 134.478 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 134.5204 | 2 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 138.4091 | 2 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 143.0033 | 2 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 143.478 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 143.8968 | 13 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 144.0633 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 144.7381 | 5 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 156.7612 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 157.6507 | 2 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 161.6045 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 164.5325 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 166.4125 | 2 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 171.1947 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 177.662 | 3 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 187.9022 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 188.096 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 189.4117 | 3 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 198.8497 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 216.5878 | 5 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 241.1244 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
-| 더블유 (W) | 286.3985 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 6 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 28.2752 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 40.28 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 99.9068 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 108.1436 | 8 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 111.8999 | 65 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 115.0115 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 117.2808 | 21 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 117.385 | 4 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 122.9186 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 124.3428 | 12 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 130.1249 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 130.3706 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 131.126 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 131.9127 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 133.6994 | 4 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 134.478 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 134.5204 | 2 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 138.4091 | 2 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 143.0033 | 2 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 143.478 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 143.8968 | 13 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 144.0633 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 144.7381 | 5 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 156.7612 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 157.6507 | 2 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 161.6045 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 164.5325 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 166.4125 | 2 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 171.1947 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 177.662 | 3 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 187.9022 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 188.096 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 189.4117 | 3 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 198.8497 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 216.5878 | 5 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 241.1244 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
+| 용호동 W아파트 (더블유) | 286.3985 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20362232) |
 | 더샵남천프레스티지 | 39.365 | 57 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20444528) |
 | 삼익비치 | 61.09 | 178 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=5222) |
 | 레이카운티(2단지) | 101.6538 | 11 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20455647) |
 | 레이카운티(2단지) | 101.8683 | 8 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20455647) |
-| 해운대 I PARK | 93.997 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
-| 해운대 I PARK | 94.112 | 2 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
-| 해운대 I PARK | 94.172 | 8 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
-| 해운대 I PARK | 100.463 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
-| 해운대 I PARK | 110.123 | 9 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
-| 해운대 I PARK | 110.152 | 9 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
-| 해운대 I PARK | 111.616 | 2 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
-| 해운대 I PARK | 111.906 | 2 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
-| 해운대 I PARK | 117.407 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
-| 해운대 I PARK | 124.721 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
-| 해운대 I PARK | 126.368 | 6 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
-| 해운대 I PARK | 146.2 | 2 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
-| 해운대 I PARK | 150.535 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
-| 해운대 I PARK | 154.622 | 15 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
-| 해운대 I PARK | 156.504 | 4 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
-| 해운대 I PARK | 156.508 | 4 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
-| 해운대 I PARK | 160.655 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
-| 해운대 I PARK | 161.604 | 2 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
-| 해운대 I PARK | 161.661 | 3 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
-| 해운대 I PARK | 165.665 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
-| 해운대 I PARK | 177.758 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
-| 해운대 I PARK | 179.475 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
-| 해운대 I PARK | 179.704 | 7 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
-| 해운대 I PARK | 184.367 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
-| 해운대 I PARK | 200.303 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
-| 해운대 I PARK | 202.037 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
-| 해운대 I PARK | 202.642 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
+| 해운대 아이파크 | 93.997 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
+| 해운대 아이파크 | 94.112 | 2 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
+| 해운대 아이파크 | 94.172 | 8 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
+| 해운대 아이파크 | 100.463 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
+| 해운대 아이파크 | 110.123 | 9 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
+| 해운대 아이파크 | 110.152 | 9 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
+| 해운대 아이파크 | 111.616 | 2 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
+| 해운대 아이파크 | 111.906 | 2 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
+| 해운대 아이파크 | 117.407 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
+| 해운대 아이파크 | 124.721 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
+| 해운대 아이파크 | 126.368 | 6 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
+| 해운대 아이파크 | 146.2 | 2 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
+| 해운대 아이파크 | 150.535 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
+| 해운대 아이파크 | 154.622 | 15 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
+| 해운대 아이파크 | 156.504 | 4 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
+| 해운대 아이파크 | 156.508 | 4 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
+| 해운대 아이파크 | 160.655 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
+| 해운대 아이파크 | 161.604 | 2 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
+| 해운대 아이파크 | 161.661 | 3 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
+| 해운대 아이파크 | 165.665 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
+| 해운대 아이파크 | 177.758 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
+| 해운대 아이파크 | 179.475 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
+| 해운대 아이파크 | 179.704 | 7 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
+| 해운대 아이파크 | 184.367 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
+| 해운대 아이파크 | 200.303 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
+| 해운대 아이파크 | 202.037 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
+| 해운대 아이파크 | 202.642 | 1 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20145382) |
 | 해운대경동제이드 | 164.3474 | 14 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20170729) |
 | 래미안대치팰리스 | 91.89 | 13 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20325153) |
 | 래미안대치팰리스 | 91.91 | 14 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20325153) |
@@ -392,8 +392,8 @@
 | 도곡렉슬 | 119.891 | 147 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20027111) |
 | 도곡렉슬 | 120.823 | 127 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20027111) |
 | 도곡렉슬 | 120.8233 | 17 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20027111) |
-| 현대14차(203,204,205,206동) | 84.56 | 3 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=51427) |
-| 현대14차(203,204,205,206동) | 84.98 | 70 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=51427) |
+| 압구정 현대14차 | 84.56 | 3 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=51427) |
+| 압구정 현대14차 | 84.98 | 70 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=51427) |
 | 흑석한강센트레빌 | 84.84 | 176 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20136192) |
 | 흑석한강푸르지오 | 84.98 | 245 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20165080) |
 | 아크로리버파크 | 84.97 | 84 | [아실 단지정보](https://asil.kr/app/apt_info.jsp?os=pc&apt=20345416) |
