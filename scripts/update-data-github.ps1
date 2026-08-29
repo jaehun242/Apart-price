@@ -249,7 +249,8 @@ $runLog = [ordered]@{
   status = 'running'; startedAt = $startedAt.ToString('o'); sourceUrl = $ApiEndpoint; apiKeyRecognized = $false
   refreshMonths = $RefreshMonths; refreshStart = $null; refreshEnd = $null; regionsRequested = 0
   basePairsRequested = 0; discoveryPairsRequested = 0; pairsRequested = 0; pairsCompleted = 0
-  apiCalls = 0; apiAttempts = 0; complexesRequested = 0; complexesMatched = 0; unmatchedComplexes = @()
+  apiCalls = 0; apiAttempts = 0; pairsFailed = 0; discoveryPairFailures = @()
+  complexesRequested = 0; complexesMatched = 0; complexesDeferred = 0; criticalUnmatched = 0; unmatchedComplexes = @()
   validDownloaded = 0; cancelledExcluded = 0; duplicateRowsSkipped = 0; recordsBefore = 0; recordsAfter = 0
   newTransactions = 0; cancelledOrRemoved = 0; correctedTransactions = 0; cancelledOrCorrected = 0
   latestContractDate = $null; firstSeenFieldsInitialized = 0; bootstrapTransactions = 0; dataChanged = $false
@@ -338,6 +339,30 @@ function Ensure-OpenApiPair {
   $runLog.pairsCompleted++
 }
 
+function Ensure-OptionalDiscoveryPair {
+  param([Parameter(Mandatory = $true)][string]$LawdCode, [Parameter(Mandatory = $true)][string]$DealYmd)
+  try {
+    Ensure-OpenApiPair -LawdCode $LawdCode -DealYmd $DealYmd -Discovery
+  } catch {
+    $runLog.pairsFailed++
+    $message = Protect-ApiKey $_.Exception.Message
+    $runLog.discoveryPairFailures = @($runLog.discoveryPairFailures) + @([PSCustomObject]@{
+        lawdCode = $LawdCode
+        dealYmd = $DealYmd
+        error = $message
+      })
+    Write-Warning "Optional catalog discovery failed for $LawdCode/$DealYmd; the normal rolling refresh will continue: $message"
+  }
+}
+
+function Test-CatalogDiscoveryDue {
+  param($Complex, [DateTimeOffset]$Today)
+  if (-not $Complex.openApiDiscovery -or -not $Complex.openApiDiscovery.nextAttempt) { return $true }
+  $nextAttempt = [DateTime]::MinValue
+  if (-not [DateTime]::TryParseExact([string]$Complex.openApiDiscovery.nextAttempt, 'yyyy-MM-dd', [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::None, [ref]$nextAttempt)) { return $true }
+  return $Today.Date -ge $nextAttempt.Date
+}
+
 function Get-ApiGroups {
   $groups = @{}
   foreach ($pairRows in $script:pairCache.Values) {
@@ -418,7 +443,7 @@ function Write-MatchReport {
   foreach ($row in @($Rows | Sort-Object ComplexName)) { $lines.Add("| $($row.ComplexName) | $($row.LawdCode) | $($row.AptName) | $($row.LegalDong) | $($row.Jibun) | $($row.AptSeq) | $($row.Method) |") }
   if (@($Unmatched).Count) {
     $lines.Add(''); $lines.Add('## OpenAPI 매칭 확인 필요'); $lines.Add('')
-    foreach ($item in @($Unmatched)) { $lines.Add("- $($item.Name) (`$($item.Id)`): $($item.Reason)") }
+    foreach ($item in @($Unmatched)) { $lines.Add("- $($item.Name) (`$($item.Id)`) [$($item.Disposition)]: $($item.Reason)") }
   }
   [IO.File]::WriteAllLines($matchReportFile, $lines, $Utf8NoBom)
 }
@@ -505,40 +530,102 @@ try {
       Ensure-OpenApiPair -LawdCode $lawdCode -DealYmd $dealMonth -Discovery
     }
   }
-  $newCatalogLawdCodes = @($needsDiscovery | Where-Object {
-      $_.catalogAddedAt -and @($existingActualByComplex[[string]$_.id]).Count -eq 0
-    } | ForEach-Object { ([string]$_.id).Split('-')[1] } | Sort-Object -Unique)
+  $catalogDiscoveryCandidates = @($needsDiscovery | Where-Object {
+      $_.catalogAddedAt -and
+      @($existingActualByComplex[[string]$_.id]).Count -eq 0 -and
+      (Test-CatalogDiscoveryDue -Complex $_ -Today $today)
+    })
+  $newCatalogLawdCodes = @($catalogDiscoveryCandidates | ForEach-Object {
+      ([string]$_.id).Split('-')[1]
+    } | Sort-Object -Unique)
+  $catalogDiscoveryAttemptedIds = New-Object 'System.Collections.Generic.HashSet[string]'
   if ($newCatalogLawdCodes.Count -and $CatalogDiscoveryMonths -gt $RefreshMonths) {
     $catalogDiscoveryDealMonths = New-Object System.Collections.Generic.List[string]
     for ($monthOffset = $RefreshMonths; $monthOffset -lt $CatalogDiscoveryMonths; $monthOffset++) {
       $catalogDiscoveryDealMonths.Add($currentMonth.AddMonths(-$monthOffset).ToString('yyyyMM'))
     }
     foreach ($lawdCode in $newCatalogLawdCodes) {
-      foreach ($dealMonth in $catalogDiscoveryDealMonths) { Ensure-OpenApiPair -LawdCode $lawdCode -DealYmd $dealMonth -Discovery }
+      foreach ($complex in @($needsDiscovery | Where-Object {
+            $_.catalogAddedAt -and
+            @($existingActualByComplex[[string]$_.id]).Count -eq 0 -and
+            ([string]$_.id).Split('-')[1] -eq $lawdCode
+          })) {
+        [void]$catalogDiscoveryAttemptedIds.Add([string]$complex.id)
+      }
+      foreach ($dealMonth in $catalogDiscoveryDealMonths) { Ensure-OptionalDiscoveryPair -LawdCode $lawdCode -DealYmd $dealMonth }
     }
   }
   if ($needsDiscovery.Count) { $groups = Get-ApiGroups }
 
-  $mappingByComplex = @{}; $matchRows = New-Object System.Collections.ArrayList; $unmatched = New-Object System.Collections.ArrayList
+  $complexById = @{}; foreach ($complex in $complexesToUpdate) { $complexById[[string]$complex.id] = $complex }
+  $mappingByComplex = @{}; $unmatchedById = @{}
   foreach ($complex in $complexesToUpdate) {
     $result = Resolve-ComplexMapping -Complex $complex -Groups $groups -ExistingRows $existingActualByComplex[[string]$complex.id]
-    if (-not $result.Success) { [void]$unmatched.Add([PSCustomObject]@{ Id = [string]$complex.id; Name = [string]$complex.name; Reason = $result.Reason }); continue }
+    if (-not $result.Success) {
+      $unmatchedById[[string]$complex.id] = [PSCustomObject]@{ Id = [string]$complex.id; Name = [string]$complex.name; Reason = $result.Reason }
+      continue
+    }
     $metadata = New-OpenApiMetadata -Complex $complex -Identity $result.Identity -Method $result.Method -Groups $groups
     $mappingByComplex[[string]$complex.id] = $metadata
-    [void]$matchRows.Add([PSCustomObject]@{ ComplexName = [string]$complex.name; LawdCode = $metadata.lawdCode; AptName = $metadata.aptName; LegalDong = $metadata.legalDong; Jibun = $metadata.jibun; AptSeq = $metadata.aptSeq; Method = $metadata.matchedBy })
   }
-  $identityOwners = @{}
+
+  $identityMembers = @{}
   foreach ($entry in $mappingByComplex.GetEnumerator()) {
     $identity = [string]$entry.Value.identityKey
-    if ($identityOwners.ContainsKey($identity)) { [void]$unmatched.Add([PSCustomObject]@{ Id = $entry.Key; Name = $entry.Key; Reason = "API identity also matched $($identityOwners[$identity]): $identity" }) }
-    else { $identityOwners[$identity] = $entry.Key }
+    if (-not $identityMembers.ContainsKey($identity)) { $identityMembers[$identity] = New-Object System.Collections.ArrayList }
+    [void]$identityMembers[$identity].Add([string]$entry.Key)
   }
-  $runLog.complexesMatched = $mappingByComplex.Count - @($unmatched).Count; $runLog.unmatchedComplexes = @($unmatched)
+  foreach ($identity in @($identityMembers.Keys)) {
+    $members = @($identityMembers[$identity])
+    if ($members.Count -le 1) { continue }
+    $established = @($members | Where-Object {
+        @($existingActualByComplex[$_]).Count -gt 0 -or -not $complexById[$_].catalogAddedAt
+      })
+    $winner = if ($established.Count -eq 1) { [string]$established[0] } else { '' }
+    foreach ($complexId in $members) {
+      if ($winner -and $complexId -eq $winner) { continue }
+      [void]$mappingByComplex.Remove($complexId)
+      $unmatchedById[$complexId] = [PSCustomObject]@{
+        Id = $complexId
+        Name = [string]$complexById[$complexId].name
+        Reason = $(if ($winner) { "API identity is already owned by established complex $winner`: $identity" } else { "API identity matched multiple complexes and has no unique established owner: $identity" })
+      }
+    }
+  }
+
+  $unmatched = New-Object System.Collections.ArrayList
+  foreach ($item in @($unmatchedById.Values | Sort-Object Id)) {
+    $complex = $complexById[[string]$item.Id]
+    $deferred = [bool]($complex.catalogAddedAt -and @($existingActualByComplex[[string]$item.Id]).Count -eq 0)
+    [void]$unmatched.Add([PSCustomObject]@{
+        Id = [string]$item.Id
+        Name = [string]$item.Name
+        Reason = [string]$item.Reason
+        Disposition = $(if ($deferred) { 'deferred-new-catalog' } else { 'critical' })
+      })
+  }
+  $deferredUnmatched = @($unmatched | Where-Object { $_.Disposition -eq 'deferred-new-catalog' })
+  $criticalUnmatched = @($unmatched | Where-Object { $_.Disposition -eq 'critical' })
+  $runLog.complexesMatched = $mappingByComplex.Count
+  $runLog.complexesDeferred = $deferredUnmatched.Count
+  $runLog.criticalUnmatched = $criticalUnmatched.Count
+  $runLog.unmatchedComplexes = @($unmatched)
+
+  $matchRows = New-Object System.Collections.ArrayList
+  foreach ($complex in $complexesToUpdate) {
+    if (-not $mappingByComplex.ContainsKey([string]$complex.id)) { continue }
+    $metadata = $mappingByComplex[[string]$complex.id]
+    [void]$matchRows.Add([PSCustomObject]@{ ComplexName = [string]$complex.name; LawdCode = $metadata.lawdCode; AptName = $metadata.aptName; LegalDong = $metadata.legalDong; Jibun = $metadata.jibun; AptSeq = $metadata.aptSeq; Method = $metadata.matchedBy })
+  }
   Write-MatchReport -Rows $matchRows -Unmatched $unmatched
-  if ($unmatched.Count -gt 0 -or $runLog.complexesMatched -ne $runLog.complexesRequested) { throw "OpenAPI complex matching failed for $($unmatched.Count) complexes. See $matchReportFile" }
+  if (($runLog.complexesMatched + $unmatched.Count) -ne $runLog.complexesRequested) { throw 'Internal matching accounting error.' }
+  if ($criticalUnmatched.Count -gt 0) { throw "OpenAPI matching failed for $($criticalUnmatched.Count) established complexes. See $matchReportFile" }
+  if ($runLog.complexesMatched -le 0) { throw 'OpenAPI matching returned no refreshable complexes.' }
+
+  $complexesToRefresh = @($complexesToUpdate | Where-Object { $mappingByComplex.ContainsKey([string]$_.id) })
 
   $replacementRows = New-Object System.Collections.ArrayList; $refreshStats = @{}
-  foreach ($complex in $complexesToUpdate) {
+  foreach ($complex in $complexesToRefresh) {
     $metadata = $mappingByComplex[[string]$complex.id]; $seen = New-Object 'System.Collections.Generic.HashSet[string]'; $valid = 0; $cancelled = 0
     foreach ($dealMonth in $dealMonths) {
       $lawdCode = ([string]$complex.id).Split('-')[1]
@@ -552,10 +639,10 @@ try {
     $refreshStats[[string]$complex.id] = [PSCustomObject]@{ Valid = $valid; Cancelled = $cancelled }
     $runLog.validDownloaded += $valid; $runLog.cancelledExcluded += $cancelled
   }
-  if ($runLog.pairsCompleted -ne $runLog.pairsRequested) { throw 'Validation failed: not all OpenAPI requests completed.' }
+  if (($runLog.pairsCompleted + $runLog.pairsFailed) -ne $runLog.pairsRequested) { throw 'Validation failed: OpenAPI request accounting is inconsistent.' }
   if (-not $runLog.apiKeyRecognized -or $runLog.validDownloaded -le 0) { throw 'Validation failed: OpenAPI key was not recognized or returned zero matched transactions.' }
 
-  $selectedSet = New-Object 'System.Collections.Generic.HashSet[string]'; foreach ($complex in $complexesToUpdate) { [void]$selectedSet.Add([string]$complex.id) }
+  $selectedSet = New-Object 'System.Collections.Generic.HashSet[string]'; foreach ($complex in $complexesToRefresh) { [void]$selectedSet.Add([string]$complex.id) }
   $oldRefreshRows = @($dataset.records | Where-Object { $selectedSet.Contains([string]$_.complexId) -and $_.kind -eq '아파트 매매' -and [string]$_.date -ge $refreshStart -and [string]$_.date -le $refreshEnd })
   $trackingResult = Sync-FirstSeenForTransactions -ExistingRows $oldRefreshRows -IncomingRows @($replacementRows) -SeenDate $today.ToString('yyyy-MM-dd')
   $trackingResult = Protect-CatalogBootstrapTransactions -TrackingResult $trackingResult -BootstrapComplexIds @($bootstrapComplexIds)
@@ -563,13 +650,31 @@ try {
   $bootstrapTransactions = [int]$trackingResult.BootstrapCount
   $newCount = [int]$trackingResult.NewCount; $removedCount = [int]$trackingResult.RemovedCount; $correctedCount = [int]$trackingResult.CorrectedCount
   $mappingChanged = $false
-  foreach ($complex in $complexesToUpdate) {
+  foreach ($complex in $complexesToRefresh) {
     $oldMetadata = if ($complex.openApi) { $complex.openApi | ConvertTo-Json -Compress } else { '' }
     $newMetadata = $mappingByComplex[[string]$complex.id] | ConvertTo-Json -Compress
     if ($oldMetadata -ne $newMetadata) { $mappingChanged = $true; break }
   }
+  $catalogDiscoveryStatusChanged = $false
+  $discoveryStatusByComplex = @{}
+  foreach ($item in $deferredUnmatched) {
+    $complex = $complexById[[string]$item.Id]
+    if (-not $catalogDiscoveryAttemptedIds.Contains([string]$item.Id)) { continue }
+    $status = [ordered]@{
+      status = 'deferred'
+      lastAttempt = $today.ToString('yyyy-MM-dd')
+      nextAttempt = $today.AddDays(7).ToString('yyyy-MM-dd')
+      reason = [string]$item.Reason
+    }
+    $discoveryStatusByComplex[[string]$item.Id] = $status
+    $oldStatus = if ($complex.openApiDiscovery) { $complex.openApiDiscovery | ConvertTo-Json -Compress } else { '' }
+    if ($oldStatus -ne ($status | ConvertTo-Json -Compress)) { $catalogDiscoveryStatusChanged = $true }
+  }
+  foreach ($complex in $complexesToRefresh) {
+    if ($complex.openApiDiscovery) { $catalogDiscoveryStatusChanged = $true }
+  }
   $sourceMigration = ([string]$dataset.meta.lastRefresh.sourceUrl -ne $ApiEndpoint)
-  $dataChanged = ($newCount -gt 0 -or $removedCount -gt 0 -or $correctedCount -gt 0 -or $mappingChanged -or $sourceMigration -or $firstSeenFieldsInitialized -gt 0)
+  $dataChanged = ($newCount -gt 0 -or $removedCount -gt 0 -or $correctedCount -gt 0 -or $mappingChanged -or $catalogDiscoveryStatusChanged -or $sourceMigration -or $firstSeenFieldsInitialized -gt 0)
   $runLog.newTransactions = $newCount; $runLog.cancelledOrRemoved = $removedCount; $runLog.correctedTransactions = $correctedCount
   $runLog.bootstrapTransactions = $bootstrapTransactions
   $runLog.cancelledOrCorrected = $removedCount + $correctedCount; $runLog.dataChanged = $dataChanged
@@ -596,10 +701,13 @@ try {
   foreach ($complex in @($dataset.complexes)) {
     $complexMap = Copy-PropertiesToOrderedMap $complex
     if ($mappingByComplex.ContainsKey([string]$complex.id)) {
+      [void]$complexMap.Remove('openApiDiscovery')
       $complexMap['openApi'] = $mappingByComplex[[string]$complex.id]; $stats = $refreshStats[[string]$complex.id]
       $complexMap['refresh'] = [ordered]@{ lastSuccess = $completedAt; sourceUrl = $ApiEndpoint; method = "official OpenAPI rolling $RefreshMonths-month replacement"; windowStart = $refreshStart; windowEnd = $refreshEnd; valid = $stats.Valid; cancelledExcluded = $stats.Cancelled }
       $complexRows = if ($rowsByComplex.ContainsKey([string]$complex.id)) { $rowsByComplex[[string]$complex.id] } else { @() }
       $complexMap['stats'] = Get-ComplexStats -Rows $complexRows -Complex $complex -RecentCancelled $stats.Cancelled
+    } elseif ($discoveryStatusByComplex.ContainsKey([string]$complex.id)) {
+      $complexMap['openApiDiscovery'] = $discoveryStatusByComplex[[string]$complex.id]
     }
     [void]$complexesOut.Add($complexMap)
   }
@@ -612,7 +720,7 @@ try {
   $firstSeenTrackingMap = [ordered]@{ field = 'first_seen_at'; startedAt = $trackingStartedAt; legacyValue = $null; basis = '우리 시스템이 거래를 처음 발견한 한국 날짜; 추적 도입 전 거래는 null' }
   if ($dataset.meta.firstSeenTracking.historyBackfill) { $firstSeenTrackingMap['historyBackfill'] = $dataset.meta.firstSeenTracking.historyBackfill }
   $metaMap['firstSeenTracking'] = $firstSeenTrackingMap
-  $metaMap['lastRefresh'] = [ordered]@{ completedAt = $completedAt; months = $dealMonths; complexes = $complexesToUpdate.Count; regions = $lawdCodes.Count; validDownloaded = $runLog.validDownloaded; cancelledExcluded = $runLog.cancelledExcluded; sourceUrl = $ApiEndpoint; method = "official OpenAPI rolling $RefreshMonths-month full replacement" }
+  $metaMap['lastRefresh'] = [ordered]@{ completedAt = $completedAt; months = $dealMonths; complexes = $complexesToRefresh.Count; complexesRequested = $complexesToUpdate.Count; deferredCatalogComplexes = $deferredUnmatched.Count; regions = $lawdCodes.Count; validDownloaded = $runLog.validDownloaded; cancelledExcluded = $runLog.cancelledExcluded; optionalDiscoveryFailures = $runLog.pairsFailed; sourceUrl = $ApiEndpoint; method = "official OpenAPI rolling $RefreshMonths-month full replacement" }
   $output = [ordered]@{ meta = $metaMap; complexes = $complexesOut; records = $sortedRows }
   $temporaryFile = $dataFile + '.tmp'
   [IO.File]::WriteAllText($temporaryFile, ("window.APT_ARCHIVE_DATA = " + ($output | ConvertTo-Json -Depth 24 -Compress) + ';' + [Environment]::NewLine), $Utf8NoBom)
