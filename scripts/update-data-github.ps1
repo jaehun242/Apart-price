@@ -443,7 +443,7 @@ function Write-MatchReport {
   foreach ($row in @($Rows | Sort-Object ComplexName)) { $lines.Add("| $($row.ComplexName) | $($row.LawdCode) | $($row.AptName) | $($row.LegalDong) | $($row.Jibun) | $($row.AptSeq) | $($row.Method) |") }
   if (@($Unmatched).Count) {
     $lines.Add(''); $lines.Add('## OpenAPI 매칭 확인 필요'); $lines.Add('')
-    foreach ($item in @($Unmatched)) { $lines.Add("- $($item.Name) (`$($item.Id)`) [$($item.Disposition)]: $($item.Reason)") }
+    foreach ($item in @($Unmatched)) { $lines.Add(('- {0} (`{1}`) [{2}]: {3}' -f $item.Name, $item.Id, $item.Disposition, $item.Reason)) }
   }
   [IO.File]::WriteAllLines($matchReportFile, $lines, $Utf8NoBom)
 }

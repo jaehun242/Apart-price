@@ -163,10 +163,9 @@ jobs:
             if ($id -and -not $seen.Add("$($record.complexId)|$id")) { throw "Duplicate transaction ID: $($record.complexId)|$id" }
           }
 
-          git diff --quiet -- 'public/data/transactions.js'
-          $diffExitCode = $LASTEXITCODE
-          if ($diffExitCode -notin @(0, 1)) { throw "Unable to inspect generated dataset changes: git diff exit $diffExitCode." }
-          $catalogChanged = $diffExitCode -eq 1
+          $changedDataPaths = @(git diff --name-only -- 'public/data/transactions.js')
+          if ($LASTEXITCODE -ne 0) { throw "Unable to inspect generated dataset changes: git diff exit $LASTEXITCODE." }
+          $catalogChanged = $changedDataPaths.Count -gt 0
           $changed = [bool]$log.dataChanged -or $catalogChanged
           "changed=$($changed.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           "latest_contract_date=$($log.latestContractDate)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append

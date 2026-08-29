@@ -23,6 +23,10 @@ try {
   const before = parseDataset(temporaryData);
   const beforeRecordText = JSON.stringify(before.records);
   const catalog = JSON.parse(fs.readFileSync(catalogPath, 'utf8'));
+  const catalogMapped = catalog.complexes.filter(entry => entry.openApi?.identityKey);
+  const catalogDeferred = catalog.complexes.filter(entry => entry.openApiDiscovery?.nextAttempt);
+  assert.strictEqual(catalogMapped.length + catalogDeferred.length, catalog.complexes.length, 'Every added catalog complex must have a cached OpenAPI identity or an explicit deferred retry.');
+  assert.strictEqual(new Set(catalogMapped.map(entry => entry.openApi.identityKey)).size, catalogMapped.length, 'Cached catalog OpenAPI identities must be unique.');
   const runSync = () => childProcess.execFileSync(process.execPath, [syncScript, '--data', temporaryData, '--catalog', catalogPath], { encoding: 'utf8' });
 
   runSync();
@@ -57,7 +61,7 @@ try {
   const second = parseDataset(temporaryData);
   assert.strictEqual(second.complexes.length, after.complexes.length, 'Catalog sync must be idempotent.');
   assert.strictEqual(JSON.stringify(second.records), beforeRecordText, 'Idempotent sync altered transactions.');
-  console.log(`Apartment catalog tests passed: ${before.complexes.length} -> ${after.complexes.length}, every district >= ${catalog.minimumPerDistrict}, 오륙도SK뷰 featured.`);
+  console.log(`Apartment catalog tests passed: ${before.complexes.length} -> ${after.complexes.length}, ${catalogMapped.length} cached OpenAPI identities, ${catalogDeferred.length} deferred retries, every district >= ${catalog.minimumPerDistrict}, 오륙도SK뷰 featured.`);
 } finally {
   fs.rmSync(temporaryDirectory, { recursive: true, force: true });
 }

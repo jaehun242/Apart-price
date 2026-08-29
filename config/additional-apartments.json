@@ -3,172 +3,2400 @@
   "minimumPerDistrict": 5,
   "selectionBasis": "서울·부산 각 구·군의 대표, 고가, 대단지, 신축 및 거래 활발 단지",
   "complexes": [
-    {"id":"busan-26290-20106194","city":"부산","district":"남구","name":"오륙도에스케이뷰","displayName":"오륙도SK뷰","featured":true,"tags":["부산 랜드마크","사용자 요청"]},
-
-    {"id":"seoul-11680-catalog-001","city":"서울","district":"강남구","name":"디에이치퍼스티어아이파크","featured":true,"officialComplexCode":"1500071300","tags":["강남 대표","신축 대단지"]},
-    {"id":"seoul-11680-catalog-002","city":"서울","district":"강남구","name":"개포자이프레지던스","featured":true,"officialComplexCode":"1500070541","tags":["강남 대표","신축 대단지"]},
-    {"id":"seoul-11680-catalog-003","city":"서울","district":"강남구","name":"디에이치아너힐즈","tags":["강남 대표","신축"]},
-    {"id":"seoul-11680-catalog-004","city":"서울","district":"강남구","name":"개포래미안포레스트","tags":["강남 대표","신축"]},
-    {"id":"seoul-11680-catalog-005","city":"서울","district":"강남구","name":"은마","displayName":"은마아파트","tags":["강남 대표","재건축"]},
-    {"id":"seoul-11680-catalog-006","city":"서울","district":"강남구","name":"타워팰리스1","displayName":"타워팰리스 1차","tags":["강남 랜드마크"]},
-    {"id":"seoul-11680-catalog-007","city":"서울","district":"강남구","name":"아크로힐스논현","tags":["강남 대표","신축"]},
-
-    {"id":"seoul-11740-catalog-001","city":"서울","district":"강동구","name":"래미안솔베뉴","tags":["구 대표"]},
-    {"id":"seoul-11740-catalog-002","city":"서울","district":"강동구","name":"고덕센트럴아이파크","tags":["구 대표","신축"]},
-    {"id":"seoul-11740-catalog-003","city":"서울","district":"강동구","name":"강동롯데캐슬퍼스트","tags":["대단지"]},
-
-    {"id":"seoul-11305-catalog-001","city":"서울","district":"강북구","name":"래미안트리베라1단지","tags":["구 대표"]},
-    {"id":"seoul-11305-catalog-002","city":"서울","district":"강북구","name":"두산위브트레지움","tags":["구 대표","대단지"]},
-
-    {"id":"seoul-11500-catalog-001","city":"서울","district":"강서구","name":"마곡13단지힐스테이트마스터","tags":["마곡","신축"]},
-    {"id":"seoul-11500-catalog-002","city":"서울","district":"강서구","name":"우장산힐스테이트","tags":["구 대표","대단지"]},
-    {"id":"seoul-11500-catalog-003","city":"서울","district":"강서구","name":"강서한강자이","tags":["구 대표"]},
-
-    {"id":"seoul-11620-catalog-001","city":"서울","district":"관악구","name":"관악푸르지오","tags":["구 대표","대단지"]},
-    {"id":"seoul-11620-catalog-002","city":"서울","district":"관악구","name":"신림푸르지오","tags":["구 대표"]},
-
-    {"id":"seoul-11215-catalog-001","city":"서울","district":"광진구","name":"광장현대파크빌10차","tags":["광장동 대표"]},
-    {"id":"seoul-11215-catalog-002","city":"서울","district":"광진구","name":"광장현대5단지","tags":["광장동 대표"]},
-    {"id":"seoul-11215-catalog-003","city":"서울","district":"광진구","name":"자양한강현대","tags":["한강변"]},
-
-    {"id":"seoul-11530-catalog-001","city":"서울","district":"구로구","name":"신도림4차e-편한세상","tags":["신도림 대표"]},
-    {"id":"seoul-11530-catalog-002","city":"서울","district":"구로구","name":"신도림태영타운","tags":["신도림 대표","대단지"]},
-    {"id":"seoul-11530-catalog-003","city":"서울","district":"구로구","name":"고척아이파크","tags":["신축 대단지"]},
-
-    {"id":"seoul-11545-catalog-001","city":"서울","district":"금천구","name":"롯데캐슬골드파크4차","tags":["구 대표","신축"]},
-    {"id":"seoul-11545-catalog-002","city":"서울","district":"금천구","name":"남서울힐스테이트","tags":["구 대표","대단지"]},
-
-    {"id":"seoul-11350-catalog-001","city":"서울","district":"노원구","name":"포레나노원","tags":["구 대표","신축"]},
-    {"id":"seoul-11350-catalog-002","city":"서울","district":"노원구","name":"노원센트럴푸르지오","tags":["구 대표","신축"]},
-    {"id":"seoul-11350-catalog-003","city":"서울","district":"노원구","name":"미륭미성삼호3차","tags":["재건축","대단지"]},
-
-    {"id":"seoul-11320-catalog-001","city":"서울","district":"도봉구","name":"창동주공19단지","tags":["창동 대표","대단지"]},
-    {"id":"seoul-11320-catalog-002","city":"서울","district":"도봉구","name":"북한산코오롱하늘채","tags":["구 대표"]},
-
-    {"id":"seoul-11230-catalog-001","city":"서울","district":"동대문구","name":"래미안엘리니티","tags":["구 대표","신축"]},
-    {"id":"seoul-11230-catalog-002","city":"서울","district":"동대문구","name":"휘경자이디센시아","tags":["신축 대단지"]},
-    {"id":"seoul-11230-catalog-003","city":"서울","district":"동대문구","name":"답십리파크자이","tags":["구 대표"]},
-
-    {"id":"seoul-11590-catalog-001","city":"서울","district":"동작구","name":"흑석리버파크자이","tags":["흑석 대표","신축"]},
-    {"id":"seoul-11590-catalog-002","city":"서울","district":"동작구","name":"보라매SKVIEW","displayName":"보라매SK뷰","tags":["구 대표","신축"]},
-    {"id":"seoul-11590-catalog-003","city":"서울","district":"동작구","name":"e편한세상상도노빌리티","tags":["구 대표"]},
-
-    {"id":"seoul-11440-catalog-001","city":"서울","district":"마포구","name":"마포자이3차","tags":["마포 대표"]},
-    {"id":"seoul-11440-catalog-002","city":"서울","district":"마포구","name":"공덕자이","tags":["공덕 대표"]},
-    {"id":"seoul-11440-catalog-003","city":"서울","district":"마포구","name":"래미안공덕5차","tags":["공덕 대표"]},
-
-    {"id":"seoul-11410-catalog-001","city":"서울","district":"서대문구","name":"힐스테이트신촌","tags":["구 대표","신축"]},
-    {"id":"seoul-11410-catalog-002","city":"서울","district":"서대문구","name":"DMC래미안e편한세상","tags":["DMC","대단지"]},
-    {"id":"seoul-11410-catalog-003","city":"서울","district":"서대문구","name":"래미안루센티아","tags":["구 대표","신축"]},
-
-    {"id":"seoul-11650-catalog-001","city":"서울","district":"서초구","name":"반포자이","featured":true,"officialComplexCode":"20113618","tags":["서초 대표","대단지"]},
-    {"id":"seoul-11650-catalog-002","city":"서울","district":"서초구","name":"신반포자이","tags":["반포 대표"]},
-    {"id":"seoul-11650-catalog-003","city":"서울","district":"서초구","name":"디에이치반포라클라스","tags":["반포 대표","신축"]},
-    {"id":"seoul-11650-catalog-004","city":"서울","district":"서초구","name":"아크로리버뷰신반포","tags":["한강변","고가"]},
-    {"id":"seoul-11650-catalog-005","city":"서울","district":"서초구","name":"서초그랑자이","tags":["서초 대표","신축"]},
-
-    {"id":"seoul-11200-catalog-001","city":"서울","district":"성동구","name":"옥수파크힐스101동~116동","displayName":"옥수파크힐스","tags":["옥수 대표","대단지"]},
-    {"id":"seoul-11200-catalog-002","city":"서울","district":"성동구","name":"서울숲리버뷰자이","tags":["성동 대표","한강변"]},
-    {"id":"seoul-11200-catalog-003","city":"서울","district":"성동구","name":"e편한세상금호파크힐스","tags":["금호 대표","대단지"]},
-
-    {"id":"seoul-11290-catalog-001","city":"서울","district":"성북구","name":"장위자이레디언트","tags":["신축 대단지"]},
-    {"id":"seoul-11290-catalog-002","city":"서울","district":"성북구","name":"래미안장위퍼스트하이","tags":["장위 대표","대단지"]},
-    {"id":"seoul-11290-catalog-003","city":"서울","district":"성북구","name":"보문파크뷰자이","tags":["구 대표"]},
-
-    {"id":"seoul-11710-catalog-001","city":"서울","district":"송파구","name":"헬리오시티","featured":true,"tags":["송파 대표","대단지"]},
-    {"id":"seoul-11710-catalog-002","city":"서울","district":"송파구","name":"잠실주공5단지","tags":["잠실 대표","재건축"]},
-    {"id":"seoul-11710-catalog-003","city":"서울","district":"송파구","name":"트리지움","tags":["잠실 대표","대단지"]},
-    {"id":"seoul-11710-catalog-004","city":"서울","district":"송파구","name":"올림픽선수기자촌1단지","tags":["송파 대표","재건축"]},
-
-    {"id":"seoul-11470-catalog-001","city":"서울","district":"양천구","name":"목동신시가지1","displayName":"목동신시가지1단지","tags":["목동 대표","재건축"]},
-    {"id":"seoul-11470-catalog-002","city":"서울","district":"양천구","name":"목동신시가지2","displayName":"목동신시가지2단지","tags":["목동 대표","재건축"]},
-    {"id":"seoul-11470-catalog-003","city":"서울","district":"양천구","name":"목동센트럴아이파크위브1단지","tags":["신축 대단지"]},
-
-    {"id":"seoul-11560-catalog-001","city":"서울","district":"영등포구","name":"여의도자이","tags":["여의도 대표"]},
-    {"id":"seoul-11560-catalog-002","city":"서울","district":"영등포구","name":"래미안에스티움","tags":["신길 대표","대단지"]},
-    {"id":"seoul-11560-catalog-003","city":"서울","district":"영등포구","name":"신길센트럴자이","tags":["신길 대표","신축"]},
-
-    {"id":"seoul-11170-catalog-001","city":"서울","district":"용산구","name":"래미안첼리투스","tags":["용산 대표","한강변"]},
-    {"id":"seoul-11170-catalog-002","city":"서울","district":"용산구","name":"용산푸르지오써밋","tags":["용산 대표","고가"]},
-    {"id":"seoul-11170-catalog-003","city":"서울","district":"용산구","name":"한가람","tags":["이촌 대표","대단지"]},
-
-    {"id":"seoul-11380-catalog-001","city":"서울","district":"은평구","name":"은평스카이뷰자이","tags":["구 대표","신축"]},
-    {"id":"seoul-11380-catalog-002","city":"서울","district":"은평구","name":"북한산푸르지오","tags":["구 대표","대단지"]},
-    {"id":"seoul-11380-catalog-003","city":"서울","district":"은평구","name":"래미안베라힐즈","tags":["구 대표"]},
-
-    {"id":"seoul-11110-catalog-001","city":"서울","district":"종로구","name":"경희궁롯데캐슬","tags":["구 대표","신축"]},
-    {"id":"seoul-11110-catalog-002","city":"서울","district":"종로구","name":"광화문스페이스본(101동~105동)","displayName":"광화문스페이스본","tags":["광화문 대표"]},
-
-    {"id":"seoul-11140-catalog-001","city":"서울","district":"중구","name":"래미안하이베르","tags":["구 대표"]},
-    {"id":"seoul-11140-catalog-002","city":"서울","district":"중구","name":"청구e편한세상","tags":["구 대표","대단지"]},
-    {"id":"seoul-11140-catalog-003","city":"서울","district":"중구","name":"롯데캐슬베네치아","tags":["도심 대표"]},
-
-    {"id":"seoul-11260-catalog-001","city":"서울","district":"중랑구","name":"용마산하늘채","tags":["구 대표"]},
-    {"id":"seoul-11260-catalog-002","city":"서울","district":"중랑구","name":"한양수자인사가정파크","tags":["구 대표","신축"]},
-    {"id":"seoul-11260-catalog-003","city":"서울","district":"중랑구","name":"상봉프레미어스엠코","tags":["상봉 대표"]},
-
-    {"id":"busan-26440-catalog-001","city":"부산","district":"강서구","name":"명지대방노블랜드오션뷰1차","tags":["명지 대표"]},
-    {"id":"busan-26440-catalog-002","city":"부산","district":"강서구","name":"명지국제신도시삼정그린코아더베스트","tags":["명지 대표","신축"]},
-
-    {"id":"busan-26410-catalog-001","city":"부산","district":"금정구","name":"래미안장전","tags":["금정 대표","대단지"]},
-    {"id":"busan-26410-catalog-002","city":"부산","district":"금정구","name":"구서롯데캐슬골드2단지","tags":["구서 대표"]},
-    {"id":"busan-26410-catalog-003","city":"부산","district":"금정구","name":"금정산2차쌍용예가","tags":["구 대표","대단지"]},
-
-    {"id":"busan-26710-catalog-001","city":"부산","district":"기장군","name":"정관동일스위트1차","tags":["정관 대표","대단지"]},
-    {"id":"busan-26710-catalog-002","city":"부산","district":"기장군","name":"정관신도시롯데캐슬","tags":["정관 대표"]},
-    {"id":"busan-26710-catalog-003","city":"부산","district":"기장군","name":"일광한신더휴센트럴포레1단지","tags":["일광","신축"]},
-
-    {"id":"busan-26290-catalog-001","city":"부산","district":"남구","name":"대연힐스테이트푸르지오","featured":true,"tags":["남구 대표","대단지"]},
-    {"id":"busan-26290-catalog-002","city":"부산","district":"남구","name":"대연SKVIEWHills","displayName":"대연SK뷰힐스","tags":["남구 대표"]},
-    {"id":"busan-26290-catalog-003","city":"부산","district":"남구","name":"GS하이츠자이","tags":["남구 대표"]},
-    {"id":"busan-26290-catalog-004","city":"부산","district":"남구","name":"대연푸르지오클라센트1단지","tags":["신축 대단지"]},
-    {"id":"busan-26290-catalog-005","city":"부산","district":"남구","name":"대연디아이엘","displayName":"대연 디아이엘","tags":["신축 대단지"]},
-
-    {"id":"busan-26170-catalog-001","city":"부산","district":"동구","name":"부산항일동미라주더오션","tags":["북항","신축"]},
-    {"id":"busan-26170-catalog-002","city":"부산","district":"동구","name":"두산위브포세이돈2","tags":["동구 대표"]},
-
-    {"id":"busan-26260-catalog-001","city":"부산","district":"동래구","name":"사직쌍용예가","tags":["사직 대표","대단지"]},
-    {"id":"busan-26260-catalog-002","city":"부산","district":"동래구","name":"명륜2차아이파크1단지","tags":["동래 대표"]},
-    {"id":"busan-26260-catalog-003","city":"부산","district":"동래구","name":"힐스테이트명륜트라디움","tags":["동래 대표","신축"]},
-    {"id":"busan-26260-catalog-004","city":"부산","district":"동래구","name":"e편한세상동래명장1단지","tags":["신축 대단지"]},
-
-    {"id":"busan-26230-catalog-001","city":"부산","district":"부산진구","name":"포레나부산초읍","tags":["초읍 대표","신축"]},
-    {"id":"busan-26230-catalog-002","city":"부산","district":"부산진구","name":"시민공원삼정그린코아더베스트","tags":["시민공원","신축"]},
-    {"id":"busan-26230-catalog-003","city":"부산","district":"부산진구","name":"개금아이파크","tags":["구 대표","대단지"]},
-
-    {"id":"busan-26320-catalog-001","city":"부산","district":"북구","name":"백양디이스트(1단지)","displayName":"백양디이스트 1단지","tags":["신축 대단지"]},
-    {"id":"busan-26320-catalog-002","city":"부산","district":"북구","name":"화명동원로얄듀크","tags":["화명 대표"]},
-    {"id":"busan-26320-catalog-003","city":"부산","district":"북구","name":"만덕5휴먼시아","tags":["대단지"]},
-
-    {"id":"busan-26530-catalog-001","city":"부산","district":"사상구","name":"주례경동리인","tags":["주례 대표"]},
-    {"id":"busan-26530-catalog-002","city":"부산","district":"사상구","name":"사상구남역동원로얄듀크","tags":["구 대표","신축"]},
-
-    {"id":"busan-26380-catalog-001","city":"부산","district":"사하구","name":"다대동롯데캐슬몰운대","tags":["다대 대표","대단지"]},
-    {"id":"busan-26380-catalog-002","city":"부산","district":"사하구","name":"괴정한신더휴","tags":["괴정 대표","신축"]},
-    {"id":"busan-26380-catalog-003","city":"부산","district":"사하구","name":"하단SKVIEW","displayName":"하단SK뷰","tags":["하단 대표"]},
-
-    {"id":"busan-26140-catalog-001","city":"부산","district":"서구","name":"대신해모로센트럴아파트","displayName":"대신해모로센트럴","tags":["서구 대표","신축"]},
-    {"id":"busan-26140-catalog-002","city":"부산","district":"서구","name":"e편한세상송도더퍼스트비치","tags":["송도 대표","신축"]},
-    {"id":"busan-26140-catalog-003","city":"부산","district":"서구","name":"동대신역비스타동원아파트","displayName":"동대신역비스타동원","tags":["역세권","신축"]},
-
-    {"id":"busan-26500-catalog-001","city":"부산","district":"수영구","name":"광안자이","tags":["광안 대표","신축"]},
-    {"id":"busan-26500-catalog-002","city":"부산","district":"수영구","name":"쌍용예가디오션","tags":["광안 대표","고가"]},
-    {"id":"busan-26500-catalog-003","city":"부산","district":"수영구","name":"수영SKVIEW1단지","displayName":"수영SK뷰 1단지","tags":["수영 대표"]},
-    {"id":"busan-26500-catalog-004","city":"부산","district":"수영구","name":"e편한세상오션테라스3단지","tags":["민락 대표","신축"]},
-    {"id":"busan-26500-catalog-005","city":"부산","district":"수영구","name":"드파인광안","displayName":"드파인 광안","tags":["광안 신축"]},
-
-    {"id":"busan-26470-catalog-001","city":"부산","district":"연제구","name":"힐스테이트연산","tags":["연산 대표","대단지"]},
-    {"id":"busan-26470-catalog-002","city":"부산","district":"연제구","name":"연산자이","tags":["연산 대표"]},
-    {"id":"busan-26470-catalog-003","city":"부산","district":"연제구","name":"연산더샵","tags":["연산 대표"]},
-
-    {"id":"busan-26200-catalog-001","city":"부산","district":"영도구","name":"오션라이프에일린의뜰1단지","tags":["영도 신축","대단지"]},
-    {"id":"busan-26200-catalog-002","city":"부산","district":"영도구","name":"동삼그린힐","tags":["영도 대표","대단지"]},
-
-    {"id":"busan-26110-catalog-001","city":"부산","district":"중구","name":"롯데캐슬스카이","tags":["중구 대표"]},
-    {"id":"busan-26110-catalog-002","city":"부산","district":"중구","name":"보수허브센티움","tags":["중구 신축"]},
-
-    {"id":"busan-26350-catalog-001","city":"부산","district":"해운대구","name":"해운대힐스테이트위브","tags":["해운대 대표","대단지"]},
-    {"id":"busan-26350-catalog-002","city":"부산","district":"해운대구","name":"경남마리나","tags":["마린시티 대표","재건축"]},
-    {"id":"busan-26350-catalog-003","city":"부산","district":"해운대구","name":"해운대자이2차1단지","tags":["해운대 대표","신축"]}
+    {
+      "id": "busan-26290-20106194",
+      "city": "부산",
+      "district": "남구",
+      "name": "오륙도에스케이뷰",
+      "displayName": "오륙도SK뷰",
+      "featured": true,
+      "tags": [
+        "부산 랜드마크",
+        "사용자 요청"
+      ],
+      "openApi": {
+        "lawdCode": "26290",
+        "identityKey": "26290|seq|26290-1980",
+        "aptSeq": "26290-1980",
+        "aptName": "오륙도에스케이뷰",
+        "legalDong": "용호동",
+        "jibun": "944",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11680-catalog-001",
+      "city": "서울",
+      "district": "강남구",
+      "name": "디에이치퍼스티어아이파크",
+      "featured": true,
+      "officialComplexCode": "1500071300",
+      "tags": [
+        "강남 대표",
+        "신축 대단지"
+      ],
+      "openApi": {
+        "lawdCode": "11680",
+        "identityKey": "11680|seq|11680-5268",
+        "aptSeq": "11680-5268",
+        "aptName": "디에이치퍼스티어아이파크",
+        "legalDong": "개포동",
+        "jibun": "660-4",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11680-catalog-002",
+      "city": "서울",
+      "district": "강남구",
+      "name": "개포자이프레지던스",
+      "featured": true,
+      "officialComplexCode": "1500070541",
+      "tags": [
+        "강남 대표",
+        "신축 대단지"
+      ],
+      "openApi": {
+        "lawdCode": "11680",
+        "identityKey": "11680|seq|11680-5235",
+        "aptSeq": "11680-5235",
+        "aptName": "개포자이프레지던스",
+        "legalDong": "개포동",
+        "jibun": "1284",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11680-catalog-003",
+      "city": "서울",
+      "district": "강남구",
+      "name": "디에이치아너힐즈",
+      "tags": [
+        "강남 대표",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "11680",
+        "identityKey": "11680|seq|11680-4850",
+        "aptSeq": "11680-4850",
+        "aptName": "디에이치아너힐즈",
+        "legalDong": "개포동",
+        "jibun": "1281",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11680-catalog-004",
+      "city": "서울",
+      "district": "강남구",
+      "name": "개포래미안포레스트",
+      "tags": [
+        "강남 대표",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "11680",
+        "identityKey": "11680|seq|11680-4929",
+        "aptSeq": "11680-4929",
+        "aptName": "개포래미안포레스트",
+        "legalDong": "개포동",
+        "jibun": "1282",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11680-catalog-005",
+      "city": "서울",
+      "district": "강남구",
+      "name": "은마",
+      "displayName": "은마아파트",
+      "tags": [
+        "강남 대표",
+        "재건축"
+      ],
+      "openApi": {
+        "lawdCode": "11680",
+        "identityKey": "11680|seq|11680-218",
+        "aptSeq": "11680-218",
+        "aptName": "은마",
+        "legalDong": "대치동",
+        "jibun": "316",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11680-catalog-006",
+      "city": "서울",
+      "district": "강남구",
+      "name": "타워팰리스1",
+      "displayName": "타워팰리스 1차",
+      "tags": [
+        "강남 랜드마크"
+      ],
+      "openApi": {
+        "lawdCode": "11680",
+        "identityKey": "11680|seq|11680-364",
+        "aptSeq": "11680-364",
+        "aptName": "타워팰리스1",
+        "legalDong": "도곡동",
+        "jibun": "467",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11680-catalog-007",
+      "city": "서울",
+      "district": "강남구",
+      "name": "아크로힐스논현",
+      "tags": [
+        "강남 대표",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "11680",
+        "identityKey": "11680|seq|11680-4356",
+        "aptSeq": "11680-4356",
+        "aptName": "아크로힐스논현",
+        "legalDong": "논현동",
+        "jibun": "276-1",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11740-catalog-001",
+      "city": "서울",
+      "district": "강동구",
+      "name": "래미안솔베뉴",
+      "tags": [
+        "구 대표"
+      ],
+      "openApi": {
+        "lawdCode": "11740",
+        "identityKey": "11740|seq|11740-4585",
+        "aptSeq": "11740-4585",
+        "aptName": "래미안솔베뉴",
+        "legalDong": "명일동",
+        "jibun": "359",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11740-catalog-002",
+      "city": "서울",
+      "district": "강동구",
+      "name": "고덕센트럴아이파크",
+      "tags": [
+        "구 대표",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "11740",
+        "identityKey": "11740|seq|11740-4675",
+        "aptSeq": "11740-4675",
+        "aptName": "고덕센트럴IPARK",
+        "legalDong": "상일동",
+        "jibun": "513",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11740-catalog-003",
+      "city": "서울",
+      "district": "강동구",
+      "name": "강동롯데캐슬퍼스트",
+      "tags": [
+        "대단지"
+      ],
+      "openApiDiscovery": {
+        "status": "deferred",
+        "lastAttempt": "2026-08-29",
+        "nextAttempt": "2026-09-05",
+        "reason": "No unique MOLIT OpenAPI transaction identity was found during the 24-month discovery scan."
+      }
+    },
+    {
+      "id": "seoul-11305-catalog-001",
+      "city": "서울",
+      "district": "강북구",
+      "name": "래미안트리베라1단지",
+      "tags": [
+        "구 대표"
+      ],
+      "openApi": {
+        "lawdCode": "11305",
+        "identityKey": "11305|seq|11305-4123",
+        "aptSeq": "11305-4123",
+        "aptName": "래미안트리베라1단지",
+        "legalDong": "미아동",
+        "jibun": "813",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11305-catalog-002",
+      "city": "서울",
+      "district": "강북구",
+      "name": "두산위브트레지움",
+      "tags": [
+        "구 대표",
+        "대단지"
+      ],
+      "openApi": {
+        "lawdCode": "11305",
+        "identityKey": "11305|seq|11305-4255",
+        "aptSeq": "11305-4255",
+        "aptName": "두산위브트레지움",
+        "legalDong": "미아동",
+        "jibun": "811",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11500-catalog-001",
+      "city": "서울",
+      "district": "강서구",
+      "name": "마곡13단지힐스테이트마스터",
+      "tags": [
+        "마곡",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "11500",
+        "identityKey": "11500|seq|11500-7596",
+        "aptSeq": "11500-7596",
+        "aptName": "마곡13단지힐스테이트마스터",
+        "legalDong": "마곡동",
+        "jibun": "748",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11500-catalog-002",
+      "city": "서울",
+      "district": "강서구",
+      "name": "우장산힐스테이트",
+      "tags": [
+        "구 대표",
+        "대단지"
+      ],
+      "openApi": {
+        "lawdCode": "11500",
+        "identityKey": "11500|seq|11500-477",
+        "aptSeq": "11500-477",
+        "aptName": "우장산힐스테이트",
+        "legalDong": "내발산동",
+        "jibun": "657",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11500-catalog-003",
+      "city": "서울",
+      "district": "강서구",
+      "name": "강서한강자이",
+      "tags": [
+        "구 대표"
+      ],
+      "openApi": {
+        "lawdCode": "11500",
+        "identityKey": "11500|seq|11500-6753",
+        "aptSeq": "11500-6753",
+        "aptName": "강서한강자이",
+        "legalDong": "가양동",
+        "jibun": "1500",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11620-catalog-001",
+      "city": "서울",
+      "district": "관악구",
+      "name": "관악푸르지오",
+      "tags": [
+        "구 대표",
+        "대단지"
+      ],
+      "openApi": {
+        "lawdCode": "11620",
+        "identityKey": "11620|seq|11620-102",
+        "aptSeq": "11620-102",
+        "aptName": "관악푸르지오",
+        "legalDong": "봉천동",
+        "jibun": "1717",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11620-catalog-002",
+      "city": "서울",
+      "district": "관악구",
+      "name": "신림푸르지오",
+      "tags": [
+        "구 대표"
+      ],
+      "openApi": {
+        "lawdCode": "11620",
+        "identityKey": "11620|seq|11620-183",
+        "aptSeq": "11620-183",
+        "aptName": "신림푸르지오",
+        "legalDong": "신림동",
+        "jibun": "1730",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11215-catalog-001",
+      "city": "서울",
+      "district": "광진구",
+      "name": "광장현대파크빌10차",
+      "tags": [
+        "광장동 대표"
+      ],
+      "openApiDiscovery": {
+        "status": "deferred",
+        "lastAttempt": "2026-08-29",
+        "nextAttempt": "2026-09-05",
+        "reason": "No unique MOLIT OpenAPI transaction identity was found during the 24-month discovery scan."
+      }
+    },
+    {
+      "id": "seoul-11215-catalog-002",
+      "city": "서울",
+      "district": "광진구",
+      "name": "광장현대5단지",
+      "tags": [
+        "광장동 대표"
+      ],
+      "openApiDiscovery": {
+        "status": "deferred",
+        "lastAttempt": "2026-08-29",
+        "nextAttempt": "2026-09-05",
+        "reason": "No unique MOLIT OpenAPI transaction identity was found during the 24-month discovery scan."
+      }
+    },
+    {
+      "id": "seoul-11215-catalog-003",
+      "city": "서울",
+      "district": "광진구",
+      "name": "자양한강현대",
+      "tags": [
+        "한강변"
+      ],
+      "openApiDiscovery": {
+        "status": "deferred",
+        "lastAttempt": "2026-08-29",
+        "nextAttempt": "2026-09-05",
+        "reason": "No unique MOLIT OpenAPI transaction identity was found during the 24-month discovery scan."
+      }
+    },
+    {
+      "id": "seoul-11530-catalog-001",
+      "city": "서울",
+      "district": "구로구",
+      "name": "신도림4차e-편한세상",
+      "tags": [
+        "신도림 대표"
+      ],
+      "openApiDiscovery": {
+        "status": "deferred",
+        "lastAttempt": "2026-08-29",
+        "nextAttempt": "2026-09-05",
+        "reason": "No unique MOLIT OpenAPI transaction identity was found during the 24-month discovery scan."
+      }
+    },
+    {
+      "id": "seoul-11530-catalog-002",
+      "city": "서울",
+      "district": "구로구",
+      "name": "신도림태영타운",
+      "tags": [
+        "신도림 대표",
+        "대단지"
+      ],
+      "openApi": {
+        "lawdCode": "11530",
+        "identityKey": "11530|seq|11530-17",
+        "aptSeq": "11530-17",
+        "aptName": "신도림태영타운",
+        "legalDong": "구로동",
+        "jibun": "1267",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11530-catalog-003",
+      "city": "서울",
+      "district": "구로구",
+      "name": "고척아이파크",
+      "tags": [
+        "신축 대단지"
+      ],
+      "openApiDiscovery": {
+        "status": "deferred",
+        "lastAttempt": "2026-08-29",
+        "nextAttempt": "2026-09-05",
+        "reason": "No unique MOLIT OpenAPI transaction identity was found during the 24-month discovery scan."
+      }
+    },
+    {
+      "id": "seoul-11545-catalog-001",
+      "city": "서울",
+      "district": "금천구",
+      "name": "롯데캐슬골드파크4차",
+      "tags": [
+        "구 대표",
+        "신축"
+      ],
+      "openApiDiscovery": {
+        "status": "deferred",
+        "lastAttempt": "2026-08-29",
+        "nextAttempt": "2026-09-05",
+        "reason": "No unique MOLIT OpenAPI transaction identity was found during the 24-month discovery scan."
+      }
+    },
+    {
+      "id": "seoul-11545-catalog-002",
+      "city": "서울",
+      "district": "금천구",
+      "name": "남서울힐스테이트",
+      "tags": [
+        "구 대표",
+        "대단지"
+      ],
+      "openApi": {
+        "lawdCode": "11545",
+        "identityKey": "11545|seq|11545-1642",
+        "aptSeq": "11545-1642",
+        "aptName": "남서울힐스테이트",
+        "legalDong": "시흥동",
+        "jibun": "1026",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11350-catalog-001",
+      "city": "서울",
+      "district": "노원구",
+      "name": "포레나노원",
+      "tags": [
+        "구 대표",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "11350",
+        "identityKey": "11350|seq|11350-2302",
+        "aptSeq": "11350-2302",
+        "aptName": "포레나노원",
+        "legalDong": "상계동",
+        "jibun": "680",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11350-catalog-002",
+      "city": "서울",
+      "district": "노원구",
+      "name": "노원센트럴푸르지오",
+      "tags": [
+        "구 대표",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "11350",
+        "identityKey": "11350|seq|11350-2275",
+        "aptSeq": "11350-2275",
+        "aptName": "노원센트럴푸르지오",
+        "legalDong": "상계동",
+        "jibun": "1355",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11350-catalog-003",
+      "city": "서울",
+      "district": "노원구",
+      "name": "미륭미성삼호3차",
+      "tags": [
+        "재건축",
+        "대단지"
+      ],
+      "openApiDiscovery": {
+        "status": "deferred",
+        "lastAttempt": "2026-08-29",
+        "nextAttempt": "2026-09-05",
+        "reason": "No unique MOLIT OpenAPI transaction identity was found during the 24-month discovery scan."
+      }
+    },
+    {
+      "id": "seoul-11320-catalog-001",
+      "city": "서울",
+      "district": "도봉구",
+      "name": "창동주공19단지",
+      "tags": [
+        "창동 대표",
+        "대단지"
+      ],
+      "openApiDiscovery": {
+        "status": "deferred",
+        "lastAttempt": "2026-08-29",
+        "nextAttempt": "2026-09-05",
+        "reason": "No unique MOLIT OpenAPI transaction identity was found during the 24-month discovery scan."
+      }
+    },
+    {
+      "id": "seoul-11320-catalog-002",
+      "city": "서울",
+      "district": "도봉구",
+      "name": "북한산코오롱하늘채",
+      "tags": [
+        "구 대표"
+      ],
+      "openApi": {
+        "lawdCode": "11320",
+        "identityKey": "11320|seq|11320-2999",
+        "aptSeq": "11320-2999",
+        "aptName": "북한산코오롱하늘채",
+        "legalDong": "쌍문동",
+        "jibun": "732",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11230-catalog-001",
+      "city": "서울",
+      "district": "동대문구",
+      "name": "래미안엘리니티",
+      "tags": [
+        "구 대표",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "11230",
+        "identityKey": "11230|seq|11230-3082",
+        "aptSeq": "11230-3082",
+        "aptName": "래미안엘리니티",
+        "legalDong": "용두동",
+        "jibun": "796",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11230-catalog-002",
+      "city": "서울",
+      "district": "동대문구",
+      "name": "휘경자이디센시아",
+      "tags": [
+        "신축 대단지"
+      ],
+      "openApi": {
+        "lawdCode": "11230",
+        "identityKey": "11230|seq|11230-4340",
+        "aptSeq": "11230-4340",
+        "aptName": "휘경자이디센시아",
+        "legalDong": "휘경동",
+        "jibun": "172",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11230-catalog-003",
+      "city": "서울",
+      "district": "동대문구",
+      "name": "답십리파크자이",
+      "tags": [
+        "구 대표"
+      ],
+      "openApi": {
+        "lawdCode": "11230",
+        "identityKey": "11230|seq|11230-2868",
+        "aptSeq": "11230-2868",
+        "aptName": "답십리파크자이",
+        "legalDong": "답십리동",
+        "jibun": "1014",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11590-catalog-001",
+      "city": "서울",
+      "district": "동작구",
+      "name": "흑석리버파크자이",
+      "tags": [
+        "흑석 대표",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "11590",
+        "identityKey": "11590|seq|11590-5152",
+        "aptSeq": "11590-5152",
+        "aptName": "흑석리버파크자이",
+        "legalDong": "흑석동",
+        "jibun": "343",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11590-catalog-002",
+      "city": "서울",
+      "district": "동작구",
+      "name": "보라매SKVIEW",
+      "displayName": "보라매SK뷰",
+      "tags": [
+        "구 대표",
+        "신축"
+      ],
+      "openApiDiscovery": {
+        "status": "deferred",
+        "lastAttempt": "2026-08-29",
+        "nextAttempt": "2026-09-05",
+        "reason": "No unique MOLIT OpenAPI transaction identity was found during the 24-month discovery scan."
+      }
+    },
+    {
+      "id": "seoul-11590-catalog-003",
+      "city": "서울",
+      "district": "동작구",
+      "name": "e편한세상상도노빌리티",
+      "tags": [
+        "구 대표"
+      ],
+      "openApi": {
+        "lawdCode": "11590",
+        "identityKey": "11590|seq|11590-4879",
+        "aptSeq": "11590-4879",
+        "aptName": "e편한세상상도노빌리티",
+        "legalDong": "상도동",
+        "jibun": "903",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11440-catalog-001",
+      "city": "서울",
+      "district": "마포구",
+      "name": "마포자이3차",
+      "tags": [
+        "마포 대표"
+      ],
+      "openApiDiscovery": {
+        "status": "deferred",
+        "lastAttempt": "2026-08-29",
+        "nextAttempt": "2026-09-05",
+        "reason": "No unique MOLIT OpenAPI transaction identity was found during the 24-month discovery scan."
+      }
+    },
+    {
+      "id": "seoul-11440-catalog-002",
+      "city": "서울",
+      "district": "마포구",
+      "name": "공덕자이",
+      "tags": [
+        "공덕 대표"
+      ],
+      "openApi": {
+        "lawdCode": "11440",
+        "identityKey": "11440|seq|11440-5458",
+        "aptSeq": "11440-5458",
+        "aptName": "공덕자이",
+        "legalDong": "아현동",
+        "jibun": "800",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11440-catalog-003",
+      "city": "서울",
+      "district": "마포구",
+      "name": "래미안공덕5차",
+      "tags": [
+        "공덕 대표"
+      ],
+      "openApi": {
+        "lawdCode": "11440",
+        "identityKey": "11440|seq|11440-4855",
+        "aptSeq": "11440-4855",
+        "aptName": "래미안공덕5차",
+        "legalDong": "공덕동",
+        "jibun": "469",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11410-catalog-001",
+      "city": "서울",
+      "district": "서대문구",
+      "name": "힐스테이트신촌",
+      "tags": [
+        "구 대표",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "11410",
+        "identityKey": "11410|seq|11410-4846",
+        "aptSeq": "11410-4846",
+        "aptName": "힐스테이트신촌",
+        "legalDong": "북아현동",
+        "jibun": "1017",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11410-catalog-002",
+      "city": "서울",
+      "district": "서대문구",
+      "name": "DMC래미안e편한세상",
+      "tags": [
+        "DMC",
+        "대단지"
+      ],
+      "openApi": {
+        "lawdCode": "11410",
+        "identityKey": "11410|seq|11410-4085",
+        "aptSeq": "11410-4085",
+        "aptName": "DMC래미안e편한세상",
+        "legalDong": "북가좌동",
+        "jibun": "481",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11410-catalog-003",
+      "city": "서울",
+      "district": "서대문구",
+      "name": "래미안루센티아",
+      "tags": [
+        "구 대표",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "11410",
+        "identityKey": "11410|seq|11410-4824",
+        "aptSeq": "11410-4824",
+        "aptName": "래미안루센티아",
+        "legalDong": "남가좌동",
+        "jibun": "390",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11650-catalog-001",
+      "city": "서울",
+      "district": "서초구",
+      "name": "반포자이",
+      "featured": true,
+      "officialComplexCode": "20113618",
+      "tags": [
+        "서초 대표",
+        "대단지"
+      ],
+      "openApi": {
+        "lawdCode": "11650",
+        "identityKey": "11650|seq|11650-3500",
+        "aptSeq": "11650-3500",
+        "aptName": "반포자이",
+        "legalDong": "반포동",
+        "jibun": "20-43",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11650-catalog-002",
+      "city": "서울",
+      "district": "서초구",
+      "name": "신반포자이",
+      "tags": [
+        "반포 대표"
+      ],
+      "openApi": {
+        "lawdCode": "11650",
+        "identityKey": "11650|seq|11650-4675",
+        "aptSeq": "11650-4675",
+        "aptName": "신반포자이",
+        "legalDong": "잠원동",
+        "jibun": "160",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11650-catalog-003",
+      "city": "서울",
+      "district": "서초구",
+      "name": "디에이치반포라클라스",
+      "tags": [
+        "반포 대표",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "11650",
+        "identityKey": "11650|seq|11650-4959",
+        "aptSeq": "11650-4959",
+        "aptName": "디에이치반포라클라스",
+        "legalDong": "반포동",
+        "jibun": "1343",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11650-catalog-004",
+      "city": "서울",
+      "district": "서초구",
+      "name": "아크로리버뷰신반포",
+      "tags": [
+        "한강변",
+        "고가"
+      ],
+      "openApi": {
+        "lawdCode": "11650",
+        "identityKey": "11650|seq|11650-4676",
+        "aptSeq": "11650-4676",
+        "aptName": "아크로리버뷰신반포",
+        "legalDong": "잠원동",
+        "jibun": "159",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11650-catalog-005",
+      "city": "서울",
+      "district": "서초구",
+      "name": "서초그랑자이",
+      "tags": [
+        "서초 대표",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "11650",
+        "identityKey": "11650|seq|11650-4969",
+        "aptSeq": "11650-4969",
+        "aptName": "서초그랑자이",
+        "legalDong": "서초동",
+        "jibun": "1757",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11200-catalog-001",
+      "city": "서울",
+      "district": "성동구",
+      "name": "옥수파크힐스101동~116동",
+      "displayName": "옥수파크힐스",
+      "tags": [
+        "옥수 대표",
+        "대단지"
+      ],
+      "openApi": {
+        "lawdCode": "11200",
+        "identityKey": "11200|seq|11200-3114",
+        "aptSeq": "11200-3114",
+        "aptName": "옥수파크힐스101동~116동",
+        "legalDong": "옥수동",
+        "jibun": "528",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11200-catalog-002",
+      "city": "서울",
+      "district": "성동구",
+      "name": "서울숲리버뷰자이",
+      "tags": [
+        "성동 대표",
+        "한강변"
+      ],
+      "openApi": {
+        "lawdCode": "11200",
+        "identityKey": "11200|seq|11200-3173",
+        "aptSeq": "11200-3173",
+        "aptName": "서울숲리버뷰자이",
+        "legalDong": "행당동",
+        "jibun": "380",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11200-catalog-003",
+      "city": "서울",
+      "district": "성동구",
+      "name": "e편한세상금호파크힐스",
+      "tags": [
+        "금호 대표",
+        "대단지"
+      ],
+      "openApiDiscovery": {
+        "status": "deferred",
+        "lastAttempt": "2026-08-29",
+        "nextAttempt": "2026-09-05",
+        "reason": "No unique MOLIT OpenAPI transaction identity was found during the 24-month discovery scan."
+      }
+    },
+    {
+      "id": "seoul-11290-catalog-001",
+      "city": "서울",
+      "district": "성북구",
+      "name": "장위자이레디언트",
+      "tags": [
+        "신축 대단지"
+      ],
+      "openApiDiscovery": {
+        "status": "deferred",
+        "lastAttempt": "2026-08-29",
+        "nextAttempt": "2026-09-05",
+        "reason": "No unique MOLIT OpenAPI transaction identity was found during the 24-month discovery scan."
+      }
+    },
+    {
+      "id": "seoul-11290-catalog-002",
+      "city": "서울",
+      "district": "성북구",
+      "name": "래미안장위퍼스트하이",
+      "tags": [
+        "장위 대표",
+        "대단지"
+      ],
+      "openApi": {
+        "lawdCode": "11290",
+        "identityKey": "11290|seq|11290-4861",
+        "aptSeq": "11290-4861",
+        "aptName": "래미안장위퍼스트하이",
+        "legalDong": "장위동",
+        "jibun": "320",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11290-catalog-003",
+      "city": "서울",
+      "district": "성북구",
+      "name": "보문파크뷰자이",
+      "tags": [
+        "구 대표"
+      ],
+      "openApi": {
+        "lawdCode": "11290",
+        "identityKey": "11290|seq|11290-4536",
+        "aptSeq": "11290-4536",
+        "aptName": "보문파크뷰자이",
+        "legalDong": "보문동6가",
+        "jibun": "458",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11710-catalog-001",
+      "city": "서울",
+      "district": "송파구",
+      "name": "헬리오시티",
+      "featured": true,
+      "tags": [
+        "송파 대표",
+        "대단지"
+      ],
+      "openApi": {
+        "lawdCode": "11710",
+        "identityKey": "11710|seq|11710-8865",
+        "aptSeq": "11710-8865",
+        "aptName": "헬리오시티",
+        "legalDong": "가락동",
+        "jibun": "913",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11710-catalog-002",
+      "city": "서울",
+      "district": "송파구",
+      "name": "잠실주공5단지",
+      "tags": [
+        "잠실 대표",
+        "재건축"
+      ],
+      "openApiDiscovery": {
+        "status": "deferred",
+        "lastAttempt": "2026-08-29",
+        "nextAttempt": "2026-09-05",
+        "reason": "No unique MOLIT OpenAPI transaction identity was found during the 24-month discovery scan."
+      }
+    },
+    {
+      "id": "seoul-11710-catalog-003",
+      "city": "서울",
+      "district": "송파구",
+      "name": "트리지움",
+      "tags": [
+        "잠실 대표",
+        "대단지"
+      ],
+      "openApi": {
+        "lawdCode": "11710",
+        "identityKey": "11710|seq|11710-6028",
+        "aptSeq": "11710-6028",
+        "aptName": "트리지움",
+        "legalDong": "잠실동",
+        "jibun": "35",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11710-catalog-004",
+      "city": "서울",
+      "district": "송파구",
+      "name": "올림픽선수기자촌1단지",
+      "tags": [
+        "송파 대표",
+        "재건축"
+      ],
+      "openApi": {
+        "lawdCode": "11710",
+        "identityKey": "11710|seq|11710-5714",
+        "aptSeq": "11710-5714",
+        "aptName": "올림픽선수기자촌1단지",
+        "legalDong": "방이동",
+        "jibun": "89",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11470-catalog-001",
+      "city": "서울",
+      "district": "양천구",
+      "name": "목동신시가지1",
+      "displayName": "목동신시가지1단지",
+      "tags": [
+        "목동 대표",
+        "재건축"
+      ],
+      "openApi": {
+        "lawdCode": "11470",
+        "identityKey": "11470|seq|11470-17",
+        "aptSeq": "11470-17",
+        "aptName": "목동신시가지1",
+        "legalDong": "목동",
+        "jibun": "901",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11470-catalog-002",
+      "city": "서울",
+      "district": "양천구",
+      "name": "목동신시가지2",
+      "displayName": "목동신시가지2단지",
+      "tags": [
+        "목동 대표",
+        "재건축"
+      ],
+      "openApi": {
+        "lawdCode": "11470",
+        "identityKey": "11470|seq|11470-18",
+        "aptSeq": "11470-18",
+        "aptName": "목동신시가지2",
+        "legalDong": "목동",
+        "jibun": "902",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11470-catalog-003",
+      "city": "서울",
+      "district": "양천구",
+      "name": "목동센트럴아이파크위브1단지",
+      "tags": [
+        "신축 대단지"
+      ],
+      "openApi": {
+        "lawdCode": "11470",
+        "identityKey": "11470|seq|11470-5627",
+        "aptSeq": "11470-5627",
+        "aptName": "목동센트럴아이파크위브1단지",
+        "legalDong": "신월동",
+        "jibun": "1075",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11560-catalog-001",
+      "city": "서울",
+      "district": "영등포구",
+      "name": "여의도자이",
+      "tags": [
+        "여의도 대표"
+      ],
+      "openApi": {
+        "lawdCode": "11560",
+        "identityKey": "11560|seq|11560-1369",
+        "aptSeq": "11560-1369",
+        "aptName": "여의도자이",
+        "legalDong": "여의도동",
+        "jibun": "47",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11560-catalog-002",
+      "city": "서울",
+      "district": "영등포구",
+      "name": "래미안에스티움",
+      "tags": [
+        "신길 대표",
+        "대단지"
+      ],
+      "openApi": {
+        "lawdCode": "11560",
+        "identityKey": "11560|seq|11560-2006",
+        "aptSeq": "11560-2006",
+        "aptName": "래미안에스티움",
+        "legalDong": "신길동",
+        "jibun": "4950",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11560-catalog-003",
+      "city": "서울",
+      "district": "영등포구",
+      "name": "신길센트럴자이",
+      "tags": [
+        "신길 대표",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "11560",
+        "identityKey": "11560|seq|11560-2118",
+        "aptSeq": "11560-2118",
+        "aptName": "신길센트럴자이아파트",
+        "legalDong": "신길동",
+        "jibun": "4964",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11170-catalog-001",
+      "city": "서울",
+      "district": "용산구",
+      "name": "래미안첼리투스",
+      "tags": [
+        "용산 대표",
+        "한강변"
+      ],
+      "openApi": {
+        "lawdCode": "11170",
+        "identityKey": "11170|seq|11170-3048",
+        "aptSeq": "11170-3048",
+        "aptName": "래미안첼리투스",
+        "legalDong": "이촌동",
+        "jibun": "436",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11170-catalog-002",
+      "city": "서울",
+      "district": "용산구",
+      "name": "용산푸르지오써밋",
+      "tags": [
+        "용산 대표",
+        "고가"
+      ],
+      "openApiDiscovery": {
+        "status": "deferred",
+        "lastAttempt": "2026-08-29",
+        "nextAttempt": "2026-09-05",
+        "reason": "No unique MOLIT OpenAPI transaction identity was found during the 24-month discovery scan."
+      }
+    },
+    {
+      "id": "seoul-11170-catalog-003",
+      "city": "서울",
+      "district": "용산구",
+      "name": "한가람",
+      "tags": [
+        "이촌 대표",
+        "대단지"
+      ],
+      "openApi": {
+        "lawdCode": "11170",
+        "identityKey": "11170|seq|11170-66",
+        "aptSeq": "11170-66",
+        "aptName": "한가람",
+        "legalDong": "이촌동",
+        "jibun": "404",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11380-catalog-001",
+      "city": "서울",
+      "district": "은평구",
+      "name": "은평스카이뷰자이",
+      "tags": [
+        "구 대표",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "11380",
+        "identityKey": "11380|seq|11380-10938",
+        "aptSeq": "11380-10938",
+        "aptName": "은평스카이뷰자이",
+        "legalDong": "진관동",
+        "jibun": "62",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11380-catalog-002",
+      "city": "서울",
+      "district": "은평구",
+      "name": "북한산푸르지오",
+      "tags": [
+        "구 대표",
+        "대단지"
+      ],
+      "openApi": {
+        "lawdCode": "11380",
+        "identityKey": "11380|seq|11380-10020",
+        "aptSeq": "11380-10020",
+        "aptName": "북한산푸르지오",
+        "legalDong": "녹번동",
+        "jibun": "281",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11380-catalog-003",
+      "city": "서울",
+      "district": "은평구",
+      "name": "래미안베라힐즈",
+      "tags": [
+        "구 대표"
+      ],
+      "openApi": {
+        "lawdCode": "11380",
+        "identityKey": "11380|seq|11380-11015",
+        "aptSeq": "11380-11015",
+        "aptName": "래미안베라힐즈",
+        "legalDong": "녹번동",
+        "jibun": "283",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11110-catalog-001",
+      "city": "서울",
+      "district": "종로구",
+      "name": "경희궁롯데캐슬",
+      "tags": [
+        "구 대표",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "11110",
+        "identityKey": "11110|seq|11110-2519",
+        "aptSeq": "11110-2519",
+        "aptName": "경희궁롯데캐슬",
+        "legalDong": "무악동",
+        "jibun": "89",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11110-catalog-002",
+      "city": "서울",
+      "district": "종로구",
+      "name": "광화문스페이스본(101동~105동)",
+      "displayName": "광화문스페이스본",
+      "tags": [
+        "광화문 대표"
+      ],
+      "openApi": {
+        "lawdCode": "11110",
+        "identityKey": "11110|seq|11110-2203",
+        "aptSeq": "11110-2203",
+        "aptName": "광화문스페이스본(101동~105동)",
+        "legalDong": "사직동",
+        "jibun": "9",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11140-catalog-001",
+      "city": "서울",
+      "district": "중구",
+      "name": "래미안하이베르",
+      "tags": [
+        "구 대표"
+      ],
+      "openApi": {
+        "lawdCode": "11140",
+        "identityKey": "11140|seq|11140-1141",
+        "aptSeq": "11140-1141",
+        "aptName": "래미안하이베르",
+        "legalDong": "신당동",
+        "jibun": "851",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11140-catalog-002",
+      "city": "서울",
+      "district": "중구",
+      "name": "청구e편한세상",
+      "tags": [
+        "구 대표",
+        "대단지"
+      ],
+      "openApi": {
+        "lawdCode": "11140",
+        "identityKey": "11140|seq|11140-1144",
+        "aptSeq": "11140-1144",
+        "aptName": "청구e편한세상",
+        "legalDong": "신당동",
+        "jibun": "852",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11140-catalog-003",
+      "city": "서울",
+      "district": "중구",
+      "name": "롯데캐슬베네치아",
+      "tags": [
+        "도심 대표"
+      ],
+      "openApiDiscovery": {
+        "status": "deferred",
+        "lastAttempt": "2026-08-29",
+        "nextAttempt": "2026-09-05",
+        "reason": "No unique MOLIT OpenAPI transaction identity was found during the 24-month discovery scan."
+      }
+    },
+    {
+      "id": "seoul-11260-catalog-001",
+      "city": "서울",
+      "district": "중랑구",
+      "name": "용마산하늘채",
+      "tags": [
+        "구 대표"
+      ],
+      "openApi": {
+        "lawdCode": "11260",
+        "identityKey": "11260|seq|11260-3079",
+        "aptSeq": "11260-3079",
+        "aptName": "용마산하늘채",
+        "legalDong": "면목동",
+        "jibun": "1537",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11260-catalog-002",
+      "city": "서울",
+      "district": "중랑구",
+      "name": "한양수자인사가정파크",
+      "tags": [
+        "구 대표",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "11260",
+        "identityKey": "11260|seq|11260-4027",
+        "aptSeq": "11260-4027",
+        "aptName": "한양수자인사가정파크",
+        "legalDong": "면목동",
+        "jibun": "1543",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "seoul-11260-catalog-003",
+      "city": "서울",
+      "district": "중랑구",
+      "name": "상봉프레미어스엠코",
+      "tags": [
+        "상봉 대표"
+      ],
+      "openApiDiscovery": {
+        "status": "deferred",
+        "lastAttempt": "2026-08-29",
+        "nextAttempt": "2026-09-05",
+        "reason": "No unique MOLIT OpenAPI transaction identity was found during the 24-month discovery scan."
+      }
+    },
+    {
+      "id": "busan-26440-catalog-001",
+      "city": "부산",
+      "district": "강서구",
+      "name": "명지대방노블랜드오션뷰1차",
+      "tags": [
+        "명지 대표"
+      ],
+      "openApi": {
+        "lawdCode": "26440",
+        "identityKey": "26440|seq|26440-58",
+        "aptSeq": "26440-58",
+        "aptName": "명지대방노블랜드오션뷰1차",
+        "legalDong": "명지동",
+        "jibun": "3423",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26440-catalog-002",
+      "city": "부산",
+      "district": "강서구",
+      "name": "명지국제신도시삼정그린코아더베스트",
+      "tags": [
+        "명지 대표",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "26440",
+        "identityKey": "26440|seq|26440-118",
+        "aptSeq": "26440-118",
+        "aptName": "명지국제신도시삼정그린코아더베스트",
+        "legalDong": "명지동",
+        "jibun": "3599-3",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26410-catalog-001",
+      "city": "부산",
+      "district": "금정구",
+      "name": "래미안장전",
+      "tags": [
+        "금정 대표",
+        "대단지"
+      ],
+      "openApi": {
+        "lawdCode": "26410",
+        "identityKey": "26410|seq|26410-2453",
+        "aptSeq": "26410-2453",
+        "aptName": "래미안장전",
+        "legalDong": "장전동",
+        "jibun": "745",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26410-catalog-002",
+      "city": "부산",
+      "district": "금정구",
+      "name": "구서롯데캐슬골드2단지",
+      "tags": [
+        "구서 대표"
+      ],
+      "openApiDiscovery": {
+        "status": "deferred",
+        "lastAttempt": "2026-08-29",
+        "nextAttempt": "2026-09-05",
+        "reason": "No unique MOLIT OpenAPI transaction identity was found during the 24-month discovery scan."
+      }
+    },
+    {
+      "id": "busan-26410-catalog-003",
+      "city": "부산",
+      "district": "금정구",
+      "name": "금정산2차쌍용예가",
+      "tags": [
+        "구 대표",
+        "대단지"
+      ],
+      "openApi": {
+        "lawdCode": "26410",
+        "identityKey": "26410|seq|26410-2232",
+        "aptSeq": "26410-2232",
+        "aptName": "금정산2차쌍용예가",
+        "legalDong": "장전동",
+        "jibun": "739",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26710-catalog-001",
+      "city": "부산",
+      "district": "기장군",
+      "name": "정관동일스위트1차",
+      "tags": [
+        "정관 대표",
+        "대단지"
+      ],
+      "openApi": {
+        "lawdCode": "26710",
+        "identityKey": "26710|seq|26710-484",
+        "aptSeq": "26710-484",
+        "aptName": "정관동일스위트1차",
+        "legalDong": "정관읍 용수리",
+        "jibun": "1387",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26710-catalog-002",
+      "city": "부산",
+      "district": "기장군",
+      "name": "정관신도시롯데캐슬",
+      "tags": [
+        "정관 대표"
+      ],
+      "openApi": {
+        "lawdCode": "26710",
+        "identityKey": "26710|seq|26710-399",
+        "aptSeq": "26710-399",
+        "aptName": "정관신도시롯데캐슬",
+        "legalDong": "정관읍 용수리",
+        "jibun": "1364",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26710-catalog-003",
+      "city": "부산",
+      "district": "기장군",
+      "name": "일광한신더휴센트럴포레1단지",
+      "tags": [
+        "일광",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "26710",
+        "identityKey": "26710|seq|26710-637",
+        "aptSeq": "26710-637",
+        "aptName": "일광한신더휴센트럴포레1단지",
+        "legalDong": "일광읍 삼성리",
+        "jibun": "794",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26290-catalog-001",
+      "city": "부산",
+      "district": "남구",
+      "name": "대연힐스테이트푸르지오",
+      "featured": true,
+      "tags": [
+        "남구 대표",
+        "대단지"
+      ],
+      "openApi": {
+        "lawdCode": "26290",
+        "identityKey": "26290|seq|26290-2315",
+        "aptSeq": "26290-2315",
+        "aptName": "대연힐스테이트푸르지오",
+        "legalDong": "대연동",
+        "jibun": "1858",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26290-catalog-002",
+      "city": "부산",
+      "district": "남구",
+      "name": "대연SKVIEWHills",
+      "displayName": "대연SK뷰힐스",
+      "tags": [
+        "남구 대표"
+      ],
+      "openApi": {
+        "lawdCode": "26290",
+        "identityKey": "26290|seq|26290-2632",
+        "aptSeq": "26290-2632",
+        "aptName": "대연SKVIEWHills",
+        "legalDong": "대연동",
+        "jibun": "1903",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26290-catalog-003",
+      "city": "부산",
+      "district": "남구",
+      "name": "GS하이츠자이",
+      "tags": [
+        "남구 대표"
+      ],
+      "openApi": {
+        "lawdCode": "26290",
+        "identityKey": "26290|seq|26290-1959",
+        "aptSeq": "26290-1959",
+        "aptName": "GS하이츠자이",
+        "legalDong": "용호동",
+        "jibun": "197",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26290-catalog-004",
+      "city": "부산",
+      "district": "남구",
+      "name": "대연푸르지오클라센트1단지",
+      "tags": [
+        "신축 대단지"
+      ],
+      "openApi": {
+        "lawdCode": "26290",
+        "identityKey": "26290|seq|26290-3241",
+        "aptSeq": "26290-3241",
+        "aptName": "대연푸르지오클라센트1단지",
+        "legalDong": "대연동",
+        "jibun": "1933",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26290-catalog-005",
+      "city": "부산",
+      "district": "남구",
+      "name": "대연디아이엘",
+      "displayName": "대연 디아이엘",
+      "tags": [
+        "신축 대단지"
+      ],
+      "openApiDiscovery": {
+        "status": "deferred",
+        "lastAttempt": "2026-08-29",
+        "nextAttempt": "2026-09-05",
+        "reason": "No unique MOLIT OpenAPI transaction identity was found during the 24-month discovery scan."
+      }
+    },
+    {
+      "id": "busan-26170-catalog-001",
+      "city": "부산",
+      "district": "동구",
+      "name": "부산항일동미라주더오션",
+      "tags": [
+        "북항",
+        "신축"
+      ],
+      "openApiDiscovery": {
+        "status": "deferred",
+        "lastAttempt": "2026-08-29",
+        "nextAttempt": "2026-09-05",
+        "reason": "No unique MOLIT OpenAPI transaction identity was found during the 24-month discovery scan."
+      }
+    },
+    {
+      "id": "busan-26170-catalog-002",
+      "city": "부산",
+      "district": "동구",
+      "name": "두산위브포세이돈2",
+      "tags": [
+        "동구 대표"
+      ],
+      "openApi": {
+        "lawdCode": "26170",
+        "identityKey": "26170|seq|26170-641",
+        "aptSeq": "26170-641",
+        "aptName": "두산위브포세이돈2",
+        "legalDong": "범일동",
+        "jibun": "825-7",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26260-catalog-001",
+      "city": "부산",
+      "district": "동래구",
+      "name": "사직쌍용예가",
+      "tags": [
+        "사직 대표",
+        "대단지"
+      ],
+      "openApi": {
+        "lawdCode": "26260",
+        "identityKey": "26260|seq|26260-1476",
+        "aptSeq": "26260-1476",
+        "aptName": "사직쌍용예가",
+        "legalDong": "사직동",
+        "jibun": "1017",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26260-catalog-002",
+      "city": "부산",
+      "district": "동래구",
+      "name": "명륜2차아이파크1단지",
+      "tags": [
+        "동래 대표"
+      ],
+      "openApi": {
+        "lawdCode": "26260",
+        "identityKey": "26260|seq|26260-1956",
+        "aptSeq": "26260-1956",
+        "aptName": "명륜2차아이파크1단지",
+        "legalDong": "명륜동",
+        "jibun": "782",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26260-catalog-003",
+      "city": "부산",
+      "district": "동래구",
+      "name": "힐스테이트명륜트라디움",
+      "tags": [
+        "동래 대표",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "26260",
+        "identityKey": "26260|seq|26260-2244",
+        "aptSeq": "26260-2244",
+        "aptName": "힐스테이트명륜트라디움",
+        "legalDong": "명륜동",
+        "jibun": "805",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26260-catalog-004",
+      "city": "부산",
+      "district": "동래구",
+      "name": "e편한세상동래명장1단지",
+      "tags": [
+        "신축 대단지"
+      ],
+      "openApi": {
+        "lawdCode": "26260",
+        "identityKey": "26260|seq|26260-2144",
+        "aptSeq": "26260-2144",
+        "aptName": "e편한세상동래명장1단지",
+        "legalDong": "명장동",
+        "jibun": "623",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26230-catalog-001",
+      "city": "부산",
+      "district": "부산진구",
+      "name": "포레나부산초읍",
+      "tags": [
+        "초읍 대표",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "26230",
+        "identityKey": "26230|seq|26230-2598",
+        "aptSeq": "26230-2598",
+        "aptName": "포레나부산초읍",
+        "legalDong": "초읍동",
+        "jibun": "676",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26230-catalog-002",
+      "city": "부산",
+      "district": "부산진구",
+      "name": "시민공원삼정그린코아더베스트",
+      "tags": [
+        "시민공원",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "26230",
+        "identityKey": "26230|seq|26230-2654",
+        "aptSeq": "26230-2654",
+        "aptName": "시민공원삼정그린코아더베스트",
+        "legalDong": "부암동",
+        "jibun": "755",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26230-catalog-003",
+      "city": "부산",
+      "district": "부산진구",
+      "name": "개금아이파크",
+      "tags": [
+        "구 대표",
+        "대단지"
+      ],
+      "openApi": {
+        "lawdCode": "26230",
+        "identityKey": "26230|seq|26230-146",
+        "aptSeq": "26230-146",
+        "aptName": "개금아이파크",
+        "legalDong": "개금동",
+        "jibun": "618-2",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26320-catalog-001",
+      "city": "부산",
+      "district": "북구",
+      "name": "백양디이스트(1단지)",
+      "displayName": "백양디이스트 1단지",
+      "tags": [
+        "신축 대단지"
+      ],
+      "openApi": {
+        "lawdCode": "26320",
+        "identityKey": "26320|seq|26320-1659",
+        "aptSeq": "26320-1659",
+        "aptName": "백양디이스트(1단지)",
+        "legalDong": "만덕동",
+        "jibun": "955",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26320-catalog-002",
+      "city": "부산",
+      "district": "북구",
+      "name": "화명동원로얄듀크",
+      "tags": [
+        "화명 대표"
+      ],
+      "openApiDiscovery": {
+        "status": "deferred",
+        "lastAttempt": "2026-08-29",
+        "nextAttempt": "2026-09-05",
+        "reason": "No unique MOLIT OpenAPI transaction identity was found during the 24-month discovery scan."
+      }
+    },
+    {
+      "id": "busan-26320-catalog-003",
+      "city": "부산",
+      "district": "북구",
+      "name": "만덕5휴먼시아",
+      "tags": [
+        "대단지"
+      ],
+      "openApiDiscovery": {
+        "status": "deferred",
+        "lastAttempt": "2026-08-29",
+        "nextAttempt": "2026-09-05",
+        "reason": "No unique MOLIT OpenAPI transaction identity was found during the 24-month discovery scan."
+      }
+    },
+    {
+      "id": "busan-26530-catalog-001",
+      "city": "부산",
+      "district": "사상구",
+      "name": "주례경동리인",
+      "tags": [
+        "주례 대표"
+      ],
+      "openApi": {
+        "lawdCode": "26530",
+        "identityKey": "26530|seq|26530-994",
+        "aptSeq": "26530-994",
+        "aptName": "주례경동리인",
+        "legalDong": "주례동",
+        "jibun": "1288",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26530-catalog-002",
+      "city": "부산",
+      "district": "사상구",
+      "name": "사상구남역동원로얄듀크",
+      "tags": [
+        "구 대표",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "26530",
+        "identityKey": "26530|seq|26530-1043",
+        "aptSeq": "26530-1043",
+        "aptName": "사상구남역동원로얄듀크",
+        "legalDong": "모라동",
+        "jibun": "1380",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26380-catalog-001",
+      "city": "부산",
+      "district": "사하구",
+      "name": "다대동롯데캐슬몰운대",
+      "tags": [
+        "다대 대표",
+        "대단지"
+      ],
+      "openApi": {
+        "lawdCode": "26380",
+        "identityKey": "26380|seq|26380-1617",
+        "aptSeq": "26380-1617",
+        "aptName": "다대동롯데캐슬몰운대",
+        "legalDong": "다대동",
+        "jibun": "1624",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26380-catalog-002",
+      "city": "부산",
+      "district": "사하구",
+      "name": "괴정한신더휴",
+      "tags": [
+        "괴정 대표",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "26380",
+        "identityKey": "26380|seq|26380-2082",
+        "aptSeq": "26380-2082",
+        "aptName": "괴정한신더휴",
+        "legalDong": "괴정동",
+        "jibun": "1286",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26380-catalog-003",
+      "city": "부산",
+      "district": "사하구",
+      "name": "하단SKVIEW",
+      "displayName": "하단SK뷰",
+      "tags": [
+        "하단 대표"
+      ],
+      "openApiDiscovery": {
+        "status": "deferred",
+        "lastAttempt": "2026-08-29",
+        "nextAttempt": "2026-09-05",
+        "reason": "No unique MOLIT OpenAPI transaction identity was found during the 24-month discovery scan."
+      }
+    },
+    {
+      "id": "busan-26140-catalog-001",
+      "city": "부산",
+      "district": "서구",
+      "name": "대신해모로센트럴아파트",
+      "displayName": "대신해모로센트럴",
+      "tags": [
+        "서구 대표",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "26140",
+        "identityKey": "26140|seq|26140-1356",
+        "aptSeq": "26140-1356",
+        "aptName": "대신해모로센트럴아파트",
+        "legalDong": "서대신동2가",
+        "jibun": "576",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26140-catalog-002",
+      "city": "부산",
+      "district": "서구",
+      "name": "e편한세상송도더퍼스트비치",
+      "tags": [
+        "송도 대표",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "26140",
+        "identityKey": "26140|seq|26140-1361",
+        "aptSeq": "26140-1361",
+        "aptName": "e편한세상송도더퍼스트비치",
+        "legalDong": "암남동",
+        "jibun": "778",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26140-catalog-003",
+      "city": "부산",
+      "district": "서구",
+      "name": "동대신역비스타동원아파트",
+      "displayName": "동대신역비스타동원",
+      "tags": [
+        "역세권",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "26140",
+        "identityKey": "26140|seq|26140-1289",
+        "aptSeq": "26140-1289",
+        "aptName": "동대신역비스타동원아파트",
+        "legalDong": "동대신동1가",
+        "jibun": "420",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26500-catalog-001",
+      "city": "부산",
+      "district": "수영구",
+      "name": "광안자이",
+      "tags": [
+        "광안 대표",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "26500",
+        "identityKey": "26500|seq|26500-2281",
+        "aptSeq": "26500-2281",
+        "aptName": "광안자이",
+        "legalDong": "광안동",
+        "jibun": "1334",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26500-catalog-002",
+      "city": "부산",
+      "district": "수영구",
+      "name": "쌍용예가디오션",
+      "tags": [
+        "광안 대표",
+        "고가"
+      ],
+      "openApi": {
+        "lawdCode": "26500",
+        "identityKey": "26500|seq|26500-1839",
+        "aptSeq": "26500-1839",
+        "aptName": "쌍용예가디오션",
+        "legalDong": "광안동",
+        "jibun": "1330",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26500-catalog-003",
+      "city": "부산",
+      "district": "수영구",
+      "name": "수영SKVIEW1단지",
+      "displayName": "수영SK뷰 1단지",
+      "tags": [
+        "수영 대표"
+      ],
+      "openApi": {
+        "lawdCode": "26500",
+        "identityKey": "26500|seq|26500-2225",
+        "aptSeq": "26500-2225",
+        "aptName": "수영SKVIEW1단지",
+        "legalDong": "망미동",
+        "jibun": "1176",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26500-catalog-004",
+      "city": "부산",
+      "district": "수영구",
+      "name": "e편한세상오션테라스3단지",
+      "tags": [
+        "민락 대표",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "26500",
+        "identityKey": "26500|seq|26500-2229",
+        "aptSeq": "26500-2229",
+        "aptName": "e편한세상오션테라스3단지",
+        "legalDong": "민락동",
+        "jibun": "783",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26500-catalog-005",
+      "city": "부산",
+      "district": "수영구",
+      "name": "드파인광안",
+      "displayName": "드파인 광안",
+      "tags": [
+        "광안 신축"
+      ],
+      "openApiDiscovery": {
+        "status": "deferred",
+        "lastAttempt": "2026-08-29",
+        "nextAttempt": "2026-09-05",
+        "reason": "No unique MOLIT OpenAPI transaction identity was found during the 24-month discovery scan."
+      }
+    },
+    {
+      "id": "busan-26470-catalog-001",
+      "city": "부산",
+      "district": "연제구",
+      "name": "힐스테이트연산",
+      "tags": [
+        "연산 대표",
+        "대단지"
+      ],
+      "openApi": {
+        "lawdCode": "26470",
+        "identityKey": "26470|seq|26470-1908",
+        "aptSeq": "26470-1908",
+        "aptName": "힐스테이트연산",
+        "legalDong": "연산동",
+        "jibun": "2382",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26470-catalog-002",
+      "city": "부산",
+      "district": "연제구",
+      "name": "연산자이",
+      "tags": [
+        "연산 대표"
+      ],
+      "openApi": {
+        "lawdCode": "26470",
+        "identityKey": "26470|seq|26470-1066",
+        "aptSeq": "26470-1066",
+        "aptName": "연산자이",
+        "legalDong": "연산동",
+        "jibun": "2262",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26470-catalog-003",
+      "city": "부산",
+      "district": "연제구",
+      "name": "연산더샵",
+      "tags": [
+        "연산 대표"
+      ],
+      "openApi": {
+        "lawdCode": "26470",
+        "identityKey": "26470|seq|26470-1552",
+        "aptSeq": "26470-1552",
+        "aptName": "연산더샵",
+        "legalDong": "연산동",
+        "jibun": "2352",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26200-catalog-001",
+      "city": "부산",
+      "district": "영도구",
+      "name": "오션라이프에일린의뜰1단지",
+      "tags": [
+        "영도 신축",
+        "대단지"
+      ],
+      "openApi": {
+        "lawdCode": "26200",
+        "identityKey": "26200|seq|26200-1220",
+        "aptSeq": "26200-1220",
+        "aptName": "오션라이프에일린의뜰1단지",
+        "legalDong": "동삼동",
+        "jibun": "1195",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26200-catalog-002",
+      "city": "부산",
+      "district": "영도구",
+      "name": "동삼그린힐",
+      "tags": [
+        "영도 대표",
+        "대단지"
+      ],
+      "openApi": {
+        "lawdCode": "26200",
+        "identityKey": "26200|seq|26200-112",
+        "aptSeq": "26200-112",
+        "aptName": "동삼그린힐",
+        "legalDong": "동삼동",
+        "jibun": "1123",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26110-catalog-001",
+      "city": "부산",
+      "district": "중구",
+      "name": "롯데캐슬스카이",
+      "tags": [
+        "중구 대표"
+      ],
+      "openApiDiscovery": {
+        "status": "deferred",
+        "lastAttempt": "2026-08-29",
+        "nextAttempt": "2026-09-05",
+        "reason": "No unique MOLIT OpenAPI transaction identity was found during the 24-month discovery scan."
+      }
+    },
+    {
+      "id": "busan-26110-catalog-002",
+      "city": "부산",
+      "district": "중구",
+      "name": "보수허브센티움",
+      "tags": [
+        "중구 신축"
+      ],
+      "openApi": {
+        "lawdCode": "26110",
+        "identityKey": "26110|seq|26110-915",
+        "aptSeq": "26110-915",
+        "aptName": "보수허브센티움",
+        "legalDong": "보수동3가",
+        "jibun": "56",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26350-catalog-001",
+      "city": "부산",
+      "district": "해운대구",
+      "name": "해운대힐스테이트위브",
+      "tags": [
+        "해운대 대표",
+        "대단지"
+      ],
+      "openApi": {
+        "lawdCode": "26350",
+        "identityKey": "26350|seq|26350-2285",
+        "aptSeq": "26350-2285",
+        "aptName": "해운대힐스테이트위브",
+        "legalDong": "중동",
+        "jibun": "1818",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26350-catalog-002",
+      "city": "부산",
+      "district": "해운대구",
+      "name": "경남마리나",
+      "tags": [
+        "마린시티 대표",
+        "재건축"
+      ],
+      "openApi": {
+        "lawdCode": "26350",
+        "identityKey": "26350|seq|26350-1",
+        "aptSeq": "26350-1",
+        "aptName": "경남마리나",
+        "legalDong": "우동",
+        "jibun": "1388-1",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    },
+    {
+      "id": "busan-26350-catalog-003",
+      "city": "부산",
+      "district": "해운대구",
+      "name": "해운대자이2차1단지",
+      "tags": [
+        "해운대 대표",
+        "신축"
+      ],
+      "openApi": {
+        "lawdCode": "26350",
+        "identityKey": "26350|seq|26350-2342",
+        "aptSeq": "26350-2342",
+        "aptName": "해운대자이2차1단지",
+        "legalDong": "우동",
+        "jibun": "1536",
+        "roadName": "",
+        "matchedBy": "catalog-cache"
+      }
+    }
   ]
 }

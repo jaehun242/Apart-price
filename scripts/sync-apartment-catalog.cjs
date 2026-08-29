@@ -59,6 +59,8 @@ for (const entry of catalog.complexes) {
     if (entry.displayName) existing.displayName = entry.displayName;
     if (entry.featured != null) existing.featured = Boolean(entry.featured);
     if (entry.officialComplexCode) existing.officialComplexCode = String(entry.officialComplexCode);
+    if (entry.openApi && !existing.openApi) existing.openApi = { ...entry.openApi };
+    if (entry.openApiDiscovery && !existing.openApi && !existing.openApiDiscovery) existing.openApiDiscovery = { ...entry.openApiDiscovery };
     if (entry.aliases) existing.aliases = [...new Set([...(existing.aliases || []), ...entry.aliases].map(String))];
     if (entry.tags) existing.tags = [...new Set([...(existing.tags || []), ...entry.tags].map(String))];
     if (JSON.stringify(existing) !== before) updated++;
@@ -76,6 +78,8 @@ for (const entry of catalog.complexes) {
     tags: [...new Set((entry.tags || ['대표·신축 추가']).map(String))],
     ...(entry.aliases ? { aliases: [...new Set(entry.aliases.map(String))] } : {}),
     ...(entry.officialComplexCode ? { officialComplexCode: String(entry.officialComplexCode) } : {}),
+    ...(entry.openApi ? { openApi: { ...entry.openApi } } : {}),
+    ...(entry.openApiDiscovery ? { openApiDiscovery: { ...entry.openApiDiscovery } } : {}),
     catalogAddedAt: String(catalog.version || new Date().toISOString().slice(0, 10)),
     supplyMapping: entry.officialComplexCode ? 'verified-source' : 'pending-source-code',
     stats: { valid: 0, cancelled: 0, recentCancelled: 0, firstDate: null, lastDate: null, years: 0, groups: {} },
