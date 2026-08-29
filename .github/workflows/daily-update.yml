@@ -11,6 +11,8 @@ on:
       - scripts/sync-apartment-catalog.cjs
       - scripts/test-openapi-updater.ps1
       - scripts/test-deferred-catalog-matching.ps1
+      - scripts/build-supply-area-map.ps1
+      - scripts/test-supply-area-builder.ps1
       - .github/workflows/daily-update.yml
   schedule:
     - cron: "37 6 * * *"
@@ -75,6 +77,7 @@ jobs:
         run: |
           ./scripts/test-openapi-updater.ps1
           ./scripts/test-deferred-catalog-matching.ps1
+          ./scripts/test-supply-area-builder.ps1
           node ./scripts/test-apartment-catalog.cjs
 
       - name: Test first-seen tracking and weekly-new filter

@@ -183,6 +183,7 @@ foreach ($complex in $complexes) {
   $complexName = $(if ($complex.displayName) { [string]$complex.displayName } else { [string]$complex.name })
   $complexCode = Get-ComplexCode -Complex $complex
   $pendingSourceCode = [string]$complex.supplyMapping -eq 'pending-source-code'
+  $complexSourceUrl = if ($pendingSourceCode) { $null } else { $sourceBaseUrl + $complexCode }
   $cachedProperty = if ($sourceCache) { $sourceCache.complexes.PSObject.Properties[$complexId] } else { $null }
   if ($cachedProperty) {
     Write-Host "[$index/$($complexes.Count)] $complexName ($complexCode, cached)"
@@ -198,7 +199,7 @@ foreach ($complex in $complexes) {
     $html = Get-SourcePage -ComplexCode $complexCode
     $sourceTypes = Get-SourceTypes -Html $html
   }
-  $records = $recordsByComplex[$complexId].ToArray()
+  $records = if ($recordsByComplex.ContainsKey($complexId)) { @($recordsByComplex[$complexId]) } else { @() }
   $areaGroups = @($records | Group-Object { ([double]$_.area).ToString('0.####', [Globalization.CultureInfo]::InvariantCulture) } | Sort-Object { [double]$_.Name })
   $areaMap = [ordered]@{}
   $complexMapped = 0
@@ -222,13 +223,13 @@ foreach ($complex in $complexes) {
         ComplexId = $complexId
         Area = $areaGroup.Name
         Records = $areaGroup.Count
-        SourceUrl = $sourceBaseUrl + $complexCode
+        SourceUrl = $complexSourceUrl
       })
     }
   }
 
   $complexMap[$complexId] = [ordered]@{
-    sourceUrl = $sourceBaseUrl + $complexCode
+    sourceUrl = $complexSourceUrl
     floorTypes = @($sourceTypes.FloorTypes)
     labelTypes = @($sourceTypes.LabelTypes)
     areas = $areaMap
@@ -301,7 +302,9 @@ $requiredSamples = @(
   [PSCustomObject]@{ Name = '더샵명지퍼스트월드3단지'; ComplexId = 'busan-26440-20414377'; Area = '99.9247' },
   [PSCustomObject]@{ Name = '더샵명지퍼스트월드3단지'; ComplexId = 'busan-26440-20414377'; Area = '113.9349' }
 )
-foreach ($sample in $requiredSamples) {
+$selectedComplexIds = New-Object 'System.Collections.Generic.HashSet[string]'
+foreach ($complex in $complexes) { [void]$selectedComplexIds.Add([string]$complex.id) }
+foreach ($sample in @($requiredSamples | Where-Object { $selectedComplexIds.Contains([string]$_.ComplexId) })) {
   $complexEntry = $complexMap[$sample.ComplexId]
   $sampleMapping = if ($complexEntry) { $complexEntry.areas[$sample.Area] } else { $null }
   if (-not $sampleMapping) { throw "Required verification sample is unresolved: $($sample.Name) $($sample.Area)㎡" }
