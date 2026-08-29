@@ -199,7 +199,7 @@ foreach ($complex in $complexes) {
     $html = Get-SourcePage -ComplexCode $complexCode
     $sourceTypes = Get-SourceTypes -Html $html
   }
-  $records = if ($recordsByComplex.ContainsKey($complexId)) { @($recordsByComplex[$complexId]) } else { @() }
+  $records = if ($recordsByComplex.ContainsKey($complexId)) { $recordsByComplex[$complexId].ToArray() } else { @() }
   $areaGroups = @($records | Group-Object { ([double]$_.area).ToString('0.####', [Globalization.CultureInfo]::InvariantCulture) } | Sort-Object { [double]$_.Name })
   $areaMap = [ordered]@{}
   $complexMapped = 0
