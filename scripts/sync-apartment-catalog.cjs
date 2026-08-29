@@ -34,6 +34,7 @@ const dataset = readDataset(dataPath);
 const catalog = JSON.parse(fs.readFileSync(catalogPath, 'utf8'));
 if (!Array.isArray(dataset.complexes) || !Array.isArray(dataset.records)) throw new Error('Dataset must contain complexes and records arrays.');
 if (!Array.isArray(catalog.complexes)) throw new Error('Catalog must contain a complexes array.');
+if (catalog.featuredOverrides != null && !Array.isArray(catalog.featuredOverrides)) throw new Error('Catalog featuredOverrides must be an array.');
 
 const byId = new Map(dataset.complexes.map(item => [String(item.id), item]));
 const normalizedByLocation = new Map();
@@ -92,6 +93,24 @@ for (const entry of catalog.complexes) {
   added++;
 }
 
+let overridesApplied = 0;
+for (const override of catalog.featuredOverrides || []) {
+  const id = String(override.id || '').trim();
+  if (!id) throw new Error(`Featured override is missing id: ${JSON.stringify(override)}`);
+  const existing = byId.get(id);
+  if (!existing) throw new Error(`Featured override points to a missing complex: ${id}`);
+
+  const before = JSON.stringify(existing);
+  if (override.displayName) existing.displayName = String(override.displayName);
+  if (override.featured != null) existing.featured = Boolean(override.featured);
+  if (override.aliases) existing.aliases = [...new Set([...(existing.aliases || []), ...override.aliases].map(String))];
+  if (override.tags) existing.tags = [...new Set([...(existing.tags || []), ...override.tags].map(String))];
+  if (JSON.stringify(existing) !== before) {
+    updated++;
+    overridesApplied++;
+  }
+}
+
 const cityStats = {};
 for (const item of dataset.complexes) {
   const city = String(item.city);
@@ -115,6 +134,7 @@ console.log(JSON.stringify({
   catalogVersion: catalog.version,
   added,
   updated,
+  overridesApplied,
   complexCount: dataset.complexes.length,
   recordCount: dataset.records.length,
   cities: dataset.meta.cities

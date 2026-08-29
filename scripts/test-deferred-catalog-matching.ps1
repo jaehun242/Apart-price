@@ -20,25 +20,21 @@ try {
   $sourceDataset = (($sourceText -replace '^\s*window\.APT_ARCHIVE_DATA\s*=\s*', '' -replace ';\s*$', '') | ConvertFrom-Json)
   $catalog = Get-Content -LiteralPath $catalogPath -Raw -Encoding UTF8 | ConvertFrom-Json
 
-  $existingComplex = $null
-  $catalogEntry = $null
-  foreach ($candidate in @($sourceDataset.complexes | Where-Object { $_.openApi.identityKey })) {
-    $lawdCode = ([string]$candidate.id).Split('-')[1]
-    $entry = @($catalog.complexes | Where-Object {
-        ([string]$_.id).Split('-')[1] -eq $lawdCode -and
-        -not (@($sourceDataset.complexes.id) -contains [string]$_.id)
-      } | Select-Object -First 1)
-    if ($entry.Count) { $existingComplex = $candidate; $catalogEntry = $entry[0]; break }
-  }
-  if (-not $existingComplex -or -not $catalogEntry) { throw 'Unable to build deferred catalog matching fixture.' }
+  $complexIdsWithRows = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+  foreach ($record in @($sourceDataset.records)) { [void]$complexIdsWithRows.Add([string]$record.complexId) }
+  $existingComplex = @($sourceDataset.complexes | Where-Object {
+      $_.openApi.identityKey -and $complexIdsWithRows.Contains([string]$_.id)
+    } | Select-Object -First 1)
+  if (-not $existingComplex.Count) { throw 'Unable to find an established OpenAPI complex for the deferred matching fixture.' }
+  $existingComplex = $existingComplex[0]
 
   $existingRows = @($sourceDataset.records | Where-Object { $_.complexId -eq $existingComplex.id })
   if (-not $existingRows.Count) { throw 'Fixture established complex has no transaction rows.' }
   $deferredComplex = [PSCustomObject][ordered]@{
-    id = [string]$catalogEntry.id
-    city = [string]$catalogEntry.city
-    district = [string]$catalogEntry.district
-    name = [string]$catalogEntry.name
+    id = "fixture-$([string]$existingComplex.openApi.lawdCode)-catalog-deferred"
+    city = [string]$existingComplex.city
+    district = [string]$existingComplex.district
+    name = '미매칭신규단지픽스처'
     leader = $false
     featured = $false
     tags = @('fixture')

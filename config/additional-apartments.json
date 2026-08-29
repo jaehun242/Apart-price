@@ -1,7 +1,204 @@
 {
-  "version": "2026-08-27",
+  "version": "2026-08-29",
   "minimumPerDistrict": 5,
   "selectionBasis": "서울·부산 각 구·군의 대표, 고가, 대단지, 신축 및 거래 활발 단지",
+  "featuredOverrides": [
+    {
+      "id": "busan-26290-20362232",
+      "displayName": "용호동 W아파트 (더블유)",
+      "featured": true,
+      "aliases": [
+        "W",
+        "W아파트",
+        "더블유",
+        "용호동 W"
+      ],
+      "tags": [
+        "부산 랜드마크",
+        "용호동",
+        "초고층"
+      ]
+    },
+    {
+      "id": "busan-26350-20147549",
+      "displayName": "해운대 두산위브더제니스",
+      "featured": true,
+      "aliases": [
+        "해운대제니스",
+        "두산위브더제니스",
+        "마린시티 제니스"
+      ],
+      "tags": [
+        "해운대 랜드마크",
+        "마린시티",
+        "초고층"
+      ]
+    },
+    {
+      "id": "busan-26350-20145382",
+      "displayName": "해운대 아이파크",
+      "featured": true,
+      "aliases": [
+        "해운대 I PARK",
+        "해운대아이파크"
+      ],
+      "tags": [
+        "해운대 랜드마크",
+        "마린시티",
+        "초고층"
+      ]
+    },
+    {
+      "id": "busan-26350-20396002",
+      "displayName": "해운대 엘시티",
+      "featured": true,
+      "aliases": [
+        "엘시티",
+        "LCT"
+      ],
+      "tags": [
+        "해운대 랜드마크",
+        "신축",
+        "초고층"
+      ]
+    },
+    {
+      "id": "busan-26350-20394309",
+      "featured": true,
+      "tags": [
+        "해운대 주요 단지",
+        "마린시티"
+      ]
+    },
+    {
+      "id": "busan-26350-20069315",
+      "featured": true,
+      "tags": [
+        "해운대 주요 단지",
+        "마린시티"
+      ]
+    },
+    {
+      "id": "busan-26350-20108501",
+      "featured": true,
+      "tags": [
+        "해운대 주요 단지",
+        "센텀"
+      ]
+    },
+    {
+      "id": "busan-26350-20009093",
+      "featured": true,
+      "tags": [
+        "해운대 주요 단지",
+        "센텀"
+      ]
+    },
+    {
+      "id": "seoul-11680-20325153",
+      "featured": true,
+      "tags": [
+        "강남 대표",
+        "대치동"
+      ]
+    },
+    {
+      "id": "seoul-11680-20027111",
+      "featured": true,
+      "tags": [
+        "강남 대표",
+        "도곡동"
+      ]
+    },
+    {
+      "id": "seoul-11680-51427",
+      "displayName": "압구정 현대14차",
+      "featured": true,
+      "aliases": [
+        "압구정현대",
+        "현대14차"
+      ],
+      "tags": [
+        "강남 대표",
+        "압구정",
+        "재건축"
+      ]
+    },
+    {
+      "id": "seoul-11680-catalog-005",
+      "featured": true,
+      "tags": [
+        "강남 대표",
+        "대치동",
+        "재건축"
+      ]
+    },
+    {
+      "id": "seoul-11680-catalog-006",
+      "featured": true,
+      "tags": [
+        "강남 랜드마크",
+        "도곡동",
+        "초고층"
+      ]
+    },
+    {
+      "id": "seoul-11650-20447603",
+      "featured": true,
+      "tags": [
+        "서울 대표",
+        "반포"
+      ]
+    },
+    {
+      "id": "seoul-11650-20345416",
+      "featured": true,
+      "tags": [
+        "서울 대표",
+        "반포"
+      ]
+    },
+    {
+      "id": "seoul-11170-20135016",
+      "featured": true,
+      "tags": [
+        "서울 대표",
+        "한남동"
+      ]
+    },
+    {
+      "id": "seoul-11170-20395488",
+      "featured": true,
+      "tags": [
+        "서울 대표",
+        "한남동"
+      ]
+    },
+    {
+      "id": "seoul-11200-20351769",
+      "featured": true,
+      "tags": [
+        "서울 랜드마크",
+        "성수동"
+      ]
+    },
+    {
+      "id": "seoul-11710-20107304",
+      "featured": true,
+      "tags": [
+        "서울 대표",
+        "잠실"
+      ]
+    },
+    {
+      "id": "seoul-11710-20099495",
+      "featured": true,
+      "tags": [
+        "서울 대표",
+        "잠실"
+      ]
+    }
+  ],
   "complexes": [
     {
       "id": "busan-26290-20106194",
