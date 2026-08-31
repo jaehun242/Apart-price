@@ -3,24 +3,13 @@ name: Daily apartment transaction update
 on:
   push:
     branches: [main]
-    paths: [config/additional-apartments.json]
   schedule:
-    - cron: "37 6 * * *"
-      timezone: "Asia/Seoul"
-    - cron: "23 9 * * *"
-      timezone: "Asia/Seoul"
-    - cron: "41 12 * * *"
-      timezone: "Asia/Seoul"
-    - cron: "7 16 * * *"
-      timezone: "Asia/Seoul"
-    - cron: "29 19 * * *"
-      timezone: "Asia/Seoul"
-    - cron: "53 22 * * *"
-      timezone: "Asia/Seoul"
+    # GitHub cron uses UTC. 22:00 UTC = next day's 07:00 Asia/Seoul.
+    - cron: "0 22 * * *"
   workflow_dispatch:
     inputs:
       mode:
-        description: "auto: reuse verified same-day collection; refresh: collect now; deploy-only: recover production without API calls"
+        description: "refresh: collect and deploy; auto: verified same-day reuse; deploy-only: publish current main without API calls"
         type: choice
         options: [auto, refresh, deploy-only]
         default: refresh
@@ -28,6 +17,8 @@ on:
 permissions:
   actions: read
   contents: write
+  pages: write
+  id-token: write
 
 concurrency:
   group: daily-apartment-transaction-update
@@ -35,27 +26,35 @@ concurrency:
 
 jobs:
   update:
-    name: Collect, store, deploy, and verify production
+    name: Validate data and deploy public to GitHub Pages
     runs-on: windows-latest
     timeout-minutes: 90
+    environment:
+      name: github-pages
+      url: ${{ steps.pages_deploy.outputs.page_url }}
     env:
       TZ: Asia/Seoul
       PIPELINE_MODE: ${{ inputs.mode || 'refresh' }}
-      PUBLIC_SITE_URL: https://beautiful-palmier-5f7cbc.netlify.app
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Check out current main
         id: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: main
           fetch-depth: 0
+
+      - name: Use supported Node.js runtime
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          package-manager-cache: false
 
       - name: Prepare immutable baseline and stage log
         id: prepare
         run: node scripts/update-pipeline.cjs prepare
 
-      - name: Regression tests and A-H reliability scenarios
+      - name: Collection, tracking, and Pages regression tests
         id: tests
         shell: pwsh
         run: |
@@ -69,6 +68,8 @@ jobs:
           ./scripts/test-first-seen-tracking.ps1
           node --test scripts/test-update-pipeline.cjs
           if ($LASTEXITCODE -ne 0) { throw 'Pipeline regression tests failed.' }
+          node scripts/test-pages-workflow.cjs
+          if ($LASTEXITCODE -ne 0) { throw 'Pages workflow regression tests failed.' }
           node scripts/test-apartment-catalog.cjs
           if ($LASTEXITCODE -ne 0) { throw 'Catalog regression failed.' }
           node scripts/test-weekly-new-transactions.cjs
@@ -94,12 +95,44 @@ jobs:
         if: ${{ success() }}
         run: node scripts/update-pipeline.cjs git
 
-      - name: "3-4. Always recover deployment and verify actual production files"
-        id: production
+      # GITHUB_TOKEN pushes do not start another push workflow. Publish here.
+      # This also runs for zero data changes, explicit deploy-only, and human pushes.
+      # The pipeline selects refresh for catalog changes; other human pushes are deploy-only.
+      - name: "3a. Validate committed public files and build metadata"
+        id: pages_source
+        if: ${{ success() }}
+        run: node scripts/update-pipeline.cjs pages_source
+
+      - name: Configure GitHub Pages
+        id: pages_config
+        if: ${{ success() }}
+        uses: actions/configure-pages@v5
+
+      - name: Upload only public to Pages
+        id: pages_upload
+        if: ${{ success() }}
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: public/
+
+      - name: Check main again before publishing
+        id: pages_guard
+        if: ${{ success() }}
+        run: node scripts/update-pipeline.cjs pages_guard
+
+      - name: "3b. Deploy GitHub Pages in this workflow"
+        id: pages_deploy
+        if: ${{ success() }}
+        uses: actions/deploy-pages@v4
+
+      - name: Record official Pages deployment result
         if: ${{ always() && steps.prepare.outcome == 'success' }}
         env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_BUILD_HOOK: ${{ secrets.NETLIFY_BUILD_HOOK }}
+          TEST_OUTCOME: ${{ steps.tests.outcome }}
+          PAGES_DEPLOY_OUTCOME: ${{ steps.pages_deploy.outcome }}
+          PAGES_URL: ${{ steps.pages_deploy.outputs.page_url }}
+          PAGES_BASE_URL: ${{ steps.pages_config.outputs.base_url }}
+          PAGES_ARTIFACT_ID: ${{ steps.pages_upload.outputs.artifact_id }}
         run: node scripts/update-pipeline.cjs deployment
 
       - name: Final result (any failed stage makes the workflow fail)

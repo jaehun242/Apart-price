@@ -1,96 +1,114 @@
 'use strict';
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const { runStages: executeStages, finalSucceeded, assertSafeMainAdvance } = require('./update-pipeline.cjs');
+const {
+  runStages: executeStages, finalSucceeded, assertSafeMainAdvance,
+  assertCurrentSource, resolveMode, pagesDeploymentResult,
+} = require('./update-pipeline.cjs');
 const runStages = (state, operations) => executeStages({ tests: 'success', ...state }, operations);
-const { ensureProduction, compareSite } = require('./verify-production.cjs');
-const { makeMeta } = require('./dataset-meta.cjs');
-const text = fs.readFileSync(require('node:path').join(__dirname, '../public/data/transactions.js'), 'utf8');
-const sha = '1'.repeat(40), expected = makeMeta(text, sha);
-const snapshot = () => ({ meta: { ...expected, provider: 'netlify', context: 'production', deploy_id: 'test-deploy' }, text });
-function ops({ changed = false, deploy, collect } = {}) {
+const sha = '1'.repeat(40), later = '2'.repeat(40);
+const pagesEnv = {
+  PAGES_DEPLOY_OUTCOME: 'success', PAGES_URL: 'https://example.github.io/apart/',
+  PAGES_BASE_URL: 'https://example.github.io/apart', PAGES_ARTIFACT_ID: '123',
+  GITHUB_SHA: later,
+};
+function ops({ changed = false, collect, validate, deployOutcome = 'success' } = {}) {
   return {
     api: collect || (async () => ({ new_transactions: changed ? 1 : 0, outcome: changed ? 'success-changed' : 'success-no-change' })),
-    validation: async () => ({ transaction_count: expected.transaction_count }),
+    validation: validate || (async () => ({ transaction_count: 100 })),
     git: async () => ({ commit_sha: sha, push: changed ? 'success' : 'not-needed' }),
-    deployment: deploy || (async () => ensureProduction(expected, { read: async () => snapshot(), wait: async () => {}, log: () => {} })),
+    pages_source: async () => ({ commit_sha: sha }),
+    pages_guard: async () => ({ commit_sha: sha }),
+    deployment: async state => pagesDeploymentResult(state, { ...pagesEnv, PAGES_DEPLOY_OUTCOME: deployOutcome }),
   };
 }
-test('A: new transactions + publication + served data => SUCCESS', async () => {
+test('Changed data commits and deploys inside the same execution', async () => {
   const state = await runStages({ mode: 'refresh' }, ops({ changed: true }));
-  assert.equal(state.success, true); assert.equal(state.api.new_transactions, 1); assert.equal(state.git.push, 'success');
+  assert.equal(state.success, true);
+  assert.equal(state.git.push, 'success');
+  assert.equal(state.deployment.commit_sha, sha);
+  // The data commit can be newer than the workflow trigger; artifact identity uses HEAD.
+  assert.equal(state.deployment.workflow_commit_sha, later);
 });
-test('B: zero new transactions still verifies production => SUCCESS', async () => {
-  let reads = 0;
-  const state = await runStages({ mode: 'auto' }, ops({ deploy: async () => ensureProduction(expected, { read: async () => { reads++; return snapshot(); }, log: () => {} }) }));
-  assert.equal(state.success, true); assert.equal(state.git.push, 'not-needed'); assert.equal(reads, 1);
+test('Zero changes skip a data commit but still deploy Pages', async () => {
+  const state = await runStages({ mode: 'refresh' }, ops());
+  assert.equal(state.success, true);
+  assert.equal(state.api.new_transactions, 0);
+  assert.equal(state.git.push, 'not-needed');
+  assert.equal(state.deployment.status, 'success');
 });
-test('C/F: stale production recovers without another API call, including zero new records', async () => {
-  for (const changed of [false, true]) {
-    let calls = 0, recovery = 0;
-    const state = await runStages({ mode: 'refresh' }, ops({ changed, collect: async () => { calls++; return { new_transactions: changed ? 1 : 0 }; },
-      deploy: async () => ensureProduction(expected, {
-        read: async () => recovery ? snapshot() : { meta: { ...snapshot().meta, commit_sha: '0'.repeat(40) } },
-        trigger: async () => { recovery++; return 'fixture'; }, wait: async () => {}, attempts: 5, log: () => {},
-      }) }));
-    assert.equal(state.success, true); assert.equal(calls, 1); assert.equal(recovery, 1);
+test('Failed collection is not zero trades and cannot save or deploy', async () => {
+  let writes = 0, publishes = 0;
+  const operations = ops({ collect: async () => { throw new Error('Final API timeout'); } });
+  operations.git = async () => { writes++; };
+  operations.deployment = async () => { publishes++; };
+  const state = await runStages({ mode: 'refresh' }, operations);
+  assert.equal(state.success, false);
+  assert.equal(state.api.new_transactions, undefined);
+  assert.equal(writes, 0);
+  assert.equal(publishes, 0);
+  assert.equal(state.deployment.status, 'skipped');
+});
+test('Validation failure never writes Git or prepares a Pages artifact', async () => {
+  let writes = 0, artifacts = 0;
+  const operations = ops({ validate: async () => { throw new Error('Invalid candidate'); } });
+  operations.git = async () => { writes++; };
+  operations.pages_source = async () => { artifacts++; };
+  const state = await runStages({ mode: 'refresh' }, operations);
+  assert.equal(state.success, false);
+  assert.equal(writes, 0);
+  assert.equal(artifacts, 0);
+});
+test('Pages failure after successful Git storage remains FAILED; no API retry', async () => {
+  let apiCalls = 0;
+  const state = await runStages({ mode: 'refresh' }, ops({
+    changed: true, collect: async () => { apiCalls++; return { new_transactions: 1 }; }, deployOutcome: 'failure',
+  }));
+  assert.equal(state.success, false);
+  assert.equal(state.git.status, 'success');
+  assert.equal(state.deployment.status, 'failed');
+  assert.equal(apiCalls, 1);
+});
+test('Deployment-only recovery does not collect, rewrite data or create a commit', async () => {
+  let calls = 0;
+  const operations = ops({ collect: async () => { calls++; } });
+  operations.git = async () => { calls++; };
+  const state = await runStages({ mode: 'deploy-only' }, operations);
+  assert.equal(state.success, true);
+  assert.equal(calls, 0);
+  assert.equal(state.api.status, 'skipped');
+  assert.equal(state.git.status, 'skipped');
+});
+test('Skipped, cancelled and missing Pages action results are not success', async () => {
+  for (const deployOutcome of ['skipped', 'cancelled', '']) {
+    const state = await runStages({ mode: 'deploy-only' }, ops({ deployOutcome }));
+    assert.equal(state.success, false);
   }
 });
-test('E: failed API is not zero trades, never writes Git, still verifies production', async () => {
-  let writes = 0, deployChecks = 0;
-  const operations = ops({ collect: async () => { throw new Error('timeout after final retry'); } });
-  operations.git = async () => { writes++; };
-  operations.deployment = async () => { deployChecks++; return { status: 'success', site_status: 'success', actual_sha: sha }; };
-  const state = await runStages({ mode: 'refresh' }, operations);
-  assert.equal(state.success, false); assert.equal(writes, 0); assert.equal(deployChecks, 1);
-  assert.equal(state.api.new_transactions, undefined);
-});
-test('F: exhausted deploy recovery fails after Git success without API re-collection', async () => {
-  let calls = 0, recoveries = 0;
-  const state = await runStages({ mode: 'refresh' }, ops({ changed: true,
-    collect: async () => { calls++; return { new_transactions: 1 }; },
-    deploy: async () => ensureProduction(expected, { read: async () => ({ meta: null }), trigger: async () => { recoveries++; }, wait: async () => {}, attempts: 14, log: () => {} }),
-  }));
-  assert.equal(state.success, false); assert.equal(state.git.status, 'success'); assert.equal(calls, 1); assert.equal(recoveries, 2);
-});
-test('G: Published/current metadata but stale served data is never SUCCESS', async () => {
-  const stale = snapshot();
-  stale.providerDeploy = { id: 'test-deploy', state: 'ready', commit_ref: sha };
-  stale.text = text.replace('"price":', '"old_price":');
-  assert.ok(compareSite(expected, stale).includes('served transactions.js hash'));
-  const state = await runStages({ mode: 'auto' }, ops({ deploy: async () => ensureProduction(expected, { read: async () => stale, attempts: 1, log: () => {} }) }));
-  assert.equal(state.success, false);
-});
-test('H: authentication failure cannot become success when production matches', async () => {
-  const state = await runStages({ mode: 'refresh' }, ops({ collect: async () => { throw new Error('authentication HTTP 403'); } }));
-  assert.equal(state.success, false); assert.equal(state.api.status, 'failed'); assert.equal(state.site.status, 'success');
-});
-test('Deployment-only recovery never invokes collection', async () => {
-  let apiCalls = 0;
-  const state = await runStages({ mode: 'deploy-only' }, ops({ collect: async () => { apiCalls++; } }));
-  assert.equal(state.success, true); assert.equal(apiCalls, 0); assert.equal(state.api.status, 'skipped');
-});
-test('Final success needs deployment and live-file verification', () => {
-  assert.equal(finalSucceeded({ api: { status: 'success' }, validation: { status: 'success' }, git: { status: 'success' }, deployment: { status: 'success' }, site: { status: 'failed' } }), false);
-});
-
-test('Skipped, cancelled, missing or failed regressions never produce final SUCCESS', () => {
-  const state = { api: { status: 'success' }, validation: { status: 'success' }, git: { status: 'success' }, deployment: { status: 'success' }, site: { status: 'success' } };
+test('Regression success is required even if the Pages action claims success', async () => {
+  const state = await runStages({ mode: 'refresh' }, ops());
   for (const tests of [undefined, 'failure', 'cancelled', 'skipped']) assert.equal(finalSucceeded({ ...state, tests }), false);
-  assert.equal(finalSucceeded({ ...state, tests: 'success' }), true);
 });
-test('Concurrent data/code/report edits are rejected, unrelated UI changes can fast-forward', () => {
+test('Newer main or wrong artifact source prevents stale deployment', () => {
+  assert.doesNotThrow(() => assertCurrentSource(sha, sha, sha));
+  assert.throws(() => assertCurrentSource(sha, sha, later), /stale/);
+  assert.throws(() => assertCurrentSource(sha, later, sha), /stale/);
+});
+test('Schedule refreshes; human pushes deploy; catalog pushes keep collection behavior', () => {
+  assert.equal(resolveMode('schedule', 'deploy-only'), 'refresh');
+  assert.equal(resolveMode('push', 'refresh', ['public/styles.css']), 'deploy-only');
+  assert.equal(resolveMode('push', '', ['config/additional-apartments.json']), 'refresh');
+  assert.equal(resolveMode('workflow_dispatch', 'deploy-only'), 'deploy-only');
+  assert.equal(resolveMode('workflow_dispatch', 'auto'), 'auto');
+  assert.throws(() => resolveMode('workflow_dispatch', 'invalid'), /Unknown/);
+});
+test('Unexpected Pages URL cannot be reported as successful', async () => {
+  const state = await runStages({ mode: 'refresh' }, ops());
+  assert.throws(() => pagesDeploymentResult(state, { ...pagesEnv, PAGES_URL: 'https://other.example/' }), /unexpected/);
+});
+test('Concurrent collection-code/data changes keep the original overwrite protection', () => {
   for (const file of ['public/data/transactions.js', 'scripts/update-data-github.ps1', 'reports/molit-openapi-matching.md', 'config/additional-apartments.json']) {
     assert.throws(() => assertSafeMainAdvance([file]), /refuse stale overwrite/);
   }
   assert.doesNotThrow(() => assertSafeMainAdvance(['public/styles.css', 'public/app.js']));
-});
-test('Workflow always verifies production, not gated by data-changed', () => {
-  const workflow = fs.readFileSync(require('node:path').join(__dirname, '../.github/workflows/daily-update.yml'), 'utf8');
-  assert.match(workflow, /always\(\) && steps\.prepare\.outcome == 'success'/);
-  assert.doesNotMatch(workflow, /verify\.outputs\.changed/);
-  assert.match(workflow, /cancel-in-progress: false/);
-  assert.match(workflow, /PIPELINE_MODE:.*inputs.mode \|\| 'refresh'/);
-  assert.match(workflow, /default: refresh/);
 });

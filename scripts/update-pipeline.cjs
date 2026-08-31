@@ -3,16 +3,15 @@ const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
 const { execFileSync, spawnSync } = require('node:child_process');
-const { hash, parse, validateDataset, makeMeta, koreaDate } = require('./dataset-meta.cjs');
-const { ensureProduction } = require('./verify-production.cjs');
+const { hash, parse, validateDataset, readMeta, koreaDate } = require('./dataset-meta.cjs');
 const root = path.resolve(__dirname, '..');
-const version = '2026-08-31-reliability-v1';
+const version = '2026-08-31-github-pages-v1';
 const dataFile = 'public/data/transactions.js';
 const allowedFiles = [dataFile, 'public/data/supply-areas.js', 'reports/supply-area-verification.md', 'reports/molit-openapi-matching.md'];
-const labels = { api: 'API', validation: 'DATA', git: 'GIT', deployment: 'DEPLOY' };
+const labels = { api: 'API', validation: 'DATA', git: 'GIT', pages_source: 'PAGES', pages_guard: 'PAGES', deployment: 'PAGES' };
 const redact = value => {
   let text = String(value);
-  for (const name of ['MOLIT_API_KEY', 'NETLIFY_AUTH_TOKEN', 'NETLIFY_BUILD_HOOK', 'GH_TOKEN', 'GITHUB_TOKEN']) {
+  for (const name of ['MOLIT_API_KEY', 'GH_TOKEN', 'GITHUB_TOKEN']) {
     const value = process.env[name];
     if (!value) continue;
     for (const form of new Set([value, encodeURIComponent(value)])) text = text.split(form).join('[REDACTED]');
@@ -37,10 +36,42 @@ function save(file, value) {
 function finalSucceeded(state) {
   const apiOK = state.api?.status === 'success' || (state.mode === 'deploy-only' && state.api?.status === 'skipped');
   const dataOK = state.mode === 'deploy-only' || (state.validation?.status === 'success' && state.git?.status === 'success');
-  return apiOK && dataOK && state.deployment?.status === 'success' && state.site?.status === 'success' && state.tests === 'success';
+  return apiOK && dataOK && state.pages_source?.status === 'success' && state.pages_guard?.status === 'success' &&
+    state.deployment?.status === 'success' && state.tests === 'success';
+}
+function resolveMode(eventName, requestedMode, changedFiles = []) {
+  if (eventName === 'push') return changedFiles.includes('config/additional-apartments.json') ? 'refresh' : 'deploy-only';
+  if (eventName === 'schedule') return 'refresh';
+  const mode = requestedMode || 'refresh';
+  if (!['refresh', 'auto', 'deploy-only'].includes(mode)) throw new Error('Unknown pipeline mode');
+  return mode;
+}
+function collectionReady(state) {
+  return state.mode === 'deploy-only' || (state.api?.status === 'success' && state.validation?.status === 'success' && state.git?.status === 'success');
+}
+function assertCurrentSource(source, local, remote) {
+  if (!/^[a-f0-9]{40}$/.test(source) || source !== local || source !== remote) {
+    throw new Error('main changed or artifact source is stale; refuse an outdated Pages deployment');
+  }
+}
+function pagesDeploymentResult(state, env) {
+  const outcome = env.PAGES_DEPLOY_OUTCOME || 'not-run';
+  if (!collectionReady(state) || state.pages_source?.status !== 'success' || state.pages_guard?.status !== 'success' || state.tests !== 'success') {
+    return { status: 'skipped', provider: 'github-pages', action_outcome: outcome, reason: 'Collection, source or regression gate did not pass' };
+  }
+  if (outcome !== 'success') throw new Error('actions/deploy-pages@v4 ended with ' + outcome);
+  const url = new URL(env.PAGES_URL || '');
+  const configured = new URL(env.PAGES_BASE_URL || '');
+  if (url.protocol !== 'https:' || url.href.replace(/\/$/, '') !== configured.href.replace(/\/$/, '')) {
+    throw new Error('Pages action returned an unexpected site URL');
+  }
+  return { status: 'success', provider: 'github-pages', action: 'actions/deploy-pages@v4',
+    action_outcome: outcome, page_url: url.href, commit_sha: state.pages_source.commit_sha,
+    workflow_commit_sha: env.GITHUB_SHA || null, artifact_id: env.PAGES_ARTIFACT_ID || null,
+    verification: 'official Pages action completed successfully; no external-provider URL check' };
 }
 function assertSafeMainAdvance(paths) {
-  if (paths.some(p => /^(scripts\/|config\/|\.github\/|netlify\.toml$|public\/data\/)/.test(p) || allowedFiles.includes(p))) {
+  if (paths.some(p => /^(scripts\/|config\/|\.github\/|public\/data\/)/.test(p) || allowedFiles.includes(p))) {
     throw new Error('origin/main changed in data or collection code; refuse stale overwrite and recollect on next run');
   }
 }
@@ -49,31 +80,24 @@ async function executeStage(name, state, operations) {
     state.api = { status: 'skipped', reason: 'explicit deployment-only recovery; no API request' }; return;
   }
   if ((name === 'validation' && state.api?.status !== 'success') ||
-      (name === 'git' && state.validation?.status !== 'success')) {
+      (name === 'git' && state.validation?.status !== 'success') ||
+      (['pages_source', 'pages_guard', 'deployment'].includes(name) && !collectionReady(state)) ||
+      (name === 'pages_guard' && state.pages_source?.status !== 'success')) {
     state[name] = { status: 'skipped', reason: 'upstream did not succeed' }; return;
   }
   try {
     state[name] = { status: 'success', ...await operations[name](state), completed_at: new Date().toISOString() };
-    if (name === 'deployment') state.site = { status: state.deployment.site_status, commit_sha: state.deployment.actual_sha };
   } catch (error) {
     state[name] = { status: 'failed', ...error.result, execution_failed: true, error: redact(error.message), completed_at: new Date().toISOString() };
-    if (name === 'deployment') state.site = { status: 'failed', commit_sha: error.result?.actual_sha || null };
     console.error('[' + labels[name] + ' ERROR] ' + redact(error.message));
   }
 }
-// The same orchestration is exercised by scenarios A-H without using production data.
+// Official Pages Actions run between pages_source and deployment in the workflow.
+// Tests inject their result without making API requests or changing real data.
 async function runStages(state, operations) {
-  for (const name of ['api', 'validation', 'git', 'deployment']) await executeStage(name, state, operations);
+  for (const name of ['api', 'validation', 'git', 'pages_source', 'pages_guard', 'deployment']) await executeStage(name, state, operations);
   state.success = finalSucceeded(state);
   return state;
-}
-function mainSnapshot() {
-  git('fetch', 'origin', 'main');
-  const sha = git('rev-parse', 'origin/main');
-  const text = git('show', sha + ':' + dataFile);
-  const assets = {};
-  for (const file of ['data/supply-areas.js', 'app.js', 'styles.css', 'index.html']) assets[file] = hash(git('show', sha + ':public/' + file));
-  return makeMeta(text, sha, { asset_hashes: assets });
 }
 function sameCollector(state, prior) {
   return prior.version === version && prior.collector_hash === state.collector_hash &&
@@ -183,18 +207,30 @@ function operations(temp) {
       console.log('[GIT] main commit ' + sha + ' / ' + (changed ? 'push verified' : 'no change; no data commit'));
       return { commit_sha: sha, data_sha256: state.validation.data_sha256, push: changed ? 'success' : 'not-needed' };
     },
+    async pages_source(state) {
+      git('fetch', 'origin', 'main');
+      const sha = git('rev-parse', 'HEAD');
+      assertCurrentSource(state.git?.commit_sha || state.baseline_sha, sha, git('rev-parse', 'origin/main'));
+      if (git('status', '--porcelain', '--untracked-files=all', '--', 'public')) throw new Error('Uncommitted public files cannot be deployed');
+      const expected = readMeta(root, sha);
+      state.production_expected = expected;
+      save(path.join(temp, 'expected-meta.json'), expected);
+      run(process.execPath, ['scripts/write-build-meta.cjs']);
+      const built = readJson(path.join(root, 'public/data/build-meta.json'));
+      if (built.commit_sha !== sha || built.data_sha256 !== expected.data_sha256) throw new Error('Pages metadata does not match the validated source');
+      console.log('[PAGES] Validated public/ from main ' + sha);
+      return { commit_sha: sha, data_sha256: expected.data_sha256, transaction_count: expected.transaction_count };
+    },
+    async pages_guard(state) {
+      const remote = git('ls-remote', 'origin', 'refs/heads/main').split(/\s+/)[0];
+      assertCurrentSource(state.pages_source.commit_sha, git('rev-parse', 'HEAD'), remote);
+      console.log('[PAGES] main unchanged immediately before deployment');
+      return { commit_sha: remote };
+    },
     async deployment(state) {
-      for (let change = 0; change < 3; change++) {
-        const expected = mainSnapshot();
-        state.production_expected = expected;
-        save(path.join(temp, 'expected-meta.json'), expected);
-        console.log('[NETLIFY] Verify production of current main ' + expected.commit_sha + ' (independent of API result)');
-        const result = await ensureProduction(expected);
-        const latest = git('ls-remote', 'origin', 'refs/heads/main').split(/\s+/)[0];
-        if (latest === expected.commit_sha) return result;
-        console.log('[SITE VERIFY] main moved; verify the newer commit before success');
-      }
-      throw new Error('main kept changing during production verification');
+      const result = pagesDeploymentResult(state, process.env);
+      console.log('[PAGES] ' + result.status + (result.page_url ? ' / ' + result.page_url : ''));
+      return result;
     },
   };
 }
@@ -204,12 +240,21 @@ async function cli() {
   const reportFile = path.join(temp, 'report.json');
   if (stage === 'prepare') {
     const collector = git('ls-tree', '-r', 'HEAD', '--', 'scripts', 'config');
-    save(reportFile, { version, run_id: process.env.GITHUB_RUN_ID || 'local', mode: process.env.PIPELINE_MODE || 'auto',
+    let changedFiles = [];
+    if (process.env.GITHUB_EVENT_NAME === 'push') {
+      const event = readJson(process.env.GITHUB_EVENT_PATH);
+      changedFiles = /^0+$/.test(event.before) ? ['config/additional-apartments.json'] :
+        git('diff', '--name-only', event.before, event.after).split(/\r?\n/);
+    }
+    const mode = resolveMode(process.env.GITHUB_EVENT_NAME, process.env.PIPELINE_MODE, changedFiles);
+    console.log('[MODE] ' + mode + ' / ' + (process.env.GITHUB_EVENT_NAME || 'manual'));
+    save(reportFile, { version, run_id: process.env.GITHUB_RUN_ID || 'local', mode,
       started_at: new Date().toISOString(), baseline_sha: git('rev-parse', 'HEAD'), collector_hash: hash(collector),
       baseline_data_hash: hash(fs.readFileSync(path.join(root, dataFile), 'utf8')) });
     return;
   }
   const state = readJson(reportFile);
+  if (process.env.TEST_OUTCOME) state.tests = process.env.TEST_OUTCOME;
   if (stage === 'final') {
     state.tests = process.env.TEST_OUTCOME;
     state.finished_at = new Date().toISOString();
@@ -223,9 +268,10 @@ async function cli() {
       ['Data validation', state.validation?.status || 'not-run'],
       ['GitHub main', state.git?.commit_sha || state.production_expected?.commit_sha || 'unknown'],
       ['GitHub push', state.git?.push || 'not-performed'],
-      ['Netlify deployment', state.deployment?.status || 'not-run'],
-      ['Production data verification', state.site?.status || 'not-run'],
-      ['GitHub / site match', state.site?.status === 'success' ? 'YES' : 'NO'],
+      ['Pages artifact source', state.pages_source?.commit_sha || 'not-prepared'],
+      ['GitHub Pages deployment', state.deployment?.status || 'not-run'],
+      ['Published site', state.deployment?.page_url || 'not-published'],
+      ['Deployment verification', 'Official actions/deploy-pages result'],
       ['Elapsed seconds', state.elapsed_seconds], ['Final', state.success ? 'SUCCESS' : 'FAILED'],
     ];
     const summary = '| Stage | Result |\n|---|---|\n' + rows.map(r => '| ' + r.join(' | ') + ' |').join('\n') + '\n';
@@ -240,5 +286,5 @@ async function cli() {
   save(reportFile, state);
   if (state[stage]?.status === 'failed' || state[stage]?.execution_failed) process.exitCode = 1;
 }
-module.exports = { finalSucceeded, executeStage, runStages, sameCollector, assertSafeMainAdvance };
+module.exports = { finalSucceeded, executeStage, runStages, sameCollector, assertSafeMainAdvance, resolveMode, collectionReady, assertCurrentSource, pagesDeploymentResult };
 if (require.main === module) cli().catch(error => { console.error('[FINAL ERROR] ' + redact(error.message)); process.exitCode = 1; });

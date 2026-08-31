@@ -1,4 +1,4 @@
-# Local desktop copies; Netlify publishes only public/.
+# Local desktop copies; GitHub Pages publishes only public/.
 /index.html
 /styles.css
 /app.js
