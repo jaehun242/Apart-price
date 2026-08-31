@@ -2,7 +2,8 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
-const { runStages, finalSucceeded, assertSafeMainAdvance } = require('./update-pipeline.cjs');
+const { runStages: executeStages, finalSucceeded, assertSafeMainAdvance } = require('./update-pipeline.cjs');
+const runStages = (state, operations) => executeStages({ tests: 'success', ...state }, operations);
 const { ensureProduction, compareSite } = require('./verify-production.cjs');
 const { makeMeta } = require('./dataset-meta.cjs');
 const text = fs.readFileSync(require('node:path').join(__dirname, '../public/data/transactions.js'), 'utf8');
@@ -73,6 +74,12 @@ test('Deployment-only recovery never invokes collection', async () => {
 test('Final success needs deployment and live-file verification', () => {
   assert.equal(finalSucceeded({ api: { status: 'success' }, validation: { status: 'success' }, git: { status: 'success' }, deployment: { status: 'success' }, site: { status: 'failed' } }), false);
 });
+
+test('Skipped, cancelled, missing or failed regressions never produce final SUCCESS', () => {
+  const state = { api: { status: 'success' }, validation: { status: 'success' }, git: { status: 'success' }, deployment: { status: 'success' }, site: { status: 'success' } };
+  for (const tests of [undefined, 'failure', 'cancelled', 'skipped']) assert.equal(finalSucceeded({ ...state, tests }), false);
+  assert.equal(finalSucceeded({ ...state, tests: 'success' }), true);
+});
 test('Concurrent data/code/report edits are rejected, unrelated UI changes can fast-forward', () => {
   for (const file of ['public/data/transactions.js', 'scripts/update-data-github.ps1', 'reports/molit-openapi-matching.md', 'config/additional-apartments.json']) {
     assert.throws(() => assertSafeMainAdvance([file]), /refuse stale overwrite/);
@@ -84,4 +91,6 @@ test('Workflow always verifies production, not gated by data-changed', () => {
   assert.match(workflow, /always\(\) && steps\.prepare\.outcome == 'success'/);
   assert.doesNotMatch(workflow, /verify\.outputs\.changed/);
   assert.match(workflow, /cancel-in-progress: false/);
+  assert.match(workflow, /PIPELINE_MODE:.*inputs.mode \|\| 'refresh'/);
+  assert.match(workflow, /default: refresh/);
 });

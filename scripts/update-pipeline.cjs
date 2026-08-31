@@ -37,7 +37,7 @@ function save(file, value) {
 function finalSucceeded(state) {
   const apiOK = state.api?.status === 'success' || (state.mode === 'deploy-only' && state.api?.status === 'skipped');
   const dataOK = state.mode === 'deploy-only' || (state.validation?.status === 'success' && state.git?.status === 'success');
-  return apiOK && dataOK && state.deployment?.status === 'success' && state.site?.status === 'success' && state.tests !== 'failure';
+  return apiOK && dataOK && state.deployment?.status === 'success' && state.site?.status === 'success' && state.tests === 'success';
 }
 function assertSafeMainAdvance(paths) {
   if (paths.some(p => /^(scripts\/|config\/|\.github\/|netlify\.toml$|public\/data\/)/.test(p) || allowedFiles.includes(p))) {

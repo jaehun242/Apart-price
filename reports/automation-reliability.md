@@ -57,7 +57,8 @@ No raw data, backup or credentials are uploaded. A same-day successful collectio
 receipt's collector version/fingerprint and committed data hash match current main. This also permits deployment
 recovery after a prior workflow failed at Netlify, without querying the API again.
 
-Manual modes: auto (verified same-day reuse), refresh (force a real collection), deploy-only (no API calls).
+Scheduled runs and the manual default use refresh, so later scheduled runs still collect newly reported trades.
+Manual modes: auto (explicit verified same-day reuse), refresh (force a real collection), deploy-only (no API calls).
 Schedules remain 06:37, 09:23, 12:41, 16:07, 19:29 and 22:53 Asia/Seoul. The shared concurrency group prevents
 overlap with older executions. The job has a 90-minute ceiling.
 
@@ -69,3 +70,25 @@ overlap with older executions. The job has a 90-minute ceiling.
 - test-openapi-updater.ps1: real HTTP 503 recovery, matching, cancellation, duplicate distinction and probe preservation.
 - test-deferred-catalog-matching.ps1, with and without -FailDiscovery: safe deferral versus partial-collection hard failure.
 - Existing first-seen, weekly-new, historical tracking, catalog and supply mapping regression suites remain active.
+
+## Real GitHub run (2026-08-31)
+
+Run 33344865874 completed with FAILED, correctly separating the successful data update from stale production.
+
+- API: 246/246 region-month pairs, 247 HTTP attempts. Region 26470 / 202607 / page 1 timed out once,
+  waited five seconds and then recovered. API authentication was recognized.
+- Matching: 236 matched + 25 existing deferred zero-history catalog entries = 261 requested;
+  no critical unmatched complex and no failed request.
+- Records: 66,310 -> 66,311; new 1, removed/cancelled 0, corrected 36; latest contract 2026-08-28.
+- Candidate validation and GitHub push succeeded; data commit 25cc64dfd22d11615211846e13044fb711cb8fbc.
+- The production step performed all 31 checks and two deployment-only recovery attempts without re-collecting.
+  Recovery requests could not be authorized because no existing Netlify recovery credential was available.
+- Netlify's webhook accepted the data push with HTTP 204. Production still served 2026-08-27 data,
+  latest contract 2026-08-24, 63,747 records; build-meta.json returned 404.
+  The internal Netlify build failure reason and published commit cannot be determined from those facts alone.
+- API, validation and Git stages passed; deployment and live-site verification failed. Execution took 1,195 seconds.
+  The GitHub run's regression suite passed; the fresh 66,311-record dataset passed the existing local regression
+  suites again. A subsequent strict-final-gate test also rejects missing/skipped/cancelled regressions.
+
+The repository cannot grant itself Netlify administrator authority. The remaining production recovery requires
+an authorized connection to the existing Netlify site; changing the MOLIT API key will not repair this failure.

@@ -23,7 +23,7 @@ on:
         description: "auto: reuse verified same-day collection; refresh: collect now; deploy-only: recover production without API calls"
         type: choice
         options: [auto, refresh, deploy-only]
-        default: auto
+        default: refresh
 
 permissions:
   actions: read
@@ -40,7 +40,7 @@ jobs:
     timeout-minutes: 90
     env:
       TZ: Asia/Seoul
-      PIPELINE_MODE: ${{ inputs.mode || 'auto' }}
+      PIPELINE_MODE: ${{ inputs.mode || 'refresh' }}
       PUBLIC_SITE_URL: https://beautiful-palmier-5f7cbc.netlify.app
       GH_TOKEN: ${{ github.token }}
     steps:
