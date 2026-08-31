@@ -11,6 +11,8 @@
 # Dependencies and local tool state.
 /node_modules/
 /.netlify/
+/public/data/build-meta.json
+/.pipeline/
 
 # Secrets must never be committed.
 .env

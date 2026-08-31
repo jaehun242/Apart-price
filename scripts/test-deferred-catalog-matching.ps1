@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param()
+param([switch]$FailDiscovery)
 
 $ErrorActionPreference = 'Stop'
 $repositoryDirectory = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
@@ -61,8 +61,9 @@ try {
   $probe.Start()
   $port = ([Net.IPEndPoint]$probe.LocalEndpoint).Port
   $probe.Stop()
-  $serverJob = Start-ThreadJob -ArgumentList $port, $fixtureAptSeq, $fixtureAptName, $fixtureLegalDong, $fixtureJibun, $fixtureRoadName -ScriptBlock {
-    param([int]$Port, [string]$AptSeq, [string]$AptName, [string]$LegalDong, [string]$Jibun, [string]$RoadName)
+  $beforeHash = (Get-FileHash -LiteralPath $dataPath -Algorithm SHA256).Hash
+  $serverJob = Start-ThreadJob -ArgumentList $port, $fixtureAptSeq, $fixtureAptName, $fixtureLegalDong, $fixtureJibun, $fixtureRoadName, ([bool]$FailDiscovery) -ScriptBlock {
+    param([int]$Port, [string]$AptSeq, [string]$AptName, [string]$LegalDong, [string]$Jibun, [string]$RoadName, [bool]$FailDiscovery)
     $listener = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, $Port)
     $listener.Start()
     try {
@@ -76,7 +77,7 @@ try {
             $line = $reader.ReadLine()
             if ($null -eq $line -or $line.Length -eq 0) { break }
           }
-          if ($requestNumber -eq 6) {
+          if ($requestNumber -eq 6 -and $FailDiscovery) {
             $body = [Text.Encoding]::UTF8.GetBytes('optional discovery outage')
             $header = [Text.Encoding]::ASCII.GetBytes("HTTP/1.1 503 Service Unavailable`r`nContent-Type: text/plain`r`nContent-Length: $($body.Length)`r`nConnection: close`r`n`r`n")
             $stream.Write($header, 0, $header.Length)
@@ -111,7 +112,8 @@ try {
     if ($serverJob.State -eq 'Failed') { throw "Fixture server failed: $(Receive-Job -Job $serverJob -Keep | Out-String)" }
   } while ($serverJob.State -eq 'NotStarted' -and [DateTime]::UtcNow -lt $deadline)
 
-  & $updaterPath `
+  $apiFailed = $false
+  try { & $updaterPath `
     -DataPath $dataPath `
     -ApiKey 'fixture-secret' `
     -ApiEndpoint "http://127.0.0.1:$port/openapi" `
@@ -124,16 +126,26 @@ try {
     -LogPath $logPath `
     -BackupPath $backupPath `
     -MatchReportPath $reportPath
-  if (-not $?) { throw 'Deferred matching update failed.' }
+  } catch {
+    $apiFailed = $true
+    if (-not $FailDiscovery) { throw }
+  }
 
   $serverJob | Wait-Job -Timeout 10 | Out-Null
   if ($serverJob.State -ne 'Completed') { throw "Fixture server did not complete: $($serverJob.State)" }
   Receive-Job -Job $serverJob | Out-Null
   $log = Get-Content -LiteralPath $logPath -Raw -Encoding UTF8 | ConvertFrom-Json
+  if ($FailDiscovery) {
+    if (-not $apiFailed -or $log.status -ne 'failed' -or -not $log.dataPreserved) { throw 'Partial discovery failure was treated as success.' }
+    if ((Get-FileHash -LiteralPath $dataPath -Algorithm SHA256).Hash -ne $beforeHash) { throw 'API failure overwrote existing data.' }
+    if (Test-Path -LiteralPath $backupPath) { throw 'Failed collection unexpectedly entered the write stage.' }
+    Write-Host 'E PASS: incomplete collection fails and preserves the original file byte-for-byte.'
+    return
+  }
   if ([string]$log.status -ne 'success-changed') { throw "Unexpected updater status: $($log.status)" }
   if ([int]$log.complexesRequested -ne 2 -or [int]$log.complexesMatched -ne 1) { throw "Expected 1/2 matched, got $($log.complexesMatched)/$($log.complexesRequested)." }
   if ([int]$log.complexesDeferred -ne 1 -or [int]$log.criticalUnmatched -ne 0) { throw "Deferred classification failed: deferred=$($log.complexesDeferred), critical=$($log.criticalUnmatched)." }
-  if ([int]$log.pairsCompleted -ne 5 -or [int]$log.pairsFailed -ne 1) { throw "Unexpected request accounting: completed=$($log.pairsCompleted), failed=$($log.pairsFailed)." }
+  if ([int]$log.pairsCompleted -ne 6 -or [int]$log.pairsFailed -ne 0) { throw "Unexpected request accounting: completed=$($log.pairsCompleted), failed=$($log.pairsFailed)." }
   if (-not (Get-Content -LiteralPath $reportPath -Raw -Encoding UTF8).Contains('deferred-new-catalog')) { throw 'Matching report does not label the deferred catalog complex.' }
   $updatedText = [IO.File]::ReadAllText($dataPath, [Text.Encoding]::UTF8)
   $updated = (($updatedText -replace '^\s*window\.APT_ARCHIVE_DATA\s*=\s*', '' -replace ';\s*$', '') | ConvertFrom-Json)
@@ -142,7 +154,7 @@ try {
   if ([string]$deferredOutput[0].openApiDiscovery.nextAttempt -notmatch '^\d{4}-\d{2}-\d{2}$') { throw 'Deferred discovery retry date was not persisted.' }
   if (@($updated.records | Where-Object { $_.complexId -eq $deferredComplex.id }).Count -ne 0) { throw 'An unmatched catalog complex received another complex transaction rows.' }
   if (-not (Test-Path -LiteralPath $backupPath)) { throw 'Successful update did not create a data backup.' }
-  Write-Host 'Deferred catalog matching test passed: an unmatched new zero-history complex and an optional discovery outage are isolated without blocking or contaminating established apartment refreshes.'
+  Write-Host 'Deferred catalog matching test passed: all requests complete; unmatched zero-history catalog remains deferred without contaminating established apartments.'
 } finally {
   if ($serverJob) {
     if ($serverJob.State -notin @('Completed', 'Failed', 'Stopped')) { Stop-Job -Job $serverJob -ErrorAction SilentlyContinue }

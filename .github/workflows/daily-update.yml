@@ -2,18 +2,8 @@ name: Daily apartment transaction update
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - config/additional-apartments.json
-      - scripts/update-data-github.ps1
-      - scripts/transaction-first-seen.ps1
-      - scripts/sync-apartment-catalog.cjs
-      - scripts/test-openapi-updater.ps1
-      - scripts/test-deferred-catalog-matching.ps1
-      - scripts/build-supply-area-map.ps1
-      - scripts/test-supply-area-builder.ps1
-      - .github/workflows/daily-update.yml
+    branches: [main]
+    paths: [config/additional-apartments.json]
   schedule:
     - cron: "37 6 * * *"
       timezone: "Asia/Seoul"
@@ -28,6 +18,12 @@ on:
     - cron: "53 22 * * *"
       timezone: "Asia/Seoul"
   workflow_dispatch:
+    inputs:
+      mode:
+        description: "auto: reuse verified same-day collection; refresh: collect now; deploy-only: recover production without API calls"
+        type: choice
+        options: [auto, refresh, deploy-only]
+        default: auto
 
 permissions:
   actions: read
@@ -39,266 +35,87 @@ concurrency:
 
 jobs:
   update:
-    name: Refresh and validate transactions
+    name: Collect, store, deploy, and verify production
     runs-on: windows-latest
     timeout-minutes: 90
     env:
       TZ: Asia/Seoul
-      MOLIT_API_KEY: ${{ secrets.MOLIT_API_KEY }}
+      PIPELINE_MODE: ${{ inputs.mode || 'auto' }}
       PUBLIC_SITE_URL: https://beautiful-palmier-5f7cbc.netlify.app
-
+      GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Check out main
+      - name: Check out current main
+        id: checkout
         uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
 
-      - name: Decide whether another refresh is needed today
-        id: freshness
-        shell: pwsh
-        env:
-          GH_ACTIONS_TOKEN: ${{ github.token }}
-        run: |
-          ./scripts/check-daily-refresh-needed.ps1 `
-            -EventName '${{ github.event_name }}' `
-            -Repository '${{ github.repository }}' `
-            -CurrentRunId '${{ github.run_id }}' `
-            -GitHubToken $env:GH_ACTIONS_TOKEN `
-            -OutputPath $env:GITHUB_OUTPUT
+      - name: Prepare immutable baseline and stage log
+        id: prepare
+        run: node scripts/update-pipeline.cjs prepare
 
-      - name: Test daily refresh gate
-        if: steps.freshness.outputs.should_run == 'true'
-        shell: pwsh
-        run: ./scripts/test-refresh-gate.ps1
-
-      - name: Test updater safeguards
-        if: steps.freshness.outputs.should_run == 'true'
+      - name: Regression tests and A-H reliability scenarios
+        id: tests
         shell: pwsh
         run: |
+          $ErrorActionPreference = 'Stop'
           ./scripts/test-openapi-updater.ps1
+          ./scripts/test-molit-retries.ps1
+          ./scripts/test-molit-transport.ps1
           ./scripts/test-deferred-catalog-matching.ps1
+          ./scripts/test-deferred-catalog-matching.ps1 -FailDiscovery
           ./scripts/test-supply-area-builder.ps1
-          node ./scripts/test-apartment-catalog.cjs
-
-      - name: Test first-seen tracking and weekly-new filter
-        if: steps.freshness.outputs.should_run == 'true'
-        shell: pwsh
-        run: |
           ./scripts/test-first-seen-tracking.ps1
-          node ./scripts/test-weekly-new-transactions.cjs
-          node ./scripts/test-first-seen-history-backfill.cjs
+          node --test scripts/test-update-pipeline.cjs
+          if ($LASTEXITCODE -ne 0) { throw 'Pipeline regression tests failed.' }
+          node scripts/test-apartment-catalog.cjs
+          if ($LASTEXITCODE -ne 0) { throw 'Catalog regression failed.' }
+          node scripts/test-weekly-new-transactions.cjs
+          if ($LASTEXITCODE -ne 0) { throw 'Weekly-new regression failed.' }
+          node scripts/test-first-seen-history-backfill.cjs
+          if ($LASTEXITCODE -ne 0) { throw 'First-seen history regression failed.' }
+          node scripts/test-supply-area-map.mjs
+          if ($LASTEXITCODE -ne 0) { throw 'Supply mapping regression failed.' }
 
-      - name: Check MOLIT OpenAPI secret
-        if: steps.freshness.outputs.should_run == 'true'
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          if ([string]::IsNullOrWhiteSpace($env:MOLIT_API_KEY)) {
-            throw 'Repository Secret MOLIT_API_KEY is not configured.'
-          }
-          'MOLIT_API_KEY is configured. The value is not printed.'
+      - name: "1. API collection (never modify the tracked dataset)"
+        id: api
+        env:
+          MOLIT_API_KEY: ${{ secrets.MOLIT_API_KEY }}
+        run: node scripts/update-pipeline.cjs api
 
-      - name: Merge expanded apartment catalog
-        if: steps.freshness.outputs.should_run == 'true'
-        shell: pwsh
-        run: node ./scripts/sync-apartment-catalog.cjs
+      - name: "2a. Validate complete candidate and preserved tracking fields"
+        id: validate
+        if: ${{ success() }}
+        run: node scripts/update-pipeline.cjs validation
 
-      - name: Refresh rolling six months from MOLIT OpenAPI
-        if: steps.freshness.outputs.should_run == 'true'
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          ./scripts/update-data-github.ps1 `
-            -DataPath 'public/data/transactions.js' `
-            -RefreshMonths 6 `
-            -MaxRetries 5 `
-            -LogPath "$env:RUNNER_TEMP/apart-price-update-log.json" `
-            -BackupPath "$env:RUNNER_TEMP/transactions.previous.js" `
-            -MatchReportPath 'reports/molit-openapi-matching.md'
+      - name: "2b. Store in GitHub main and verify push"
+        id: git
+        if: ${{ success() }}
+        run: node scripts/update-pipeline.cjs git
 
-      - name: Verify generated dataset and OpenAPI run
-        id: verify
-        if: steps.freshness.outputs.should_run == 'true'
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $logPath = "$env:RUNNER_TEMP/apart-price-update-log.json"
-          if (-not (Test-Path -LiteralPath $logPath)) { throw 'Update log was not generated.' }
-          $log = Get-Content -LiteralPath $logPath -Raw -Encoding UTF8 | ConvertFrom-Json
-          if ([string]$log.status -notin @('success-changed', 'success-no-change')) {
-            throw "Updater did not succeed: $($log.status); $($log.error)"
-          }
-          if (-not [bool]$log.apiKeyRecognized) { throw 'MOLIT OpenAPI did not recognize the API key.' }
-          if ([int]$log.complexesRequested -le 0 -or [int]$log.complexesMatched -le 0) {
-            throw "No refreshable complexes were matched: $($log.complexesMatched)/$($log.complexesRequested)."
-          }
-          if ([int]$log.criticalUnmatched -gt 0) {
-            throw "Established complex matching failed: $($log.criticalUnmatched) critical unmatched."
-          }
-          if (([int]$log.complexesMatched + [int]$log.complexesDeferred) -ne [int]$log.complexesRequested) {
-            throw "Complex matching accounting failed: matched=$($log.complexesMatched), deferred=$($log.complexesDeferred), requested=$($log.complexesRequested)."
-          }
-          if (([int]$log.pairsCompleted + [int]$log.pairsFailed) -ne [int]$log.pairsRequested -or [int]$log.apiCalls -le 0) {
-            throw "OpenAPI request accounting failed: completed=$($log.pairsCompleted), optional-failed=$($log.pairsFailed), requested=$($log.pairsRequested)."
-          }
-          if ([int]$log.validDownloaded -le 0) { throw 'No matched transactions were downloaded.' }
+      - name: "3-4. Always recover deployment and verify actual production files"
+        id: production
+        if: ${{ always() && steps.prepare.outcome == 'success' }}
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_BUILD_HOOK: ${{ secrets.NETLIFY_BUILD_HOOK }}
+        run: node scripts/update-pipeline.cjs deployment
 
-          $dataPath = 'public/data/transactions.js'
-          $text = [IO.File]::ReadAllText($dataPath, [Text.Encoding]::UTF8)
-          $json = $text -replace '^\s*window\.APT_ARCHIVE_DATA\s*=\s*', '' -replace ';\s*$', ''
-          $dataset = $json | ConvertFrom-Json
-          if (@($dataset.complexes).Count -ne [int]$log.complexesRequested) {
-            throw "Generated dataset has $(@($dataset.complexes).Count) complexes; expected $($log.complexesRequested)."
-          }
-          if (@($dataset.records).Count -ne [int]$dataset.meta.recordCount) { throw 'Generated record count does not match metadata.' }
-          if ([string]$dataset.meta.sourceUrl -ne 'https://apis.data.go.kr/1613000/RTMSDataSvcAptTradeDev/getRTMSDataSvcAptTradeDev') {
-            throw 'Dataset source URL is not the official MOLIT OpenAPI endpoint.'
-          }
-          $seen = New-Object 'System.Collections.Generic.HashSet[string]'
-          foreach ($record in @($dataset.records)) {
-            if (-not $record.complexId -or -not $record.date -or [double]$record.area -le 0 -or [long]$record.price -le 0) {
-              throw 'Generated dataset contains a record with missing required fields.'
-            }
-            if (-not $record.PSObject.Properties['first_seen_at']) { throw 'Generated dataset contains a record without first_seen_at.' }
-            $firstSeen = ([string]$record.first_seen_at).Trim()
-            if ($firstSeen -and $firstSeen -notmatch '^\d{4}-\d{2}-\d{2}$') { throw "Invalid first_seen_at: $firstSeen" }
-            $id = ([string]$record.transactionId).Trim()
-            if ($id -and -not $seen.Add("$($record.complexId)|$id")) { throw "Duplicate transaction ID: $($record.complexId)|$id" }
-          }
+      - name: Final result (any failed stage makes the workflow fail)
+        if: ${{ always() && steps.prepare.outcome == 'success' }}
+        env:
+          TEST_OUTCOME: ${{ steps.tests.outcome }}
+        run: node scripts/update-pipeline.cjs final
 
-          $changedDataPaths = @(git diff --name-only -- 'public/data/transactions.js')
-          if ($LASTEXITCODE -ne 0) { throw "Unable to inspect generated dataset changes: git diff exit $LASTEXITCODE." }
-          $catalogChanged = $changedDataPaths.Count -gt 0
-          $changed = [bool]$log.dataChanged -or $catalogChanged
-          "changed=$($changed.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          "latest_contract_date=$($log.latestContractDate)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          "record_count=$(@($dataset.records).Count)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          "api_calls=$([int]$log.apiCalls)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-
-          @"
-          ## MOLIT OpenAPI refresh
-
-          - Status: **$($log.status)**
-          - API key recognized: **$($log.apiKeyRecognized)**
-          - Complexes matched: **$($log.complexesMatched)/$($log.complexesRequested)**
-          - New catalog complexes deferred safely: **$($log.complexesDeferred)**
-          - Critical unmatched complexes: **$($log.criticalUnmatched)**
-          - Regions: **$($log.regionsRequested)**
-          - Rolling window: **$($log.refreshStart) — $($log.refreshEnd)**
-          - OpenAPI request pairs: **$($log.pairsCompleted)/$($log.pairsRequested)**
-          - HTTP attempts including retries: **$($log.apiAttempts)**
-          - Successful HTTP calls: **$($log.apiCalls)**
-          - Optional discovery calls failed without blocking refresh: **$($log.pairsFailed)**
-          - Valid matched transactions: **$($log.validDownloaded)**
-          - Cancelled rows excluded: **$($log.cancelledExcluded)**
-          - Duplicate rows skipped: **$($log.duplicateRowsSkipped)**
-          - New transactions: **$($log.newTransactions)**
-          - Catalog bootstrap transactions kept out of weekly-new: **$($log.bootstrapTransactions)**
-          - Removed/cancelled: **$($log.cancelledOrRemoved)**
-          - Corrected: **$($log.correctedTransactions)**
-          - Latest contract date: **$($log.latestContractDate)**
-          - Data changed: **$changed**
-          "@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
-
-      - name: Refresh supply mappings and validate
-        if: steps.freshness.outputs.should_run == 'true' && steps.verify.outputs.changed == 'true'
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          ./scripts/build-supply-area-map.ps1 `
-            -DataPath 'public/data/transactions.js' `
-            -OutputPath 'public/data/supply-areas.js' `
-            -ReportPath 'reports/supply-area-verification.md' `
-            -ReuseExistingTypes
-          node ./scripts/test-supply-area-map.mjs
-
-      - name: Commit validated data and mappings
-        if: steps.freshness.outputs.should_run == 'true' && steps.verify.outputs.changed == 'true'
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- public/data/transactions.js public/data/supply-areas.js reports/supply-area-verification.md reports/molit-openapi-matching.md
-          git diff --cached --quiet
-          if ($LASTEXITCODE -eq 0) { throw 'Updater reported a change, but Git found no staged data difference.' }
-          $date = [TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([DateTimeOffset]::UtcNow, 'Korea Standard Time').ToString('yyyy-MM-dd')
-          git commit -m "data: refresh apartment transactions $date"
-          if ($LASTEXITCODE -ne 0) { throw 'Git commit failed.' }
-
-      - name: Push and verify main
-        id: push
-        if: steps.freshness.outputs.should_run == 'true' && steps.verify.outputs.changed == 'true'
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $localHead = (git rev-parse HEAD).Trim()
-          git push origin HEAD:main
-          if ($LASTEXITCODE -ne 0) { throw 'GitHub push failed.' }
-          $remoteLine = git ls-remote origin refs/heads/main
-          $remoteHead = ($remoteLine -split '\s+')[0]
-          if ($remoteHead -ne $localHead) { throw "Push verification failed: local=$localHead remote=$remoteHead" }
-          "sha=$localHead" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          "- GitHub push: **success** (`$localHead`)" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
-
-      - name: Verify Netlify deployment and public data
-        if: steps.freshness.outputs.should_run == 'true' && steps.verify.outputs.changed == 'true'
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $localPath = 'public/data/transactions.js'
-          $localContent = ([IO.File]::ReadAllText($localPath, [Text.Encoding]::UTF8) -replace "`r`n", "`n").TrimEnd("`r", "`n")
-          $sha = [Security.Cryptography.SHA256]::Create()
-          try { $localHash = ([BitConverter]::ToString($sha.ComputeHash([Text.Encoding]::UTF8.GetBytes($localContent))) -replace '-', '') } finally { $sha.Dispose() }
-          $dataUrl = "$env:PUBLIC_SITE_URL/data/transactions.js"
-          $lastStatus = 'no response'
-          for ($attempt = 1; $attempt -le 40; $attempt++) {
-            try {
-              $response = Invoke-WebRequest -Uri $dataUrl -UseBasicParsing -TimeoutSec 30 -Headers @{ 'Cache-Control'='no-cache' }
-              $lastStatus = "HTTP $([int]$response.StatusCode)"
-              if ([int]$response.StatusCode -eq 200) {
-                $remoteContent = (([string]$response.Content) -replace "`r`n", "`n").TrimEnd("`r", "`n")
-                $remoteBytes = [Text.Encoding]::UTF8.GetBytes($remoteContent)
-                $sha = [Security.Cryptography.SHA256]::Create()
-                try { $remoteHash = ([BitConverter]::ToString($sha.ComputeHash($remoteBytes)) -replace '-', '') } finally { $sha.Dispose() }
-                if ($remoteHash -eq $localHash) {
-                  $expectedMarker = '"rangeEnd":"' + '${{ steps.verify.outputs.latest_contract_date }}' + '"'
-                  if (-not ([string]$response.Content).Contains($expectedMarker)) {
-                    throw 'Netlify data file does not contain the expected latest contract date.'
-                  }
-                  "- Netlify deployment: **success** ($env:PUBLIC_SITE_URL)" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
-                  "- Public latest contract date: **${{ steps.verify.outputs.latest_contract_date }}**" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
-                  exit 0
-                }
-                $lastStatus = 'HTTP 200 but the deployed data hash is still old'
-              }
-            } catch { $lastStatus = $_.Exception.Message }
-            if ($attempt -lt 40) { Start-Sleep -Seconds 15 }
-          }
-          throw "Netlify deployment was not verified after 10 minutes: $lastStatus"
-
-      - name: Record no-change result
-        if: steps.freshness.outputs.should_run == 'true' && steps.verify.outputs.changed != 'true'
-        shell: pwsh
-        run: |
-          "- GitHub push: **not needed (validated OpenAPI data had no change)**" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
-          "- Netlify deployment: **not needed**" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
-
-      - name: Record already-refreshed result
-        if: steps.freshness.outputs.should_run != 'true'
-        shell: pwsh
-        run: |
-          "## Daily refresh skipped" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
-          "- Reason: **a successful refresh already completed today**" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
-          "- Successful run: **${{ steps.freshness.outputs.successful_run_id }}**" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
-
-      - name: Upload OpenAPI diagnostics
-        if: always() && steps.freshness.outputs.should_run == 'true'
+      - name: Upload sanitized stage diagnostics (never API keys or raw data)
+        if: ${{ always() && steps.prepare.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
-          name: molit-openapi-diagnostics-${{ github.run_id }}
+          name: pipeline-diagnostics-${{ github.run_id }}
           path: |
-            ${{ runner.temp }}/apart-price-update-log.json
-            reports/molit-openapi-matching.md
-          if-no-files-found: ignore
+            ${{ runner.temp }}/apart-price-pipeline/report.json
+            ${{ runner.temp }}/apart-price-pipeline/api-log.json
+            ${{ runner.temp }}/apart-price-pipeline/expected-meta.json
           retention-days: 14
+          if-no-files-found: warn

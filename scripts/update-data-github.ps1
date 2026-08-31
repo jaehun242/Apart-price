@@ -6,8 +6,9 @@ param(
   [ValidateRange(3, 6)][int]$RefreshMonths = 6,
   [ValidateRange(6, 60)][int]$CatalogDiscoveryMonths = 24,
   [int]$RequestDelayMs = 150,
-  [ValidateRange(5, 60)][int]$RequestTimeoutSec = 40,
-  [ValidateRange(1, 5)][int]$MaxRetries = 3,
+  [Alias('RequestTimeoutSec')][ValidateRange(1, 300)][int]$ReadTimeoutSec = 60,
+  [ValidateRange(1, 120)][int]$ConnectTimeoutSec = 25,
+  [ValidateRange(1, 6)][int]$MaxRetries = 6,
   [int]$Limit = 0,
   [string[]]$ComplexIds,
   [string]$LogPath = '',
@@ -21,6 +22,7 @@ $Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 $scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repositoryDirectory = Split-Path -Parent $scriptDirectory
 . (Join-Path $scriptDirectory 'transaction-first-seen.ps1')
+. (Join-Path $scriptDirectory 'molit-http.ps1')
 $lockStream = $null
 $temporaryFile = $null
 
@@ -254,6 +256,8 @@ $runLog = [ordered]@{
   validDownloaded = 0; cancelledExcluded = 0; duplicateRowsSkipped = 0; recordsBefore = 0; recordsAfter = 0
   newTransactions = 0; cancelledOrRemoved = 0; correctedTransactions = 0; cancelledOrCorrected = 0
   latestContractDate = $null; firstSeenFieldsInitialized = 0; bootstrapTransactions = 0; dataChanged = $false
+  connectTimeoutSec = $ConnectTimeoutSec; readTimeoutSec = $ReadTimeoutSec; maxAttempts = $MaxRetries
+  failedRequest = $null; dataPreserved = $true; validationPassed = $false
 }
 
 function Write-UpdateLog {
@@ -273,49 +277,65 @@ function Invoke-OpenApiPage {
   $lastError = $null
   for ($attempt = 1; $attempt -le $MaxRetries; $attempt++) {
     $runLog.apiAttempts++
+    $retryable = $true; $failureKind = 'network'; $statusText = 'network'
     try {
-      $response = Invoke-WebRequest -Uri $uri -Method Get -TimeoutSec $RequestTimeoutSec -UseBasicParsing
-      $runLog.apiCalls++
-      if ([int]$response.StatusCode -ne 200) { throw "HTTP $([int]$response.StatusCode)" }
+      $response = Invoke-MolitHttpResponse -Uri $uri -ConnectTimeoutSec $ConnectTimeoutSec -ReadTimeoutSec $ReadTimeoutSec
+      $statusText = [string]$response.StatusCode
+      if ([int]$response.StatusCode -ne 200) {
+        $retryable = ([int]$response.StatusCode -eq 429 -or [int]$response.StatusCode -eq 408 -or [int]$response.StatusCode -ge 500)
+        $failureKind = if ([int]$response.StatusCode -in @(401,403)) { 'authentication' } else { 'http' }
+        throw "HTTP $($response.StatusCode)"
+      }
+      $retryable = $false; $failureKind = 'response-validation'
       try { [xml]$xml = $response.Content } catch { throw "HTTP 200 invalid XML: $($_.Exception.Message)" }
       if ($xml.OpenAPI_ServiceResponse) {
         $reason = [string]$xml.OpenAPI_ServiceResponse.cmmMsgHeader.returnReason
         $code = [string]$xml.OpenAPI_ServiceResponse.cmmMsgHeader.returnAuthMsg
         $detail = [string]$xml.OpenAPI_ServiceResponse.cmmMsgHeader.errMsg
-        throw "HTTP 200 OpenAPI authentication error: $code $reason $detail".Trim()
+        $retryable = ($code -match 'LIMITED_NUMBER|SERVICE_UNAVAILABLE|TEMPORAR' -or $reason -eq '22')
+        $failureKind = if ($retryable) { 'rate-limit-or-service' } else { 'authentication' }
+        throw "HTTP 200 OpenAPI service error: $code $reason $detail".Trim()
       }
       $resultCode = [string]$xml.response.header.resultCode
       $resultMessage = [string]$xml.response.header.resultMsg
-      if ($resultCode -notin @('00', '000')) { throw "HTTP 200 OpenAPI result $resultCode`: $resultMessage" }
+      if ($resultCode -notin @('00', '000')) {
+        $retryable = ($resultCode -in @('01','02','04','05','22','99') -and $resultMessage -notmatch 'SERVICE.?KEY|AUTH|ACCESS_DENIED')
+        $failureKind = if ($resultCode -in @('20','21','30','31','32') -or $resultMessage -match 'SERVICE.?KEY|AUTH') { 'authentication' } else { 'service' }
+        throw "HTTP 200 OpenAPI result $resultCode`: $resultMessage"
+      }
       $runLog.apiKeyRecognized = $true
       $rows = New-Object System.Collections.ArrayList
       foreach ($item in @($xml.response.body.items.item | Where-Object { $null -ne $_ })) { [void]$rows.Add((Convert-XmlItem -Item $item -LawdCode $LawdCode -DealYmd $DealYmd)) }
       $totalCount = 0
-      [void][int]::TryParse([string]$xml.response.body.totalCount, [ref]$totalCount)
+      if (-not [int]::TryParse([string]$xml.response.body.totalCount, [ref]$totalCount) -or $totalCount -lt 0) { throw 'Invalid or missing OpenAPI totalCount.' }
+      $runLog.apiCalls++
       return [PSCustomObject]@{ Rows = @($rows); TotalCount = $totalCount; StatusCode = 200 }
     } catch {
       $lastError = $_.Exception
-      $statusText = 'network'
-      if ($_.Exception.Response -and $_.Exception.Response.StatusCode) { $statusText = [string][int]$_.Exception.Response.StatusCode }
       $message = Protect-ApiKey $lastError.Message
+      $runLog.failedRequest = [ordered]@{ lawdCode=$LawdCode; dealMonth=$DealYmd; page=$PageNo; attempt=$attempt; category=$failureKind; httpStatus=$statusText; error=$message }
+      if (-not $retryable) { throw "[API ERROR] $failureKind ($LawdCode/$DealYmd/page $PageNo), no retry: $message" }
       if ($attempt -lt $MaxRetries) {
-        $pauseSeconds = @(3, 10, 20)[[Math]::Min($attempt - 1, 2)]
-        Write-Warning "OpenAPI retry $attempt/$MaxRetries ($LawdCode, $DealYmd, page $PageNo, HTTP $statusText): $message"
+        $pauseSeconds = Get-MolitBackoffSeconds -Attempt $attempt
+        Write-Warning "[API RETRY] $attempt/$MaxRetries ($LawdCode/$DealYmd/page $PageNo, HTTP $statusText), wait ${pauseSeconds}s: $message"
         Start-Sleep -Seconds $pauseSeconds
       }
     }
   }
   $finalMessage = Protect-ApiKey $lastError.Message
-  throw "OpenAPI request failed after $MaxRetries attempts ($LawdCode, $DealYmd, page $PageNo): $finalMessage"
+  throw "[API ERROR] OpenAPI request failed after $MaxRetries attempts ($LawdCode, $DealYmd, page $PageNo): $finalMessage"
 }
 
 function Get-OpenApiPair {
   param([Parameter(Mandatory = $true)][string]$LawdCode, [Parameter(Mandatory = $true)][string]$DealYmd)
   $rows = New-Object System.Collections.ArrayList
   $pageNo = 1
+  $expectedTotal = $null
   do {
     $page = Invoke-OpenApiPage -LawdCode $LawdCode -DealYmd $DealYmd -PageNo $pageNo
     $pageRows = @($page.Rows)
+    if ($null -eq $expectedTotal) { $expectedTotal = $page.TotalCount }
+    if ($expectedTotal -ne $page.TotalCount) { throw "[API ERROR] totalCount changed during pagination ($LawdCode/$DealYmd/page $pageNo)." }
     if ($pageRows.Count -eq 0 -and $rows.Count -lt $page.TotalCount) {
       throw "OpenAPI pagination returned no rows before totalCount was reached ($LawdCode, $DealYmd, page $pageNo, $($rows.Count)/$($page.TotalCount))."
     }
@@ -324,6 +344,7 @@ function Get-OpenApiPair {
     if ($pageNo -gt 1000) { throw "OpenAPI pagination exceeded 1000 pages ($LawdCode, $DealYmd)." }
     if ($RequestDelayMs -gt 0) { Start-Sleep -Milliseconds $RequestDelayMs }
   } while ($rows.Count -lt $page.TotalCount)
+  if ($rows.Count -ne $expectedTotal) { throw "[API ERROR] Incomplete pagination ($LawdCode/$DealYmd): $($rows.Count)/$expectedTotal." }
   return @($rows)
 }
 
@@ -337,6 +358,8 @@ function Ensure-OpenApiPair {
   Write-Host ("[{0}] OpenAPI {1} {2}{3}" -f $runLog.pairsRequested, $LawdCode, $DealYmd, $(if ($Discovery) { ' (matching discovery)' } else { '' }))
   $script:pairCache[$key] = @(Get-OpenApiPair -LawdCode $LawdCode -DealYmd $DealYmd)
   $runLog.pairsCompleted++
+  $runLog.failedRequest = $null
+  Write-Host "[API] $($runLog.pairsCompleted)/$([Math]::Max($runLog.basePairsRequested + $runLog.discoveryPairsRequested, $runLog.pairsRequested)) requests complete ($LawdCode/$DealYmd)"
 }
 
 function Ensure-OptionalDiscoveryPair {
@@ -351,7 +374,7 @@ function Ensure-OptionalDiscoveryPair {
         dealYmd = $DealYmd
         error = $message
       })
-    Write-Warning "Optional catalog discovery failed for $LawdCode/$DealYmd; the normal rolling refresh will continue: $message"
+    throw "[API ERROR] Catalog discovery failed for $LawdCode/$DealYmd. Entire update aborted; existing data preserved. $message"
   }
 }
 
@@ -567,6 +590,7 @@ try {
     }
     $metadata = New-OpenApiMetadata -Complex $complex -Identity $result.Identity -Method $result.Method -Groups $groups
     $mappingByComplex[[string]$complex.id] = $metadata
+    Write-Host "[MATCH] $($mappingByComplex.Count)/$($complexesToUpdate.Count) complexes matched"
   }
 
   $identityMembers = @{}
@@ -639,7 +663,7 @@ try {
     $refreshStats[[string]$complex.id] = [PSCustomObject]@{ Valid = $valid; Cancelled = $cancelled }
     $runLog.validDownloaded += $valid; $runLog.cancelledExcluded += $cancelled
   }
-  if (($runLog.pairsCompleted + $runLog.pairsFailed) -ne $runLog.pairsRequested) { throw 'Validation failed: OpenAPI request accounting is inconsistent.' }
+  if ($runLog.pairsFailed -ne 0 -or $runLog.pairsCompleted -ne $runLog.pairsRequested) { throw '[API ERROR] Not all requested pairs completed successfully.' }
   if (-not $runLog.apiKeyRecognized -or $runLog.validDownloaded -le 0) { throw 'Validation failed: OpenAPI key was not recognized or returned zero matched transactions.' }
 
   $selectedSet = New-Object 'System.Collections.Generic.HashSet[string]'; foreach ($complex in $complexesToRefresh) { [void]$selectedSet.Add([string]$complex.id) }
@@ -680,15 +704,6 @@ try {
   $runLog.cancelledOrCorrected = $removedCount + $correctedCount; $runLog.dataChanged = $dataChanged
   $latestBefore = @($dataset.records | ForEach-Object { [string]$_.date } | Sort-Object | Select-Object -Last 1)
 
-  if ($Probe) {
-    $runLog.status = 'probe-success'; $runLog.recordsAfter = $runLog.recordsBefore; $runLog.latestContractDate = $(if ($latestBefore.Count) { $latestBefore[0] } else { $null })
-    Write-UpdateLog $runLog; Write-Host "Probe succeeded: key recognized, $($runLog.complexesMatched) complexes matched, $($runLog.validDownloaded) valid rows. Data file unchanged."; return
-  }
-  if (-not $dataChanged) {
-    $runLog.status = 'success-no-change'; $runLog.recordsAfter = $runLog.recordsBefore; $runLog.latestContractDate = $(if ($latestBefore.Count) { $latestBefore[0] } else { $null })
-    Write-UpdateLog $runLog; Write-Host 'No OpenAPI transaction changes. Existing data file left untouched.'; return
-  }
-
   $keptRows = New-Object System.Collections.ArrayList
   foreach ($record in @($dataset.records)) {
     $replace = $selectedSet.Contains([string]$record.complexId) -and $record.kind -eq '아파트 매매' -and [string]$record.date -ge $refreshStart -and [string]$record.date -le $refreshEnd
@@ -727,15 +742,24 @@ try {
   $verificationText = [IO.File]::ReadAllText($temporaryFile, [Text.Encoding]::UTF8)
   $verification = (($verificationText -replace '^\s*window\.APT_ARCHIVE_DATA\s*=\s*', '' -replace ';\s*$', '') | ConvertFrom-Json)
   Assert-Dataset -Before $dataset -After $verification -ExpectedRecordCount $sortedRows.Count -OldRefreshCount $oldRefreshRows.Count -NewRefreshCount $replacementRows.Count
+  $runLog.validationPassed = $true
+  Write-Host "[VERIFY] All $($sortedRows.Count) records validated; first_seen_at, identity, dates, exclusive areas and duplicate checks passed."
+  if ($Probe -or -not $dataChanged) {
+    $runLog.status = if ($Probe) { 'probe-success' } else { 'success-no-change' }
+    $runLog.recordsAfter = $runLog.recordsBefore; $runLog.latestContractDate = $(if ($latestBefore.Count) { $latestBefore[0] } else { $null })
+    Write-UpdateLog $runLog; Write-Host "[API] $($runLog.status); validated successfully, original file unchanged."; return
+  }
   $backupDirectory = Split-Path -Parent $backupFile
   if (-not (Test-Path -LiteralPath $backupDirectory)) { [IO.Directory]::CreateDirectory($backupDirectory) | Out-Null }
   Copy-Item -LiteralPath $dataFile -Destination $backupFile -Force
   Move-Item -LiteralPath $temporaryFile -Destination $dataFile -Force; $temporaryFile = $null
+  $runLog.dataPreserved = $false
   $runLog.status = 'success-changed'; $runLog.recordsAfter = $sortedRows.Count; $runLog.latestContractDate = $(if ($latestDate.Count) { $latestDate[0] } else { $null })
   Write-UpdateLog $runLog; Write-Host "OpenAPI update succeeded: $($runLog.recordsBefore) -> $($runLog.recordsAfter); latest $($runLog.latestContractDate)."
 } catch {
   $runLog.status = 'failed'; $runLog.error = Protect-ApiKey $_.Exception.Message
-  Write-UpdateLog $runLog; throw
+  if ($runLog.dataPreserved) { $runLog.recordsAfter = $runLog.recordsBefore }
+  Write-UpdateLog $runLog; throw (Protect-ApiKey $_.Exception.Message)
 } finally {
   if ($lockStream) { $lockStream.Dispose() }
   if (Test-Path -LiteralPath $lockFile) { Remove-Item -LiteralPath $lockFile -Force -ErrorAction SilentlyContinue }
