@@ -11,6 +11,8 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 function normalizeSecret(value) {
   let secret=String(value||'').trim();
   if ((secret.startsWith('"')&&secret.endsWith('"'))||(secret.startsWith("'")&&secret.endsWith("'"))) secret=secret.slice(1,-1).trim();
+  if (/^https?:\/\//i.test(secret)) { try { secret=new URL(secret).searchParams.get('KEY')||new URL(secret).searchParams.get('key')||secret; } catch {} }
+  secret=secret.replace(/^RONE_API_KEY\s*=\s*/i,'').replace(/^KEY\s*=\s*/i,'').trim();
   if (/%[0-9a-f]{2}/i.test(secret)) { try { secret=decodeURIComponent(secret); } catch {} }
   return secret;
 }
