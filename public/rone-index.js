@@ -2,6 +2,7 @@
   'use strict';
   const host = document.querySelector('#rone-chart');
   if (!host) return;
+  window.RONE_INDEX_READY=false;
   const status = document.querySelector('#rone-status'), latest = document.querySelector('#rone-latest'), source = document.querySelector('#rone-source');
   const fmt = value => Number(value).toFixed(1), monthLabel = month => month.replace('-', '.');
   function validate(data) {
@@ -20,7 +21,7 @@
     const show=event=>{const rect=svg.getBoundingClientRect(),clientX=event.touches?.[0]?.clientX??event.clientX,svgX=(clientX-rect.left)/rect.width*width,index=Math.max(0,Math.min(points.length-1,Math.round((svgX-margin.left)/innerW*(points.length-1)))),point=points[index],px=x(index);line.hidden=false;line.setAttribute('x1',px);line.setAttribute('x2',px);[['seoul',0],['busan',1]].forEach(([key,n])=>{dots[n].hidden=false;dots[n].setAttribute('cx',px);dots[n].setAttribute('cy',y(point[key]));});tooltip.innerHTML=`<strong>${monthLabel(point.month)}</strong><span>서울 <b>${fmt(point.seoul)}</b></span><span>부산 <b>${fmt(point.busan)}</b></span>`;tooltip.classList.add('is-visible');tooltip.style.left=`${Math.max(62,Math.min(rect.width-62,clientX-rect.left))}px`;};
     hit.addEventListener('mousemove',show);hit.addEventListener('touchstart',show,{passive:true});hit.addEventListener('touchmove',show,{passive:true});hit.addEventListener('mouseleave',()=>tooltip.classList.remove('is-visible'));
     const last=points.at(-1);latest.innerHTML=['seoul','busan'].map(key=>`<article><span>${key==='seoul'?'서울':'부산'}</span><strong>${fmt(last[key])}</strong><p>2015.01 대비 <b>${last[key]>=100?'+':''}${fmt(last[key]-100)}%</b></p></article>`).join('');
-    source.textContent=`자료: 한국부동산원 R-ONE · 최신 발표월: ${monthLabel(data.latest_month)} · 2015.01=100으로 재산정`;status.hidden=true;
+    source.textContent=`자료: 한국부동산원 R-ONE · 최신 발표월: ${monthLabel(data.latest_month)} · 2015.01=100으로 재산정`;status.hidden=true;window.RONE_INDEX_READY=true;if(!location.hash)document.querySelector('#rone-section').hidden=false;
   }
-  fetch('data/rone-apartment-index.json',{cache:'no-store'}).then(response=>{if(!response.ok)throw new Error(`HTTP ${response.status}`);return response.json();}).then(data=>render(validate(data))).catch(error=>{status.textContent=`가격지수를 표시하지 못했습니다. (${error.message})`;status.classList.add('is-error');});
+  fetch('data/rone-apartment-index.json',{cache:'no-store'}).then(response=>{if(!response.ok)throw new Error(`HTTP ${response.status}`);return response.json();}).then(data=>render(validate(data))).catch(error=>{status.textContent=`가격지수를 표시하지 못했습니다. (${error.message})`;status.classList.add('is-error');document.querySelector('#rone-section').hidden=true;});
 })();

@@ -282,7 +282,7 @@
     state.selectedId=null;
     $('#home-view').hidden=false; $('#detail-hero').hidden=true;
     $('#home-content').hidden=false; $('#detail-content').hidden=true;
-    $('#rone-section').hidden=false;
+    $('#rone-section').hidden=!window.RONE_INDEX_READY;
     $('#download-current-top').hidden=true;
     const result=homeRows(),latest=result.rows[0]?.first_seen_at;
     $('#home-range-note').textContent=`한국시간 기준 ${formatHomeDate(result.monday)}부터 ${formatHomeDate(result.today)}까지 우리 데이터에 처음 추가된 거래입니다.`;
