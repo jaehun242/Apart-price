@@ -282,6 +282,7 @@
     state.selectedId=null;
     $('#home-view').hidden=false; $('#detail-hero').hidden=true;
     $('#home-content').hidden=false; $('#detail-content').hidden=true;
+    $('#rone-section').hidden=false;
     $('#download-current-top').hidden=true;
     const result=homeRows(),latest=result.rows[0]?.first_seen_at;
     $('#home-range-note').textContent=`한국시간 기준 ${formatHomeDate(result.monday)}부터 ${formatHomeDate(result.today)}까지 우리 데이터에 처음 추가된 거래입니다.`;
@@ -298,6 +299,7 @@
     if (!currentComplex()) { renderHome(); return; }
     $('#home-view').hidden=true; $('#detail-hero').hidden=false;
     $('#home-content').hidden=true; $('#detail-content').hidden=false;
+    $('#rone-section').hidden=true;
     $('#download-current-top').hidden=false;
     syncSelectorToCurrent(); renderHero(); renderSummary(); renderCharts(); renderGroupFilters(); populateYearFilter(); renderTable();
   }

@@ -49,7 +49,7 @@ function makeMeta(text, commitSha, extra = {}) {
 }
 function readMeta(root, commitSha, extra = {}) {
   const assets = {};
-  for (const file of ['data/supply-areas.js', 'app.js', 'styles.css', 'index.html']) {
+  for (const file of ['data/supply-areas.js', 'data/rone-apartment-index.json', 'rone-index.js', 'app.js', 'styles.css', 'index.html']) {
     const full = path.join(root, 'public', file);
     if (fs.existsSync(full)) assets[file] = hash(fs.readFileSync(full, 'utf8'));
   }

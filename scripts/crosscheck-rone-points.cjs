@@ -1,0 +1,7 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path');
+const {CONFIG,requestJson,parsePayload}=require('./rone-index-lib.cjs');
+const data=JSON.parse(fs.readFileSync(path.resolve(__dirname,'../public/data/rone-apartment-index.json'),'utf8'));
+const secret=process.env.RONE_API_KEY;if(!secret){console.error('[R-ONE AUTH ERROR] RONE_API_KEY is missing');process.exit(1);}
+async function point(key,month){const region=CONFIG.regions[key],params=new URLSearchParams({KEY:secret,Type:'json',STATBL_ID:CONFIG.statblId,DTACYCLE_CD:CONFIG.cycle,CLS_ID:region.id,ITM_ID:CONFIG.itemId,WRTTIME_IDTFR_ID:month.replace('-','')});const parsed=parsePayload(await requestJson(`${CONFIG.endpoint}?${params}`));if(parsed.rows.length!==1)throw new Error(`${region.name} ${month} official point returned ${parsed.rows.length} rows`);return Number(parsed.rows[0].DTA_VAL);}
+(async()=>{for(const key of ['seoul','busan'])for(const month of ['2015-01',data.latest_month]){const expected=data.data.find(row=>row.month===month)[`${key}_raw`],actual=await point(key,month);if(actual!==expected)throw new Error(`${CONFIG.regions[key].name} ${month} mismatch: history=${expected} point=${actual}`);console.log(`[R-ONE CROSSCHECK] ${CONFIG.regions[key].name} ${month} raw ${actual} MATCH`);}})().catch(error=>{console.error(`[R-ONE CROSSCHECK ERROR] ${error.message}`);process.exitCode=1;});

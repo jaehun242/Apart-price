@@ -1,0 +1,10 @@
+'use strict';
+const fs = require('node:fs');
+const path = require('node:path');
+const { buildDataset } = require('./rone-index-lib.cjs');
+const file = path.resolve(__dirname, '../public/data/rone-apartment-index.json');
+const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+const rows = key => data.data.map(item => ({ STATBL_ID: data.statbl_id, DTACYCLE_CD: data.cycle, WRTTIME_IDTFR_ID: item.month.replace('-', ''), CLS_ID: data.regions[key].id, CLS_NM: data.regions[key].name, ITM_ID: data.item.id, ITM_NM: data.item.name, DTA_VAL: item[`${key}_raw`] }));
+const rebuilt = buildDataset(rows('seoul'), rows('busan'), data.generated_at, data);
+if (JSON.stringify(rebuilt.data) !== JSON.stringify(data.data) || rebuilt.latest_month !== data.latest_month) throw new Error('R-ONE JSON 검증 실패');
+console.log(`[R-ONE VERIFY] PASS 서울 ${data.counts.seoul} / 부산 ${data.counts.busan} / latest ${data.latest_month}`);

@@ -1,0 +1,96 @@
+name: R-ONE monthly apartment index update
+
+on:
+  schedule:
+    # Weekly check after the usual mid-month publication window: Wed 11:20 KST.
+    - cron: "20 2 * * 3"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: apartment-data-pages-production
+  cancel-in-progress: false
+
+jobs:
+  update-rone:
+    name: Collect official R-ONE index and deploy public
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      TZ: Asia/Seoul
+    steps:
+      - name: Check out current main
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Use supported Node.js runtime
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Test R-ONE collector and validation guards
+        run: node --test scripts/test-rone-index.cjs
+
+      - name: Collect complete official history (2015.01 through latest)
+        env:
+          RONE_API_KEY: ${{ secrets.RONE_API_KEY }}
+        run: node scripts/update-rone-index.cjs
+
+      - name: Validate generated static JSON
+        run: node scripts/validate-rone-index.cjs
+
+      - name: Cross-check start/latest points against official table queries
+        env:
+          RONE_API_KEY: ${{ secrets.RONE_API_KEY }}
+        run: node scripts/crosscheck-rone-points.cjs
+
+      - name: Commit only an actual official-data change
+        id: commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- public/data/rone-apartment-index.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "[GIT] R-ONE collection succeeded; no official data change"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data/rone-apartment-index.json
+          git commit -m "data: update R-ONE apartment price index"
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "[GIT] stored $(git rev-parse HEAD) in main"
+
+      # A GITHUB_TOKEN push does not trigger another workflow, so publish here.
+      - name: Write current commit metadata
+        run: node scripts/write-build-meta.cjs
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload only public to Pages
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: public/
+
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Verify the actual production JSON
+        env:
+          PAGES_URL: ${{ steps.deployment.outputs.page_url }}
+        run: node scripts/verify-rone-pages.cjs

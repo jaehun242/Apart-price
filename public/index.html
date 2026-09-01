@@ -87,6 +87,23 @@
         <button class="load-more weekly-toggle" id="weekly-toggle" type="button" hidden>이번 주 신규 거래 전체보기 <span>＋</span></button>
       </section>
 
+      <section class="section rone-section" id="rone-section" aria-labelledby="rone-title">
+        <div class="section-heading rone-heading">
+          <div>
+            <p class="section-kicker">OFFICIAL MARKET INDEX · R-ONE</p>
+            <h2 id="rone-title">서울·부산 아파트 가격 추이</h2>
+          </div>
+          <p class="section-note">한국부동산원 월간 아파트 매매가격지수 · 2015.01 = 100</p>
+        </div>
+        <div class="rone-card" id="rone-card">
+          <div class="rone-legend" aria-label="지역 범례"><span><i class="rone-swatch seoul"></i>서울</span><span><i class="rone-swatch busan"></i>부산</span></div>
+          <p class="rone-status" id="rone-status">공식 가격지수를 불러오는 중입니다.</p>
+          <div class="rone-chart" id="rone-chart" role="img" aria-label="2015년 1월을 100으로 환산한 서울과 부산 아파트 매매가격지수 선그래프"></div>
+          <div class="rone-latest" id="rone-latest"></div>
+          <p class="rone-source" id="rone-source"></p>
+        </div>
+      </section>
+
       <div id="detail-content" hidden>
       <section class="section summary-section" aria-labelledby="summary-title">
         <div class="section-heading">
@@ -221,6 +238,7 @@
   <script src="data/transactions.js"></script>
   <script src="data/supply-areas.js"></script>
   <script src="weekly-new-transactions.js"></script>
+  <script src="rone-index.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

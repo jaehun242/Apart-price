@@ -268,6 +268,45 @@ a { color: inherit; }
 .weekly-detail { grid-column: 1 / -1; color: var(--ink-soft); font-size: 12px; }
 .weekly-toggle { margin-top: 18px; }
 
+.rone-section { width: 100%; max-width: none; padding-left: max(28px, calc((100vw - 1320px) / 2)); padding-right: max(28px, calc((100vw - 1320px) / 2)); color: #eef1f5; background: #111923; border-top: 0 !important; }
+.rone-section .section-kicker { color: #9eb3e4; }
+.rone-section .section-note { max-width: 460px; color: rgba(255,255,255,.48); text-align: right; line-height: 1.6; }
+.rone-card { position: relative; padding: 31px 34px 27px; border: 1px solid rgba(255,255,255,.13); border-radius: 24px; background: rgba(255,255,255,.035); }
+.rone-legend { display: flex; justify-content: flex-end; gap: 23px; margin-bottom: 12px; color: rgba(255,255,255,.72); font-size: 12px; font-weight: 750; }
+.rone-legend span { display: inline-flex; align-items: center; gap: 8px; }
+.rone-swatch { width: 28px; height: 3px; border-radius: 999px; }
+.rone-swatch.seoul { background: #d8ef52; }
+.rone-swatch.busan { background: #61a9ff; }
+.rone-status { margin: 38px 0; color: rgba(255,255,255,.56); text-align: center; }
+.rone-status.is-error { color: #ffb19a; }
+.rone-chart { position: relative; width: 100%; min-height: 390px; }
+.rone-chart svg { display: block; width: 100%; height: auto; overflow: visible; touch-action: pan-y; }
+.rone-chart svg text { fill: rgba(255,255,255,.42); font-size: 11px; }
+.rone-grid { stroke: rgba(255,255,255,.1); }
+.rone-year-grid { stroke: rgba(255,255,255,.035); }
+.rone-line { fill: none; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+.rone-line.seoul { stroke: #d8ef52; }
+.rone-line.busan { stroke: #61a9ff; }
+.rone-focus-line { stroke: rgba(255,255,255,.38); stroke-dasharray: 3 4; }
+.rone-focus-dot { stroke: #111923; stroke-width: 2; }
+.rone-focus-dot.seoul { fill: #d8ef52; }
+.rone-focus-dot.busan { fill: #61a9ff; }
+.rone-hit { cursor: crosshair; pointer-events: all; }
+.rone-tooltip { position: absolute; z-index: 5; top: 16px; min-width: 130px; padding: 12px 14px; border: 1px solid rgba(255,255,255,.15); border-radius: 11px; color: #fff; background: rgba(4,9,14,.94); box-shadow: 0 12px 30px rgba(0,0,0,.32); pointer-events: none; transform: translateX(-50%); opacity: 0; }
+.rone-tooltip.is-visible { opacity: 1; }
+.rone-tooltip strong,.rone-tooltip span { display: block; }
+.rone-tooltip strong { margin-bottom: 6px; font-size: 13px; }
+.rone-tooltip span { color: rgba(255,255,255,.66); font-size: 11px; line-height: 1.55; }
+.rone-tooltip b { float: right; margin-left: 18px; color: #fff; }
+.rone-latest { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); margin-top: 10px; border-top: 1px solid rgba(255,255,255,.12); }
+.rone-latest article { padding: 25px 24px 10px; }
+.rone-latest article + article { border-left: 1px solid rgba(255,255,255,.12); }
+.rone-latest span { color: rgba(255,255,255,.48); font-size: 11px; letter-spacing: .08em; }
+.rone-latest strong { display: block; margin-top: 8px; font-family: Georgia,"Malgun Gothic",serif; font-size: clamp(34px,4vw,54px); font-weight: 500; }
+.rone-latest p { margin: 6px 0 0; color: rgba(255,255,255,.5); font-size: 12px; }
+.rone-latest b { color: #fff; }
+.rone-source { margin: 25px 0 0; color: rgba(255,255,255,.4); font-size: 11px; text-align: right; }
+
 .section {
   width: min(1320px, calc(100% - 56px));
   margin: 0 auto;
@@ -472,6 +511,17 @@ footer p { margin: 0; }
   .weekly-list { grid-template-columns: 1fr; gap: 11px; }
   .weekly-card { grid-template-columns: 1fr; gap: 9px; min-height: 178px; padding: 21px 20px; }
   .weekly-date { justify-self: start; }
+  .rone-section { width: 100%; padding: 54px 16px; }
+  .rone-section .section-note { text-align: left; }
+  .rone-card { padding: 22px 14px 20px; border-radius: 18px; }
+  .rone-legend { justify-content: flex-start; margin: 0 8px 16px; }
+  .rone-chart { min-height: 0; }
+  .rone-chart svg text { font-size: 16px; }
+  .rone-line { stroke-width: 4; }
+  .rone-latest { grid-template-columns: 1fr; margin-top: 15px; }
+  .rone-latest article { padding: 20px 10px; }
+  .rone-latest article + article { border-left: 0; border-top: 1px solid rgba(255,255,255,.12); }
+  .rone-source { margin: 18px 8px 0; font-size: 10px; line-height: 1.6; text-align: left; }
   .eyebrow { margin-bottom: 13px; font-size: 10px; line-height: 1.5; }
   .hero h1 { max-width: 100%; font-size: clamp(40px, 12.4vw, 54px); line-height: .96; }
   .hero-description { margin-top: 20px; font-size: 14px; line-height: 1.65; }
