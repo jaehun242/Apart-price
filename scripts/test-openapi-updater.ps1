@@ -64,18 +64,27 @@ try {
             $stream.Flush()
             continue
           }
-          $month = (Get-Date).Month
-          $year = (Get-Date).Year
+          # Keep fixture transactions safely in the past on every calendar day.
+          # Fixed day-of-month values become future dates at the start of a month.
+          $contractDate = (Get-Date).Date.AddDays(-10)
+          $cancelledContractDate = $contractDate.AddDays(-1)
+          $cancellationDate = $contractDate.AddDays(1).ToString('yyyyMMdd')
+          $month = $contractDate.Month
+          $year = $contractDate.Year
+          $day = $contractDate.Day
+          $cancelledMonth = $cancelledContractDate.Month
+          $cancelledYear = $cancelledContractDate.Year
+          $cancelledDay = $cancelledContractDate.Day
           $xml = @"
 <?xml version="1.0" encoding="UTF-8"?>
 <response>
   <header><resultCode>000</resultCode><resultMsg>OK</resultMsg></header>
   <body>
     <items>
-      <item><aptSeq>$AptSeq</aptSeq><aptNm>$AptName</aptNm><umdNm>$LegalDong</umdNm><jibun>$Jibun</jibun><roadNm>$RoadName</roadNm><dealYear>$year</dealYear><dealMonth>$month</dealMonth><dealDay>20</dealDay><excluUseAr>84.9146</excluUseAr><dealAmount>55,000</dealAmount><floor>7</floor><aptDong>101</aptDong><dealingGbn>중개거래</dealingGbn><estateAgentSggNm>부산 강서구</estateAgentSggNm><rgstDate></rgstDate><cdealDay></cdealDay><cdealType></cdealType></item>
-      <item><aptSeq>$AptSeq</aptSeq><aptNm>$AptName</aptNm><umdNm>$LegalDong</umdNm><jibun>$Jibun</jibun><roadNm>$RoadName</roadNm><dealYear>$year</dealYear><dealMonth>$month</dealMonth><dealDay>20</dealDay><excluUseAr>84.9146</excluUseAr><dealAmount>55,000</dealAmount><floor>7</floor><aptDong>101</aptDong><dealingGbn>중개거래</dealingGbn><estateAgentSggNm>부산 강서구</estateAgentSggNm><rgstDate></rgstDate><cdealDay></cdealDay><cdealType></cdealType></item>
-      <item><aptSeq>$AptSeq</aptSeq><aptNm>$AptName</aptNm><umdNm>$LegalDong</umdNm><jibun>$Jibun</jibun><roadNm>$RoadName</roadNm><dealYear>$year</dealYear><dealMonth>$month</dealMonth><dealDay>18</dealDay><excluUseAr>59.9821</excluUseAr><dealAmount>42,000</dealAmount><floor>11</floor><aptDong>103</aptDong><dealingGbn>중개거래</dealingGbn><estateAgentSggNm>부산 강서구</estateAgentSggNm><rgstDate></rgstDate><cdealDay></cdealDay><cdealType></cdealType></item>
-      <item><aptSeq>$AptSeq</aptSeq><aptNm>$AptName</aptNm><umdNm>$LegalDong</umdNm><jibun>$Jibun</jibun><roadNm>$RoadName</roadNm><dealYear>$year</dealYear><dealMonth>$month</dealMonth><dealDay>19</dealDay><excluUseAr>84.9146</excluUseAr><dealAmount>54,000</dealAmount><floor>5</floor><aptDong>102</aptDong><dealingGbn>중개거래</dealingGbn><estateAgentSggNm>부산 강서구</estateAgentSggNm><rgstDate></rgstDate><cdealDay>$year$('{0:D2}' -f $month)21</cdealDay><cdealType>O</cdealType></item>
+      <item><aptSeq>$AptSeq</aptSeq><aptNm>$AptName</aptNm><umdNm>$LegalDong</umdNm><jibun>$Jibun</jibun><roadNm>$RoadName</roadNm><dealYear>$year</dealYear><dealMonth>$month</dealMonth><dealDay>$day</dealDay><excluUseAr>84.9146</excluUseAr><dealAmount>55,000</dealAmount><floor>7</floor><aptDong>101</aptDong><dealingGbn>중개거래</dealingGbn><estateAgentSggNm>부산 강서구</estateAgentSggNm><rgstDate></rgstDate><cdealDay></cdealDay><cdealType></cdealType></item>
+      <item><aptSeq>$AptSeq</aptSeq><aptNm>$AptName</aptNm><umdNm>$LegalDong</umdNm><jibun>$Jibun</jibun><roadNm>$RoadName</roadNm><dealYear>$year</dealYear><dealMonth>$month</dealMonth><dealDay>$day</dealDay><excluUseAr>84.9146</excluUseAr><dealAmount>55,000</dealAmount><floor>7</floor><aptDong>101</aptDong><dealingGbn>중개거래</dealingGbn><estateAgentSggNm>부산 강서구</estateAgentSggNm><rgstDate></rgstDate><cdealDay></cdealDay><cdealType></cdealType></item>
+      <item><aptSeq>$AptSeq</aptSeq><aptNm>$AptName</aptNm><umdNm>$LegalDong</umdNm><jibun>$Jibun</jibun><roadNm>$RoadName</roadNm><dealYear>$year</dealYear><dealMonth>$month</dealMonth><dealDay>$day</dealDay><excluUseAr>59.9821</excluUseAr><dealAmount>42,000</dealAmount><floor>11</floor><aptDong>103</aptDong><dealingGbn>중개거래</dealingGbn><estateAgentSggNm>부산 강서구</estateAgentSggNm><rgstDate></rgstDate><cdealDay></cdealDay><cdealType></cdealType></item>
+      <item><aptSeq>$AptSeq</aptSeq><aptNm>$AptName</aptNm><umdNm>$LegalDong</umdNm><jibun>$Jibun</jibun><roadNm>$RoadName</roadNm><dealYear>$cancelledYear</dealYear><dealMonth>$cancelledMonth</dealMonth><dealDay>$cancelledDay</dealDay><excluUseAr>84.9146</excluUseAr><dealAmount>54,000</dealAmount><floor>5</floor><aptDong>102</aptDong><dealingGbn>중개거래</dealingGbn><estateAgentSggNm>부산 강서구</estateAgentSggNm><rgstDate></rgstDate><cdealDay>$cancellationDate</cdealDay><cdealType>O</cdealType></item>
     </items>
     <numOfRows>9999</numOfRows><pageNo>1</pageNo><totalCount>4</totalCount>
   </body>

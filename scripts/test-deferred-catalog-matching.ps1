@@ -88,9 +88,15 @@ try {
           $dealYmd = if ($requestLine -match '[?&]DEAL_YMD=(\d{6})') { $matches[1] } else { (Get-Date).ToString('yyyyMM') }
           $year = $dealYmd.Substring(0, 4)
           $month = [int]$dealYmd.Substring(4, 2)
+          $today = (Get-Date).Date
+          $dealDay = if ([int]$year -eq $today.Year -and $month -eq $today.Month) {
+            [Math]::Min(20, $today.Day)
+          } else {
+            20
+          }
           $xml = @"
 <?xml version="1.0" encoding="UTF-8"?>
-<response><header><resultCode>000</resultCode><resultMsg>OK</resultMsg></header><body><items><item><aptSeq>$AptSeq</aptSeq><aptNm>$AptName</aptNm><umdNm>$LegalDong</umdNm><jibun>$Jibun</jibun><roadNm>$RoadName</roadNm><dealYear>$year</dealYear><dealMonth>$month</dealMonth><dealDay>20</dealDay><excluUseAr>84.9146</excluUseAr><dealAmount>55,000</dealAmount><floor>7</floor><aptDong>101</aptDong><dealingGbn>중개거래</dealingGbn><estateAgentSggNm>fixture</estateAgentSggNm><rgstDate></rgstDate><cdealDay></cdealDay><cdealType></cdealType></item></items><numOfRows>9999</numOfRows><pageNo>1</pageNo><totalCount>1</totalCount></body></response>
+<response><header><resultCode>000</resultCode><resultMsg>OK</resultMsg></header><body><items><item><aptSeq>$AptSeq</aptSeq><aptNm>$AptName</aptNm><umdNm>$LegalDong</umdNm><jibun>$Jibun</jibun><roadNm>$RoadName</roadNm><dealYear>$year</dealYear><dealMonth>$month</dealMonth><dealDay>$dealDay</dealDay><excluUseAr>84.9146</excluUseAr><dealAmount>55,000</dealAmount><floor>7</floor><aptDong>101</aptDong><dealingGbn>중개거래</dealingGbn><estateAgentSggNm>fixture</estateAgentSggNm><rgstDate></rgstDate><cdealDay></cdealDay><cdealType></cdealType></item></items><numOfRows>9999</numOfRows><pageNo>1</pageNo><totalCount>1</totalCount></body></response>
 "@
           $body = [Text.Encoding]::UTF8.GetBytes($xml)
           $header = [Text.Encoding]::ASCII.GetBytes("HTTP/1.1 200 OK`r`nContent-Type: application/xml; charset=utf-8`r`nContent-Length: $($body.Length)`r`nConnection: close`r`n`r`n")
