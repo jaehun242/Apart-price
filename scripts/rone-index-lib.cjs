@@ -8,6 +8,12 @@ const CONFIG = Object.freeze({
   regions: Object.freeze({ seoul: Object.freeze({ id: '500008', name: '서울' }), busan: Object.freeze({ id: '500011', name: '부산' }) }),
 });
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+function normalizeSecret(value) {
+  let secret=String(value||'').trim();
+  if ((secret.startsWith('"')&&secret.endsWith('"'))||(secret.startsWith("'")&&secret.endsWith("'"))) secret=secret.slice(1,-1).trim();
+  if (/%[0-9a-f]{2}/i.test(secret)) { try { secret=decodeURIComponent(secret); } catch {} }
+  return secret;
+}
 
 function apiError(message, category = 'data') { const error = new Error(message); error.category = category; return error; }
 function parsePayload(payload) {
@@ -101,7 +107,7 @@ function buildDataset(seoulRows, busanRows, generatedAt = new Date().toISOString
 
 function comparable(data) { const copy = structuredClone(data); delete copy.generated_at; return JSON.stringify(copy); }
 async function run(options = {}) {
-  const secret = options.secret || process.env.RONE_API_KEY;
+  const secret = normalizeSecret(options.secret || process.env.RONE_API_KEY);
   if (!secret) throw apiError('RONE_API_KEY가 설정되지 않았습니다.', 'auth');
   const output = path.resolve(options.output || path.join(__dirname, '../public/data/rone-apartment-index.json'));
   let previous = null; try { previous = JSON.parse(fs.readFileSync(output, 'utf8')); } catch {}
@@ -113,4 +119,4 @@ async function run(options = {}) {
   return { dataset, changed: dataset !== previous, output };
 }
 
-module.exports = { CONFIG, parsePayload, requestJson, collectRegion, validateRows, buildDataset, comparable, run };
+module.exports = { CONFIG, normalizeSecret, parsePayload, requestJson, collectRegion, validateRows, buildDataset, comparable, run };
