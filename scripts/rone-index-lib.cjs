@@ -56,7 +56,7 @@ async function collectRegion(key, secret, options = {}) {
   let total = null;
   for (let page = 1; total == null || rows.length < total; page += 1) {
     const params = new URLSearchParams({ KEY: secret, Type: 'json', pIndex: String(page), pSize: String(pageSize), STATBL_ID: CONFIG.statblId,
-      DTACYCLE_CD: CONFIG.cycle, CLS_ID: region.id, ITM_ID: CONFIG.itemId, START_WRTTIME: '2015', END_WRTTIME: String(options.endYear || new Date().getUTCFullYear()) });
+      DTACYCLE_CD: CONFIG.cycle, CLS_ID: region.id, ITM_ID: CONFIG.itemId, START_WRTTIME: '2015' });
     const parsed = parsePayload(await requestJson(`${endpoint}?${params}`, options));
     total ??= parsed.total;
     rows.push(...parsed.rows);
@@ -96,6 +96,8 @@ function buildDataset(seoulRows, busanRows, generatedAt = new Date().toISOString
   if (sm.join(',') !== bm.join(',')) throw apiError('서울·부산 월 목록이 일치하지 않습니다. 누락 월을 보간하지 않습니다.');
   const latest = sm.at(-1), expected = expectedMonths(CONFIG.startMonth, latest);
   if (sm.join(',') !== expected.join(',')) throw apiError(`누락 월이 있습니다 (${sm.length}/${expected.length}). 보간하지 않고 배포를 중지합니다.`);
+  const now=new Date(), recentBoundary=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth()-3,1)), recentMonth=`${recentBoundary.getUTCFullYear()}${String(recentBoundary.getUTCMonth()+1).padStart(2,'0')}`;
+  if(latest<recentMonth) throw apiError(`최신월 ${latest}이 공표 지연 허용범위 ${recentMonth}보다 오래됐습니다. 불완전 조회로 판단합니다.`);
   if (previous?.data?.length && sm.length < Math.floor(previous.data.length * 0.9)) throw apiError(`기존 대비 비정상 대량 누락: ${previous.data.length} -> ${sm.length}`);
   const baseS = seoul[0].raw, baseB = busan[0].raw;
   const data = seoul.map((item, index) => ({ month: monthText(item.month), seoul_raw: item.raw, busan_raw: busan[index].raw,
