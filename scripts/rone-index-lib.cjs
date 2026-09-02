@@ -4,8 +4,8 @@ const path = require('node:path');
 
 const CONFIG = Object.freeze({
   endpoint: 'https://www.reb.or.kr/r-one/openapi/SttsApiTblData.do',
-  statblId: 'A_2024_00045', cycle: 'MM', itemId: '100001', startMonth: '201501',
-  regions: Object.freeze({ seoul: Object.freeze({ id: '500008', name: '서울' }), busan: Object.freeze({ id: '500011', name: '부산' }) }),
+  statblId: 'A_2024_00178', cycle: 'MM', itemId: '100001', startMonth: '201501',
+  regions: Object.freeze({ seoul: Object.freeze({ id: '500007', name: '서울' }), busan: Object.freeze({ id: '500008', name: '부산' }) }),
 });
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 function normalizeSecret(value) {
@@ -103,7 +103,8 @@ function buildDataset(seoulRows, busanRows, generatedAt = new Date().toISOString
   const data = seoul.map((item, index) => ({ month: monthText(item.month), seoul_raw: item.raw, busan_raw: busan[index].raw,
     seoul: item.raw / baseS * 100, busan: busan[index].raw / baseB * 100 }));
   if (Math.abs(data[0].seoul - 100) > 1e-12 || Math.abs(data[0].busan - 100) > 1e-12) throw apiError('2015.01 재기준 지수가 100이 아닙니다.');
-  return { schema_version: 1, source: '한국부동산원 R-ONE', stat_name: '전국주택가격동향조사 (월) 매매가격지수_아파트',
+  return { schema_version: 2, source: '한국부동산원 R-ONE', category: '공동주택 실거래가격지수', stat_name: '(월) 지역별 매매지수_아파트',
+    housing_type: '아파트', transaction_type: '매매', index_basis: '실제 신고된 아파트 거래가격',
     statbl_id: CONFIG.statblId, item: { id: CONFIG.itemId, name: '지수' }, cycle: CONFIG.cycle,
     regions: { seoul: CONFIG.regions.seoul, busan: CONFIG.regions.busan }, base: '2015-01=100', latest_month: monthText(latest), generated_at: generatedAt,
     counts: { seoul: seoul.length, busan: busan.length }, warnings: [], data };
@@ -113,7 +114,7 @@ function comparable(data) { const copy = structuredClone(data); delete copy.gene
 async function run(options = {}) {
   const secret = normalizeSecret(options.secret || process.env.RONE_API_KEY);
   if (!secret) throw apiError('RONE_API_KEY가 설정되지 않았습니다.', 'auth');
-  const output = path.resolve(options.output || path.join(__dirname, '../public/data/rone-apartment-index.json'));
+  const output = path.resolve(options.output || path.join(__dirname, '../public/data/apartment-transaction-price-index.json'));
   let previous = null; try { previous = JSON.parse(fs.readFileSync(output, 'utf8')); } catch {}
   const [seoul, busan] = await Promise.all(['seoul', 'busan'].map(key => collectRegion(key, secret, options)));
   let dataset = buildDataset(seoul, busan, new Date().toISOString(), previous);

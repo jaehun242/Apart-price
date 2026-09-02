@@ -298,12 +298,13 @@ a { color: inherit; }
 .rone-focus-dot.seoul { fill: #d8ef52; }
 .rone-focus-dot.busan { fill: #61a9ff; }
 .rone-hit { cursor: crosshair; pointer-events: all; }
-.rone-tooltip { position: absolute; z-index: 5; top: 16px; min-width: 130px; padding: 12px 14px; border: 1px solid rgba(255,255,255,.15); border-radius: 11px; color: #fff; background: rgba(4,9,14,.94); box-shadow: 0 12px 30px rgba(0,0,0,.32); pointer-events: none; transform: translateX(-50%); opacity: 0; }
+.rone-tooltip { position: absolute; z-index: 5; top: 16px; min-width: 220px; padding: 12px 14px; border: 1px solid rgba(255,255,255,.15); border-radius: 11px; color: #fff; background: rgba(4,9,14,.94); box-shadow: 0 12px 30px rgba(0,0,0,.32); pointer-events: none; transform: translateX(-50%); opacity: 0; }
 .rone-tooltip.is-visible { opacity: 1; }
 .rone-tooltip strong,.rone-tooltip span { display: block; }
 .rone-tooltip strong { margin-bottom: 6px; font-size: 13px; }
 .rone-tooltip span { color: rgba(255,255,255,.66); font-size: 11px; line-height: 1.55; }
 .rone-tooltip b { float: right; margin-left: 18px; color: #fff; }
+.rone-tooltip .rone-tooltip-region { margin-top: 7px; color: #fff; font-weight: 700; }
 .rone-latest { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); margin-top: 10px; border-top: 1px solid rgba(255,255,255,.12); }
 .rone-latest article { padding: 25px 24px 10px; }
 .rone-latest article + article { border-left: 1px solid rgba(255,255,255,.12); }
@@ -311,7 +312,9 @@ a { color: inherit; }
 .rone-latest strong { display: block; margin-top: 8px; font-family: var(--font-sans); font-size: clamp(34px,4vw,54px); font-weight: 680; font-variant-numeric: tabular-nums; letter-spacing: -.04em; }
 .rone-latest p { margin: 6px 0 0; color: rgba(255,255,255,.5); font-size: 12px; }
 .rone-latest b { color: #fff; }
-.rone-source { margin: 25px 0 0; color: rgba(255,255,255,.4); font-size: 11px; text-align: right; }
+.rone-source { margin: 25px 0 0; color: rgba(255,255,255,.4); font-size: 11px; line-height: 1.7; text-align: right; }
+.rone-source span,.rone-source em { display: block; }
+.rone-source em { margin-top: 5px; color: rgba(255,255,255,.58); font-style: normal; }
 
 .section {
   width: min(1320px, calc(100% - 56px));
